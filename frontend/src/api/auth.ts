@@ -1,6 +1,8 @@
 import type {
   LoginRequest,
   LoginResponse,
+  MedicoAuth,
+  MedicoConfigUpdate,
   RecuperarSenhaResponse,
 } from '../types/auth'
 import { apiClient } from './client'
@@ -18,5 +20,17 @@ export async function recuperarSenha(email: string): Promise<RecuperarSenhaRespo
     '/api/auth/recuperar-senha',
     { email },
   )
+  return data
+}
+
+export async function obterPerfilMedico(): Promise<MedicoAuth> {
+  const { data } = await apiClient.get<MedicoAuth>('/api/auth/me')
+  return data
+}
+
+export async function atualizarPerfilMedico(
+  payload: MedicoConfigUpdate,
+): Promise<MedicoAuth> {
+  const { data } = await apiClient.patch<MedicoAuth>('/api/auth/me', payload)
   return data
 }

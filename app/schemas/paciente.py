@@ -18,6 +18,16 @@ class PacienteCreate(BaseModel):
     )
 
 
+class PacienteUpdate(BaseModel):
+    nome: str | None = Field(default=None, min_length=2, max_length=200)
+    data_nascimento: date | None = None
+    sexo: str | None = Field(default=None, min_length=1, max_length=1, pattern=r"^[MF]$")
+    cpf: str | None = Field(default=None, max_length=11)
+    telefone: str | None = Field(default=None, max_length=20)
+    observacoes: str | None = None
+    id_usuario: int | None = None
+
+
 class PacienteResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

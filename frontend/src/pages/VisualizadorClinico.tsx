@@ -19,10 +19,10 @@ import { EegSignalChart } from '../components/visualizador/EegSignalChart'
 import { useDiagnosticoPolling } from '../hooks/useDiagnosticoPolling'
 
 import type { Paciente } from '../types/api'
-
-const TAXA_AMOSTRAGEM_PADRAO = 256
+import { useAuth } from '../contexts/AuthContext'
 
 export function VisualizadorClinico() {
+  const { medico } = useAuth()
   const { pacienteId } = useParams<{ pacienteId: string }>()
   const pacienteIdNum = Number(pacienteId)
 
@@ -100,7 +100,9 @@ export function VisualizadorClinico() {
         if (cancelado) return
         const canais = resposta.canais_eeg ?? []
         setCanaisEeg(canais)
-        setCanaisSelecionados(canais)
+        const montagemPadrao = medico?.montagem_padrao ?? []
+        const preferidos = montagemPadrao.filter((canal) => canais.includes(canal))
+        setCanaisSelecionados(preferidos.length > 0 ? preferidos : canais)
       })
       .catch(() => {
         if (!cancelado) {
@@ -115,7 +117,7 @@ export function VisualizadorClinico() {
     return () => {
       cancelado = true
     }
-  }, [exameIdUpload])
+  }, [exameIdUpload, medico?.montagem_padrao])
 
   const enviarArquivo = useCallback(
     async (file: File, pacienteAtual: Paciente) => {
@@ -130,7 +132,6 @@ export function VisualizadorClinico() {
         const resposta = await uploadExame(
           file,
           pacienteAtual.id,
-          TAXA_AMOSTRAGEM_PADRAO,
         )
         setExameIdUpload(resposta.exame_id)
       } catch {
@@ -252,7 +253,7 @@ export function VisualizadorClinico() {
           center={
             <EegSignalChart
               exameId={exameId}
-              mapaShapUrl={concluido?.mapa_shap_url}
+              mapaShapUrl={medico?.exibir_shap === false ? null : concluido?.mapa_shap_url}
               placeholder={placeholderGrafico}
             />
           }
@@ -269,6 +270,7 @@ export function VisualizadorClinico() {
               solicitarDesabilitado={!exameIdUpload || Boolean(concluido)}
               score={concluido?.resultado_score}
               classificacao={concluido?.classificacao_clinica}
+              threshold={concluido?.threshold_confianca ?? medico?.threshold_confianca}
               laudoTextoInicial={diagnostico?.laudo_texto}
               statusExameInicial={diagnostico?.status_exame}
               erro={erroUpload ?? erroDiagnostico}

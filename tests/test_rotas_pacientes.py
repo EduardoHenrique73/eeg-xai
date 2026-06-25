@@ -76,3 +76,29 @@ async def test_criar_paciente_vincula_usuario_padrao_dev(
     payload = response.json()
     assert payload["nome"] == "Maria Souza"
     assert payload["id_usuario"] == usuario_medico.id
+
+
+@pytest.mark.asyncio
+async def test_atualizar_paciente(client_pacientes, paciente):
+    response = await client_pacientes.patch(
+        f"/api/pacientes/{paciente.id}",
+        json={
+            "nome": "Joao Atualizado",
+            "telefone": "62999990000",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["nome"] == "Joao Atualizado"
+    assert payload["telefone"] == "62999990000"
+    assert payload["cpf"] == paciente.cpf
+
+
+@pytest.mark.asyncio
+async def test_excluir_paciente(client_pacientes, paciente):
+    response = await client_pacientes.delete(f"/api/pacientes/{paciente.id}")
+    assert response.status_code == 204
+
+    consulta = await client_pacientes.get(f"/api/pacientes/{paciente.id}")
+    assert consulta.status_code == 404

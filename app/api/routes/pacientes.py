@@ -1,4 +1,4 @@
-"""Rotas de gestão de pacientes."""
+"""Rotas de gestao de pacientes."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -8,7 +8,7 @@ from app.config import Settings, get_settings
 from app.core.deps import get_current_user
 from app.database import get_db
 from app.models import Paciente, Usuario
-from app.schemas.paciente import PacienteCreate, PacienteResponse
+from app.schemas.paciente import PacienteCreate, PacienteResponse, PacienteUpdate
 
 router = APIRouter(
     prefix="/api/pacientes",
@@ -32,17 +32,22 @@ async def _resolver_id_usuario(
         else:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="id_usuario é obrigatório fora do ambiente de desenvolvimento.",
+                detail="id_usuario e obrigatorio fora do ambiente de desenvolvimento.",
             )
 
     medico = await db.get(Usuario, usuario_id)
     if medico is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Usuário (médico) com id {usuario_id} não encontrado.",
+            detail=f"Usuario (medico) com id {usuario_id} nao encontrado.",
         )
 
     return usuario_id
+
+
+def _is_unique_violation(exc: Exception) -> bool:
+    mensagem = str(exc).lower()
+    return "unique constraint failed" in mensagem or "unique constraint" in mensagem
 
 
 @router.get("", response_model=list[PacienteResponse], summary="Listar pacientes")
@@ -66,7 +71,7 @@ async def obter_paciente(
     if paciente is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Paciente com id {paciente_id} não encontrado.",
+            detail=f"Paciente com id {paciente_id} nao encontrado.",
         )
     return paciente
 
@@ -100,11 +105,76 @@ async def criar_paciente(
         await db.refresh(paciente)
     except Exception as exc:
         await db.rollback()
-        if "UNIQUE constraint failed" in str(exc) or "unique constraint" in str(exc).lower():
+        if _is_unique_violation(exc):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="CPF já cadastrado para outro paciente.",
+                detail="CPF ja cadastrado para outro paciente.",
             ) from exc
         raise
 
     return paciente
+
+
+@router.patch(
+    "/{paciente_id}",
+    response_model=PacienteResponse,
+    summary="Atualizar paciente",
+)
+async def atualizar_paciente(
+    paciente_id: int,
+    payload: PacienteUpdate,
+    db: AsyncSession = Depends(get_db),
+) -> PacienteResponse:
+    paciente = await db.get(Paciente, paciente_id)
+    if paciente is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Paciente com id {paciente_id} nao encontrado.",
+        )
+
+    dados = payload.model_dump(exclude_unset=True)
+    usuario_id = dados.get("id_usuario")
+    if usuario_id is not None:
+        medico = await db.get(Usuario, usuario_id)
+        if medico is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Usuario (medico) com id {usuario_id} nao encontrado.",
+            )
+
+    for campo, valor in dados.items():
+        setattr(paciente, campo, valor)
+
+    try:
+        await db.flush()
+        await db.refresh(paciente)
+    except Exception as exc:
+        await db.rollback()
+        if _is_unique_violation(exc):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="CPF ja cadastrado para outro paciente.",
+            ) from exc
+        raise
+
+    return paciente
+
+
+@router.delete(
+    "/{paciente_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Excluir paciente",
+)
+async def excluir_paciente(
+    paciente_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    paciente = await db.get(Paciente, paciente_id)
+    if paciente is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Paciente com id {paciente_id} nao encontrado.",
+        )
+
+    await db.delete(paciente)
+    await db.flush()

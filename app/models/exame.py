@@ -33,6 +33,7 @@ class Exame(Base):
         nullable=False,
     )
     taxa_amostragem: Mapped[float] = mapped_column(Float, nullable=False)
+    canais_eeg: Mapped[str | None] = mapped_column(Text, nullable=True)
     arquivo_path: Mapped[str] = mapped_column(String(500), nullable=False)
     laudo_texto: Mapped[str | None] = mapped_column(Text, nullable=True)
     status_exame: Mapped[str] = mapped_column(

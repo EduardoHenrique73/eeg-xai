@@ -22,6 +22,13 @@ from app.ai_engine.inference import (
     realizar_inferencia,
 )
 from app.ai_engine.shap_explainer import SHAPExplainer, gerar_mapa_shap
+from app.ai_engine.training import (
+    SeizureInterval,
+    avaliar_kfold_features,
+    extrair_dataset_janelado_de_sinal,
+    gerar_janelas_temporais,
+    parse_chbmit_summary,
+)
 
 __all__ = [
     "FeatureExtractor",
@@ -35,4 +42,9 @@ __all__ = [
     "limpar_cache_modelos",
     "gerar_mapa_shap",
     "obter_modelo_keras",
+    "SeizureInterval",
+    "parse_chbmit_summary",
+    "gerar_janelas_temporais",
+    "extrair_dataset_janelado_de_sinal",
+    "avaliar_kfold_features",
 ]

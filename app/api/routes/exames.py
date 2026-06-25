@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 
 from fastapi import (
@@ -21,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import Settings, get_settings
 from app.core.deps import get_current_user
 from app.database import get_db
-from app.models import Exame, Paciente, PredicaoIA
+from app.models import Exame, Paciente, PredicaoIA, Usuario
 from app.models.exame import STATUS_EXAME_CONCLUIDO
 from app.schemas.exame import (
     AnaliseIARequest,
@@ -37,7 +38,7 @@ from app.services.exame_pipeline import processar_exame_ia
 from app.services.exame_sinais import extrair_sinais_para_visualizacao
 from app.services.exame_storage import salvar_arquivo_edf, validar_extensao_edf
 from app.services.static_urls import classificar_score_clinico, mapa_shap_path_para_url
-from app.ai_engine.feature_extractor import listar_canais_eeg_edf
+from app.ai_engine.feature_extractor import extrair_metadados_edf, listar_canais_eeg_edf
 
 router = APIRouter(
     prefix="/api/exames",
@@ -62,6 +63,7 @@ async def obter_diagnostico_exame(
     exame_id: int,
     db: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_settings),
+    usuario: Usuario = Depends(get_current_user),
 ) -> DiagnosticoConcluido | JSONResponse:
     """
     Retorna metadados do exame e laudo da CNN-LSTM + explicabilidade (XAI).
@@ -101,11 +103,21 @@ async def obter_diagnostico_exame(
             content=payload.model_dump(mode="json"),
         )
 
+    mapa_shap_url = (
+        mapa_shap_path_para_url(predicao.mapa_shap_path, settings)
+        if usuario.exibir_shap
+        else None
+    )
+
     return DiagnosticoConcluido(
         **metadados,
         resultado_score=predicao.resultado_score,
-        classificacao_clinica=classificar_score_clinico(predicao.resultado_score),
-        mapa_shap_url=mapa_shap_path_para_url(predicao.mapa_shap_path, settings),
+        classificacao_clinica=classificar_score_clinico(
+            predicao.resultado_score,
+            usuario.threshold_confianca,
+        ),
+        threshold_confianca=usuario.threshold_confianca,
+        mapa_shap_url=mapa_shap_url,
         data_analise=predicao.data_analise,
     )
 
@@ -291,7 +303,11 @@ async def solicitar_analise_ia(
 async def upload_exame(
     arquivo: UploadFile,
     paciente_id: int = Form(..., description="ID do paciente vinculado ao exame"),
-    taxa_amostragem: float = Form(..., gt=0, description="Taxa de amostragem em Hz"),
+    taxa_amostragem: float | None = Form(
+        default=None,
+        gt=0,
+        description="Taxa de amostragem em Hz; se omitida, sera extraida do EDF.",
+    ),
     db: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_settings),
 ) -> ExameUploadResponse:
@@ -316,9 +332,22 @@ async def upload_exame(
 
     caminho_absoluto = await salvar_arquivo_edf(arquivo, settings)
 
+    try:
+        metadados_edf = await asyncio.to_thread(extrair_metadados_edf, caminho_absoluto)
+    except (FileNotFoundError, ValueError) as exc:
+        caminho_absoluto.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
+
+    taxa_real = float(metadados_edf["taxa_amostragem"])
+    canais_eeg = list(metadados_edf["canais_eeg"])
+
     exame = Exame(
         id_paciente=paciente_id,
-        taxa_amostragem=taxa_amostragem,
+        taxa_amostragem=taxa_real if taxa_amostragem is None else taxa_real,
+        canais_eeg=json.dumps(canais_eeg),
         arquivo_path=str(caminho_absoluto),
     )
     db.add(exame)
@@ -328,6 +357,8 @@ async def upload_exame(
     return ExameUploadResponse(
         exame_id=exame.id,
         arquivo_path=exame.arquivo_path,
+        taxa_amostragem=exame.taxa_amostragem,
+        canais_eeg=canais_eeg,
         status_exame=exame.status_exame,
         laudo_texto=exame.laudo_texto,
     )

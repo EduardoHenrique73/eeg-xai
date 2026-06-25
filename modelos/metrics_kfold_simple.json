@@ -1,0 +1,162 @@
+{
+  "n_samples": 70,
+  "n_features": 19,
+  "n_splits": 3,
+  "class_counts": {
+    "0": 60,
+    "1": 10
+  },
+  "folds": [
+    {
+      "accuracy": 0.9583333333333334,
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.8888888888888888
+    },
+    {
+      "accuracy": 0.9565217391304348,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8
+    },
+    {
+      "accuracy": 0.8695652173913043,
+      "precision": 0.5,
+      "recall": 0.6666666666666666,
+      "f1": 0.5714285714285714
+    }
+  ],
+  "mean": {
+    "accuracy": 0.9281400966183574,
+    "precision": 0.7666666666666666,
+    "recall": 0.7777777777777777,
+    "f1": 0.7534391534391535
+  },
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "summary": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\chb01-summary.txt",
+  "window_seconds": 10.0,
+  "step_seconds": 5.0,
+  "augmentation": "overlapping_temporal_windows",
+  "windows_preview": [
+    {
+      "start_seconds": 0.0,
+      "end_seconds": 10.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 120.0,
+      "end_seconds": 130.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 245.0,
+      "end_seconds": 255.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 370.0,
+      "end_seconds": 380.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 495.0,
+      "end_seconds": 505.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 615.0,
+      "end_seconds": 625.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 740.0,
+      "end_seconds": 750.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 865.0,
+      "end_seconds": 875.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 990.0,
+      "end_seconds": 1000.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1110.0,
+      "end_seconds": 1120.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1235.0,
+      "end_seconds": 1245.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1360.0,
+      "end_seconds": 1370.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1485.0,
+      "end_seconds": 1495.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1605.0,
+      "end_seconds": 1615.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1730.0,
+      "end_seconds": 1740.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1855.0,
+      "end_seconds": 1865.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1980.0,
+      "end_seconds": 1990.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2100.0,
+      "end_seconds": 2110.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2225.0,
+      "end_seconds": 2235.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2350.0,
+      "end_seconds": 2360.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    }
+  ]
+}

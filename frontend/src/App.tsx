@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { Configuracoes } from './pages/Configuracoes'
 import { Dashboard } from './pages/Dashboard'
 import { GestaoPacientes } from './pages/GestaoPacientes'
 import { Login } from './pages/Login'
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/pacientes" element={<GestaoPacientes />} />
             <Route path="/pacientes/:pacienteId/exame" element={<VisualizadorClinico />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
           </Route>
         </Route>
       </Routes>

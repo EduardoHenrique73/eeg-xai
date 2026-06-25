@@ -12,6 +12,8 @@ class ExameUploadResponse(BaseModel):
     )
     exame_id: int
     arquivo_path: str
+    taxa_amostragem: float
+    canais_eeg: list[str] = Field(default_factory=list)
     status_exame: str = "pendente"
     laudo_texto: str | None = None
 
@@ -47,7 +49,8 @@ class DiagnosticoConcluido(DiagnosticoExameBase):
     status: Literal["concluido"] = "concluido"
     resultado_score: float = Field(ge=0.0, le=1.0)
     classificacao_clinica: str
-    mapa_shap_url: str
+    mapa_shap_url: str | None = None
+    threshold_confianca: float = Field(default=0.5, ge=0.0, le=1.0)
     data_analise: datetime
 
 

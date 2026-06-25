@@ -3,6 +3,9 @@ export interface MedicoAuth {
   nome: string
   email: string
   crm: string
+  threshold_confianca: number
+  montagem_padrao: string[]
+  exibir_shap: boolean
 }
 
 export interface LoginRequest {
@@ -18,4 +21,13 @@ export interface LoginResponse {
 
 export interface RecuperarSenhaResponse {
   message: string
+}
+
+export interface MedicoConfigUpdate {
+  nome: string
+  email: string
+  crm: string
+  threshold_confianca: number
+  montagem_padrao: string[]
+  exibir_shap: boolean
 }

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
+  Brush,
   CartesianGrid,
   Line,
   LineChart,
@@ -20,18 +21,20 @@ interface EegSignalChartProps {
 export function EegSignalChart({
   exameId,
   mapaShapUrl,
-  placeholder = 'Aguardando importação do exame...',
+  placeholder = 'Aguardando importacao do exame...',
 }: EegSignalChartProps) {
   const [serie, setSerie] = useState<EegPonto[] | undefined>(undefined)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [shapExpandido, setShapExpandido] = useState(false)
+  const [escalaVertical, setEscalaVertical] = useState(1)
 
   useEffect(() => {
     if (exameId == null) {
       setSerie(undefined)
       setCarregando(false)
       setErro(null)
+      setEscalaVertical(1)
       return
     }
 
@@ -39,6 +42,7 @@ export function EegSignalChart({
     setCarregando(true)
     setErro(null)
     setSerie(undefined)
+    setEscalaVertical(1)
 
     obterSinaisExame(exameId)
       .then((resposta) => {
@@ -46,7 +50,7 @@ export function EegSignalChart({
       })
       .catch(() => {
         if (!cancelado) {
-          setErro('Não foi possível carregar as ondas cerebrais do exame.')
+          setErro('Nao foi possivel carregar as ondas cerebrais do exame.')
         }
       })
       .finally(() => {
@@ -59,6 +63,13 @@ export function EegSignalChart({
   }, [exameId])
 
   const possuiSerie = Boolean(serie && serie.length > 0)
+  const dominioY = useMemo(() => {
+    if (!serie || serie.length === 0) return undefined
+    const maxAbs = Math.max(...serie.map((p) => Math.abs(p.amplitude)), 1)
+    const limite = maxAbs / escalaVertical
+    return [-limite, limite] as [number, number]
+  }, [serie, escalaVertical])
+
   const mensagem = carregando
     ? 'Carregando ondas cerebrais...'
     : erro ?? placeholder
@@ -66,15 +77,47 @@ export function EegSignalChart({
   return (
     <section className="flex h-full min-h-0 flex-col rounded-xl border border-clinical-200 bg-white shadow-clinical">
       <header className="shrink-0 border-b border-clinical-100 px-5 py-4">
-        <h2 className="text-base font-semibold text-clinical-900">
-          Visualizador de Sinais EEG
-        </h2>
-        <p className="text-xs text-clinical-500">
-          Série temporal real (média dos canais EEG)
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-clinical-900">
+              Visualizador de Sinais EEG
+            </h2>
+            <p className="text-xs text-clinical-500">
+              Serie temporal real com zoom horizontal e escala vertical
+            </p>
+          </div>
+
+          {possuiSerie && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setEscalaVertical((v) => Math.max(0.5, Number((v - 0.5).toFixed(1))))}
+                className="rounded-lg border border-clinical-200 px-2.5 py-1 text-xs font-semibold text-clinical-700 transition hover:border-accent hover:text-accent"
+              >
+                Y-
+              </button>
+              <span className="w-12 text-center text-xs font-medium text-clinical-500">
+                {escalaVertical.toFixed(1)}x
+              </span>
+              <button
+                type="button"
+                onClick={() => setEscalaVertical((v) => Math.min(5, Number((v + 0.5).toFixed(1))))}
+                className="rounded-lg border border-clinical-200 px-2.5 py-1 text-xs font-semibold text-clinical-700 transition hover:border-accent hover:text-accent"
+              >
+                Y+
+              </button>
+              <button
+                type="button"
+                onClick={() => setEscalaVertical(1)}
+                className="rounded-lg border border-clinical-200 px-2.5 py-1 text-xs font-semibold text-clinical-700 transition hover:border-accent hover:text-accent"
+              >
+                Reset
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
-      {/* Gráfico EEG — área superior */}
       <div
         className={[
           'shrink-0 p-4',
@@ -109,9 +152,10 @@ export function EegSignalChart({
                 }}
               />
               <YAxis
+                domain={dominioY}
                 tick={{ fontSize: 11, fill: '#64748b' }}
                 label={{
-                  value: 'µV',
+                  value: 'uV',
                   angle: -90,
                   position: 'insideLeft',
                   fill: '#64748b',
@@ -133,12 +177,18 @@ export function EegSignalChart({
                 dot={false}
                 isAnimationActive={false}
               />
+              <Brush
+                dataKey="tempo"
+                height={24}
+                travellerWidth={8}
+                stroke="#0d9488"
+                tickFormatter={(value) => `${Number(value).toFixed(0)}s`}
+              />
             </LineChart>
           </ResponsiveContainer>
         )}
       </div>
 
-      {/* Mapa SHAP — painel inferior separado */}
       {mapaShapUrl && (
         <div className="flex min-h-0 flex-1 flex-col border-t border-clinical-200">
           <div className="flex shrink-0 items-center justify-between border-b border-clinical-100 bg-clinical-50 px-5 py-3">
@@ -147,7 +197,7 @@ export function EegSignalChart({
                 Mapa de Explicabilidade (SHAP)
               </h3>
               <p className="text-xs text-clinical-500">
-                Regiões e features que mais influenciaram a decisão da IA
+                Features que mais influenciaram a decisao da IA
               </p>
             </div>
             <button
@@ -169,7 +219,6 @@ export function EegSignalChart({
         </div>
       )}
 
-      {/* Modal fullscreen para inspeção detalhada */}
       {shapExpandido && mapaShapUrl && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-backdrop-in"
@@ -185,7 +234,7 @@ export function EegSignalChart({
           <div className="relative flex max-h-[95vh] max-w-5xl flex-col rounded-2xl bg-white shadow-2xl animate-modal-in">
             <div className="flex items-center justify-between border-b border-clinical-100 px-5 py-3">
               <h3 className="text-sm font-semibold text-clinical-900">
-                Mapa SHAP — Visualização ampliada
+                Mapa SHAP - Visualizacao ampliada
               </h3>
               <button
                 type="button"

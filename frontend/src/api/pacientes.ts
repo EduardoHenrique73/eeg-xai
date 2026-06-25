@@ -1,4 +1,4 @@
-import type { Paciente, PacienteCreate } from '../types/api'
+import type { Paciente, PacienteCreate, PacienteUpdate } from '../types/api'
 import { apiClient } from './client'
 
 export async function listarPacientes(): Promise<Paciente[]> {
@@ -14,4 +14,19 @@ export async function obterPaciente(pacienteId: number): Promise<Paciente> {
 export async function criarPaciente(payload: PacienteCreate): Promise<Paciente> {
   const { data } = await apiClient.post<Paciente>('/api/pacientes', payload)
   return data
+}
+
+export async function atualizarPaciente(
+  pacienteId: number,
+  payload: PacienteUpdate,
+): Promise<Paciente> {
+  const { data } = await apiClient.patch<Paciente>(
+    `/api/pacientes/${pacienteId}`,
+    payload,
+  )
+  return data
+}
+
+export async function excluirPaciente(pacienteId: number): Promise<void> {
+  await apiClient.delete(`/api/pacientes/${pacienteId}`)
 }

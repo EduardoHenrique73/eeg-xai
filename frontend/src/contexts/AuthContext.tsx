@@ -21,6 +21,7 @@ interface AuthContextValue {
   isLoading: boolean
   login: (email: string, senha: string) => Promise<void>
   logout: () => void
+  atualizarMedico: (medico: MedicoAuth) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -29,7 +30,13 @@ function lerMedicoStorage(): MedicoAuth | null {
   const raw = localStorage.getItem(MEDICO_KEY)
   if (!raw) return null
   try {
-    return JSON.parse(raw) as MedicoAuth
+    const dados = JSON.parse(raw) as MedicoAuth
+    return {
+      ...dados,
+      threshold_confianca: dados.threshold_confianca ?? 0.5,
+      montagem_padrao: dados.montagem_padrao ?? [],
+      exibir_shap: dados.exibir_shap ?? true,
+    }
   } catch {
     return null
   }
@@ -66,6 +73,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthToken(null)
   }, [])
 
+  const atualizarMedico = useCallback((dados: MedicoAuth) => {
+    setMedico(dados)
+    localStorage.setItem(MEDICO_KEY, JSON.stringify(dados))
+  }, [])
+
   const login = useCallback(async (email: string, senha: string) => {
     const resposta = await loginApi({ email, senha })
     setToken(resposta.access_token)
@@ -83,8 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login,
       logout,
+      atualizarMedico,
     }),
-    [medico, token, isLoading, login, logout],
+    [medico, token, isLoading, login, logout, atualizarMedico],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,14 +1,30 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { criarPaciente, listarPacientes } from '../api/pacientes'
+import {
+  atualizarPaciente,
+  criarPaciente,
+  excluirPaciente,
+  listarPacientes,
+} from '../api/pacientes'
 import { useToast } from '../contexts/ToastContext'
 import type { Paciente, PacienteCreate } from '../types/api'
 
 function formatarCpf(cpf: string | null | undefined): string {
-  if (!cpf) return '—'
+  if (!cpf) return '-'
   const digitos = cpf.replace(/\D/g, '')
   if (digitos.length !== 11) return cpf
   return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-${digitos.slice(9)}`
+}
+
+function pacienteParaForm(paciente: Paciente): PacienteCreate {
+  return {
+    nome: paciente.nome,
+    data_nascimento: paciente.data_nascimento,
+    sexo: paciente.sexo === 'F' ? 'F' : 'M',
+    cpf: paciente.cpf ?? '',
+    telefone: paciente.telefone ?? '',
+    observacoes: paciente.observacoes ?? '',
+  }
 }
 
 const formInicial: PacienteCreate = {
@@ -26,6 +42,8 @@ export function GestaoPacientes() {
   const [carregando, setCarregando] = useState(true)
   const [modalAberto, setModalAberto] = useState(false)
   const [salvando, setSalvando] = useState(false)
+  const [removendoId, setRemovendoId] = useState<number | null>(null)
+  const [pacienteEditando, setPacienteEditando] = useState<Paciente | null>(null)
   const [form, setForm] = useState<PacienteCreate>(formInicial)
   const [busca, setBusca] = useState('')
 
@@ -35,7 +53,7 @@ export function GestaoPacientes() {
       const lista = await listarPacientes()
       setPacientes(lista)
     } catch {
-      toastErro('Não foi possível carregar a lista de pacientes.')
+      toastErro('Nao foi possivel carregar a lista de pacientes.')
     } finally {
       setCarregando(false)
     }
@@ -55,44 +73,81 @@ export function GestaoPacientes() {
     )
   }, [pacientes, busca])
 
-  const abrirModal = () => {
+  const abrirNovo = () => {
+    setPacienteEditando(null)
     setForm(formInicial)
     setModalAberto(true)
   }
+
+  const abrirEdicao = (paciente: Paciente) => {
+    setPacienteEditando(paciente)
+    setForm(pacienteParaForm(paciente))
+    setModalAberto(true)
+  }
+
+  const normalizarForm = (): PacienteCreate => ({
+    ...form,
+    nome: form.nome.trim(),
+    cpf: form.cpf?.replace(/\D/g, '') || null,
+    telefone: form.telefone?.trim() || null,
+    observacoes: form.observacoes?.trim() || null,
+  })
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     setSalvando(true)
 
     try {
-      await criarPaciente({
-        ...form,
-        cpf: form.cpf?.replace(/\D/g, '') || null,
-        telefone: form.telefone || null,
-        observacoes: form.observacoes || null,
-      })
+      const payload = normalizarForm()
+      if (pacienteEditando) {
+        await atualizarPaciente(pacienteEditando.id, payload)
+        sucesso(`Paciente "${payload.nome}" atualizado com sucesso.`)
+      } else {
+        await criarPaciente(payload)
+        sucesso(`Paciente "${payload.nome}" cadastrado com sucesso.`)
+      }
       setModalAberto(false)
-      sucesso(`Paciente "${form.nome}" cadastrado com sucesso!`)
+      setPacienteEditando(null)
       await carregar()
     } catch {
-      toastErro('Falha ao cadastrar paciente. Verifique os dados e tente novamente.')
+      toastErro('Falha ao salvar paciente. Verifique os dados e tente novamente.')
     } finally {
       setSalvando(false)
     }
   }
 
+  const handleExcluir = async (paciente: Paciente) => {
+    const confirmar = window.confirm(
+      `Excluir o paciente "${paciente.nome}" e todos os exames vinculados?`,
+    )
+    if (!confirmar) return
+
+    setRemovendoId(paciente.id)
+    try {
+      await excluirPaciente(paciente.id)
+      sucesso(`Paciente "${paciente.nome}" excluido com sucesso.`)
+      await carregar()
+    } catch {
+      toastErro('Nao foi possivel excluir o paciente.')
+    } finally {
+      setRemovendoId(null)
+    }
+  }
+
+  const tituloModal = pacienteEditando ? 'Editar Paciente' : 'Novo Paciente'
+
   return (
     <div className="p-8">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-clinical-900">Gestão de Pacientes</h2>
+          <h2 className="text-2xl font-bold text-clinical-900">Gestao de Pacientes</h2>
           <p className="mt-1 text-sm text-clinical-500">
-            Cadastro e encaminhamento para novos exames EEG.
+            Cadastro, edicao e encaminhamento para novos exames EEG.
           </p>
         </div>
         <button
           type="button"
-          onClick={abrirModal}
+          onClick={abrirNovo}
           className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-dark"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,8 +157,7 @@ export function GestaoPacientes() {
         </button>
       </header>
 
-      {/* Busca */}
-      <div className="mb-4 relative">
+      <div className="relative mb-4">
         <svg
           className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-clinical-400"
           fill="none"
@@ -132,19 +186,14 @@ export function GestaoPacientes() {
             <tr>
               <th className="px-5 py-3 font-semibold">Nome</th>
               <th className="px-5 py-3 font-semibold">CPF</th>
-              <th className="px-5 py-3 font-semibold text-right">Ações</th>
+              <th className="px-5 py-3 font-semibold text-right">Acoes</th>
             </tr>
           </thead>
           <tbody>
             {carregando ? (
               <tr>
-                <td colSpan={3} className="px-5 py-10 text-center">
-                  <div className="flex items-center justify-center gap-2 text-clinical-500">
-                    <svg className="h-4 w-4 animate-spin-slow text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v3m6.364 1.636l-2.121 2.121M21 12h-3m-1.636 6.364l-2.121-2.121M12 21v-3m-6.364-1.636l2.121 2.121M3 12h3m1.636-6.364l2.121 2.121" />
-                    </svg>
-                    Carregando pacientes...
-                  </div>
+                <td colSpan={3} className="px-5 py-10 text-center text-clinical-500">
+                  Carregando pacientes...
                 </td>
               </tr>
             ) : pacientesFiltrados.length === 0 ? (
@@ -161,16 +210,30 @@ export function GestaoPacientes() {
                 >
                   <td className="px-5 py-4 font-medium text-clinical-900">{paciente.nome}</td>
                   <td className="px-5 py-4 font-mono text-clinical-700">{formatarCpf(paciente.cpf)}</td>
-                  <td className="px-5 py-4 text-right">
-                    <Link
-                      to={`/pacientes/${paciente.id}/exame`}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent transition hover:bg-accent hover:text-white"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                      Novo Exame
-                    </Link>
+                  <td className="px-5 py-4">
+                    <div className="flex justify-end gap-2">
+                      <Link
+                        to={`/pacientes/${paciente.id}/exame`}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent transition hover:bg-accent hover:text-white"
+                      >
+                        Novo Exame
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => abrirEdicao(paciente)}
+                        className="rounded-lg border border-clinical-200 px-3 py-1.5 text-xs font-semibold text-clinical-700 transition hover:border-accent hover:text-accent"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleExcluir(paciente)}
+                        disabled={removendoId === paciente.id}
+                        className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-alert-crisis transition hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {removendoId === paciente.id ? 'Excluindo...' : 'Excluir'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -179,7 +242,6 @@ export function GestaoPacientes() {
         </table>
       </div>
 
-      {/* Modal novo paciente */}
       {modalAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-backdrop-in">
           <div
@@ -203,18 +265,11 @@ export function GestaoPacientes() {
               </svg>
             </button>
 
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
-                <svg className="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-              </div>
-              <div>
-                <h3 id="modal-titulo" className="text-lg font-semibold text-clinical-900">
-                  Novo Paciente
-                </h3>
-                <p className="text-xs text-clinical-500">Preencha os dados cadastrais.</p>
-              </div>
+            <div className="mb-5">
+              <h3 id="modal-titulo" className="text-lg font-semibold text-clinical-900">
+                {tituloModal}
+              </h3>
+              <p className="text-xs text-clinical-500">Preencha os dados cadastrais.</p>
             </div>
 
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
@@ -258,7 +313,7 @@ export function GestaoPacientes() {
                 <input
                   value={form.cpf ?? ''}
                   onChange={(e) => setForm({ ...form, cpf: e.target.value })}
-                  placeholder="Somente números"
+                  placeholder="Somente numeros"
                   className="mt-1 w-full rounded-lg border border-clinical-200 px-3 py-2.5 font-mono outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 />
               </label>
@@ -273,7 +328,7 @@ export function GestaoPacientes() {
               </label>
 
               <label className="block text-sm">
-                <span className="font-medium text-clinical-700">Observações</span>
+                <span className="font-medium text-clinical-700">Observacoes</span>
                 <textarea
                   rows={3}
                   value={form.observacoes ?? ''}
@@ -293,14 +348,9 @@ export function GestaoPacientes() {
                 <button
                   type="submit"
                   disabled={salvando}
-                  className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white transition hover:bg-accent-dark disabled:opacity-60"
+                  className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white transition hover:bg-accent-dark disabled:opacity-60"
                 >
-                  {salvando && (
-                    <svg className="h-3.5 w-3.5 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v3m6.364 1.636l-2.121 2.121M21 12h-3m-1.636 6.364l-2.121-2.121M12 21v-3m-6.364-1.636l2.121 2.121M3 12h3m1.636-6.364l2.121 2.121" />
-                    </svg>
-                  )}
-                  {salvando ? 'Cadastrando...' : 'Cadastrar Paciente'}
+                  {salvando ? 'Salvando...' : pacienteEditando ? 'Salvar Alteracoes' : 'Cadastrar Paciente'}
                 </button>
               </div>
             </form>

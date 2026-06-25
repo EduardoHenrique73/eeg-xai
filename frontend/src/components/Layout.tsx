@@ -33,6 +33,9 @@ export function Layout() {
           <NavLink to="/pacientes" className={linkClass}>
             Pacientes
           </NavLink>
+          <NavLink to="/configuracoes" className={linkClass}>
+            Configuracoes
+          </NavLink>
         </nav>
 
         <div className="border-t border-slate-700 px-5 py-4">

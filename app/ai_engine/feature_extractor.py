@@ -130,6 +130,27 @@ def listar_canais_eeg_edf(
     return list(raw.ch_names)
 
 
+def extrair_metadados_edf(arquivo_path: str | Path) -> dict[str, object]:
+    """
+    Extrai metadados leves do EDF sem carregar o sinal inteiro em memoria.
+    """
+    path = Path(arquivo_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Arquivo EDF nao encontrado: {path}")
+    if path.suffix.lower() != ".edf":
+        raise ValueError(f"Extensao invalida (esperado .edf): {path.suffix}")
+
+    raw = mne.io.read_raw_edf(path, preload=False, verbose=False)
+    raw.pick_types(eeg=True)
+    if len(raw.ch_names) == 0:
+        raise ValueError(f"Nenhum canal EEG encontrado em {path}")
+
+    return {
+        "taxa_amostragem": float(raw.info["sfreq"]),
+        "canais_eeg": list(raw.ch_names),
+    }
+
+
 def carregar_sinal_edf(
     arquivo_path: str | Path,
     max_duration_seconds: float | None = MAX_DURATION_SECONDS,

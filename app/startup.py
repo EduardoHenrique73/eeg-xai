@@ -28,6 +28,7 @@ async def criar_tabelas(engine: AsyncEngine) -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     await _migrar_colunas_exame_sqlite(engine)
+    await _migrar_colunas_usuario_sqlite(engine)
 
 
 async def _migrar_colunas_exame_sqlite(engine: AsyncEngine) -> None:
@@ -46,6 +47,13 @@ async def _migrar_colunas_exame_sqlite(engine: AsyncEngine) -> None:
                 if "duplicate column" not in str(exc).lower():
                     raise
 
+        if "canais_eeg" not in colunas:
+            try:
+                await conn.execute(text("ALTER TABLE exames ADD COLUMN canais_eeg TEXT"))
+            except Exception as exc:
+                if "duplicate column" not in str(exc).lower():
+                    raise
+
         if "status_exame" not in colunas:
             try:
                 await conn.execute(
@@ -57,6 +65,29 @@ async def _migrar_colunas_exame_sqlite(engine: AsyncEngine) -> None:
             except Exception as exc:
                 if "duplicate column" not in str(exc).lower():
                     raise
+
+
+async def _migrar_colunas_usuario_sqlite(engine: AsyncEngine) -> None:
+    """Adiciona preferencias do medico em bancos SQLite ja existentes."""
+    if not engine.url.drivername.startswith("sqlite"):
+        return
+
+    async with engine.begin() as conn:
+        result = await conn.execute(text("PRAGMA table_info(usuarios)"))
+        colunas = {row[1] for row in result.fetchall()}
+
+        if "threshold_confianca" not in colunas:
+            await conn.execute(
+                text("ALTER TABLE usuarios ADD COLUMN threshold_confianca FLOAT NOT NULL DEFAULT 0.5")
+            )
+
+        if "montagem_padrao" not in colunas:
+            await conn.execute(text("ALTER TABLE usuarios ADD COLUMN montagem_padrao TEXT"))
+
+        if "exibir_shap" not in colunas:
+            await conn.execute(
+                text("ALTER TABLE usuarios ADD COLUMN exibir_shap BOOLEAN NOT NULL DEFAULT 1")
+            )
 
 from app.database import AsyncSessionLocal, Base
 from app.models import Paciente, Usuario

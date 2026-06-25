@@ -78,11 +78,15 @@ async def test_upload_edf_valido_retorna_202_e_persiste(client, paciente, db_ses
     paciente_id = paciente.id
     conteudo = b"0       EDF+DUMMY"
 
-    response = await http_client.post(
-        "/api/exames/upload",
-        data={"paciente_id": str(paciente_id), "taxa_amostragem": "512"},
-        files={"arquivo": ("exame_clinico.edf", BytesIO(conteudo), "application/octet-stream")},
-    )
+    with patch(
+        "app.api.routes.exames.extrair_metadados_edf",
+        return_value={"taxa_amostragem": 256.0, "canais_eeg": ["FP1", "F7"]},
+    ):
+        response = await http_client.post(
+            "/api/exames/upload",
+            data={"paciente_id": str(paciente_id)},
+            files={"arquivo": ("exame_clinico.edf", BytesIO(conteudo), "application/octet-stream")},
+        )
 
     assert response.status_code == 202
     payload = response.json()
@@ -91,6 +95,8 @@ async def test_upload_edf_valido_retorna_202_e_persiste(client, paciente, db_ses
     )
     assert "exame_id" in payload
     assert "arquivo_path" in payload
+    assert payload["taxa_amostragem"] == 256.0
+    assert payload["canais_eeg"] == ["FP1", "F7"]
 
     db_session.expire_all()
     result = await db_session.execute(
@@ -99,7 +105,8 @@ async def test_upload_edf_valido_retorna_202_e_persiste(client, paciente, db_ses
     exame = result.scalar_one()
 
     assert exame.id_paciente == paciente_id
-    assert exame.taxa_amostragem == 512.0
+    assert exame.taxa_amostragem == 256.0
+    assert exame.canais_eeg == '["FP1", "F7"]'
     assert exame.arquivo_path == payload["arquivo_path"]
 
     nome_arquivo = exame.arquivo_path.replace("\\", "/").split("/")[-1]
@@ -343,4 +350,3 @@ async def test_salvar_laudo_exame_ja_emitido_retorna_409(client, exame, db_sessi
     )
 
     assert response.status_code == 409
-

@@ -18,6 +18,7 @@ interface IaLaudoPanelProps {
   solicitarDesabilitado?: boolean
   score?: number | null
   classificacao?: string | null
+  threshold?: number | null
   laudoTextoInicial?: string | null
   statusExameInicial?: string | null
   erro?: string | null
@@ -35,6 +36,7 @@ export function IaLaudoPanel({
   solicitarDesabilitado = false,
   score,
   classificacao,
+  threshold,
   laudoTextoInicial,
   statusExameInicial,
   erro,
@@ -154,6 +156,7 @@ export function IaLaudoPanel({
       <ScoreConfianca
         score={score}
         classificacao={classificacao}
+        threshold={threshold}
         status={scoreStatus}
       />
 

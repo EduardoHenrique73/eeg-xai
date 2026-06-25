@@ -22,10 +22,14 @@ export interface PacienteCreate {
   observacoes?: string | null
 }
 
+export type PacienteUpdate = Partial<PacienteCreate>
+
 export interface ExameUploadResponse {
   message: string
   exame_id: number
   arquivo_path: string
+  taxa_amostragem: number
+  canais_eeg: string[]
   status_exame: string
   laudo_texto?: string | null
 }
@@ -55,7 +59,8 @@ export interface DiagnosticoConcluido extends DiagnosticoExameBase {
   status: 'concluido'
   resultado_score: number
   classificacao_clinica: string
-  mapa_shap_url: string
+  mapa_shap_url?: string | null
+  threshold_confianca: number
   data_analise: string
 }
 

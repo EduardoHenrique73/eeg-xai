@@ -5,6 +5,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
+from app.core.deps import get_current_user
 from app.core.security import hash_password
 from app.database import get_db
 from app.main import app
@@ -59,6 +60,9 @@ async def test_login_credenciais_validas_retorna_jwt(client_auth, medico_com_sen
     assert payload["access_token"]
     assert payload["medico"]["id"] == medico_com_senha.id
     assert payload["medico"]["nome"] == medico_com_senha.nome
+    assert payload["medico"]["threshold_confianca"] == pytest.approx(0.5)
+    assert payload["medico"]["montagem_padrao"] == []
+    assert payload["medico"]["exibir_shap"] is True
 
 
 @pytest.mark.asyncio
@@ -78,6 +82,36 @@ async def test_recuperar_senha_retorna_200(client_auth):
     )
     assert response.status_code == 200
     assert "instruções" in response.json()["message"].lower()
+
+
+@pytest.mark.asyncio
+async def test_atualizar_perfil_e_preferencias_medico(client_auth, medico_com_senha):
+    async def override_current_user():
+        return medico_com_senha
+
+    app.dependency_overrides[get_current_user] = override_current_user
+
+    response = await client_auth.patch(
+        "/api/auth/me",
+        json={
+            "nome": "Dra. Config",
+            "email": "config@test.com",
+            "crm": "123456-GO",
+            "threshold_confianca": 0.72,
+            "montagem_padrao": ["FP1-F7", "F7-T7"],
+            "exibir_shap": False,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["nome"] == "Dra. Config"
+    assert payload["email"] == "config@test.com"
+    assert payload["crm"] == "123456-GO"
+    assert payload["threshold_confianca"] == pytest.approx(0.72)
+    assert payload["montagem_padrao"] == ["FP1-F7", "F7-T7"]
+    assert payload["exibir_shap"] is False
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest.mark.asyncio

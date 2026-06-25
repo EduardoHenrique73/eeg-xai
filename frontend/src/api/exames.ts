@@ -12,12 +12,14 @@ import { apiClient } from './client'
 export async function uploadExame(
   arquivo: File,
   pacienteId: number,
-  taxaAmostragem: number,
+  taxaAmostragem?: number,
 ): Promise<ExameUploadResponse> {
   const formData = new FormData()
   formData.append('arquivo', arquivo)
   formData.append('paciente_id', String(pacienteId))
-  formData.append('taxa_amostragem', String(taxaAmostragem))
+  if (taxaAmostragem != null) {
+    formData.append('taxa_amostragem', String(taxaAmostragem))
+  }
 
   const { data } = await apiClient.post<ExameUploadResponse>(
     '/api/exames/upload',

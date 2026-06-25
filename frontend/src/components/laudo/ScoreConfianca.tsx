@@ -1,29 +1,29 @@
 interface ScoreConfiancaProps {
   score?: number | null
   classificacao?: string | null
+  threshold?: number | null
   status?: 'idle' | 'processando' | 'concluido'
 }
 
 export function ScoreConfianca({
   score,
   classificacao,
+  threshold = 0.5,
   status = 'idle',
 }: ScoreConfiancaProps) {
-  const percentual =
-    score != null ? Math.round(score * 100) : null
-
-  const barraCor =
-    score != null && score > 0.5 ? 'bg-alert-crisis' : 'bg-alert-normal'
+  const percentual = score != null ? Math.round(score * 100) : null
+  const limiar = threshold ?? 0.5
+  const barraCor = score != null && score > limiar ? 'bg-alert-crisis' : 'bg-alert-normal'
 
   return (
     <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
-        Score de Confiança (IA)
+        Score de Confianca (IA)
       </h3>
 
       {status === 'idle' && (
         <p className="mt-4 text-sm text-clinical-500">
-          Aguardando solicitação de análise.
+          Aguardando solicitacao de analise.
         </p>
       )}
 
@@ -49,7 +49,7 @@ export function ScoreConfianca({
               <span
                 className={[
                   'rounded-full px-3 py-1 text-xs font-semibold',
-                  score != null && score > 0.5
+                  score != null && score > limiar
                     ? 'bg-red-50 text-alert-crisis'
                     : 'bg-green-50 text-alert-normal',
                 ].join(' ')}
@@ -67,7 +67,7 @@ export function ScoreConfianca({
           </div>
 
           <p className="mt-2 text-xs text-clinical-500">
-            Probabilidade estimada de crise epiléptica (limiar clínico: 50%)
+            Probabilidade estimada de crise epileptica (limiar clinico: {Math.round(limiar * 100)}%)
           </p>
         </div>
       )}

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Environment
+.env
+config.env
+eeg_xai_dev.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Storage (dados clínicos — nunca versionar)
+storage/edf/*
+storage/shap/*
+!storage/edf/.gitkeep
+!storage/shap/.gitkeep
+
+# Dataset de amostra (arquivos locais de desenvolvimento)
+dataset_amostra/*
+!dataset_amostra/.gitkeep
+
+# ML artifacts
+*.pkl
+*.h5
+*.keras
+!modelos/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Frontend
+frontend/node_modules/
+frontend/dist/

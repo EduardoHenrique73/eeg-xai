@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+@config '../tailwind.config.js';
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full;
+  }
+
+  body {
+    @apply m-0 bg-clinical-50 font-sans text-clinical-800 antialiased;
+  }
+}

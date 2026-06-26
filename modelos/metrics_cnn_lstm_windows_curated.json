@@ -1,0 +1,180 @@
+{
+  "n_samples": 500,
+  "n_features": 19,
+  "n_splits": 3,
+  "epochs": 4,
+  "batch_size": 8,
+  "class_counts": {
+    "0": 330,
+    "1": 170
+  },
+  "folds": [
+    {
+      "accuracy": 0.8203592814371258,
+      "precision": 0.9090909090909091,
+      "recall": 0.5263157894736842,
+      "f1": 0.6666666666666666
+    },
+    {
+      "accuracy": 0.8263473053892215,
+      "precision": 0.78,
+      "recall": 0.6842105263157895,
+      "f1": 0.7289719626168224
+    },
+    {
+      "accuracy": 0.8493975903614458,
+      "precision": 0.8444444444444444,
+      "recall": 0.6785714285714286,
+      "f1": 0.7524752475247525
+    }
+  ],
+  "mean": {
+    "accuracy": 0.8320347257292644,
+    "precision": 0.8445117845117845,
+    "recall": 0.6296992481203008,
+    "f1": 0.7160379589360805
+  },
+  "dataset_kind": "curated_ok_plus_common_warnings",
+  "selected_files": [
+    "chb01_01.edf",
+    "chb01_03.edf",
+    "chb01_04.edf",
+    "chb01_15.edf",
+    "chb02_16.edf",
+    "chb03_01.edf",
+    "chb03_05.edf",
+    "chb04_01.edf",
+    "chb05_01.edf",
+    "chb05_06.edf",
+    "chb06_01.edf"
+  ],
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "augmentation": "overlapping_temporal_windows",
+  "artifacts": {
+    "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid.keras",
+    "scaler_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid_scaler.pkl"
+  },
+  "windows_preview": [
+    {
+      "start_seconds": 0.0,
+      "end_seconds": 4.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 124.0,
+      "end_seconds": 128.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 248.0,
+      "end_seconds": 252.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 372.0,
+      "end_seconds": 376.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 496.0,
+      "end_seconds": 500.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 620.0,
+      "end_seconds": 624.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 744.0,
+      "end_seconds": 748.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 868.0,
+      "end_seconds": 872.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 992.0,
+      "end_seconds": 996.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1116.0,
+      "end_seconds": 1120.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1240.0,
+      "end_seconds": 1244.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1364.0,
+      "end_seconds": 1368.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1488.0,
+      "end_seconds": 1492.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1612.0,
+      "end_seconds": 1616.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1736.0,
+      "end_seconds": 1740.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1860.0,
+      "end_seconds": 1864.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1984.0,
+      "end_seconds": 1988.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2108.0,
+      "end_seconds": 2112.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2232.0,
+      "end_seconds": 2236.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2356.0,
+      "end_seconds": 2360.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    }
+  ]
+}

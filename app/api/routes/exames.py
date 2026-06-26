@@ -103,6 +103,13 @@ async def obter_diagnostico_exame(
             content=payload.model_dump(mode="json"),
         )
 
+    detalhes = {}
+    if predicao.detalhes_json:
+        try:
+            detalhes = json.loads(predicao.detalhes_json)
+        except json.JSONDecodeError:
+            detalhes = {}
+
     mapa_shap_url = (
         mapa_shap_path_para_url(predicao.mapa_shap_path, settings)
         if usuario.exibir_shap
@@ -117,6 +124,14 @@ async def obter_diagnostico_exame(
             usuario.threshold_confianca,
         ),
         threshold_confianca=usuario.threshold_confianca,
+        feature_mode=detalhes.get("feature_mode"),
+        canais_processados=list(detalhes.get("canais_processados", [])),
+        canais_omitidos=list(detalhes.get("canais_omitidos", [])),
+        canais_destaque=list(detalhes.get("canais_destaque", [])),
+        n_janelas_analisadas=detalhes.get("n_janelas_analisadas"),
+        janela_pico=detalhes.get("janela_pico"),
+        janelas_top=list(detalhes.get("janelas_top", [])),
+        score_agregacao=detalhes.get("score_agregacao"),
         mapa_shap_url=mapa_shap_url,
         data_analise=predicao.data_analise,
     )

@@ -19,6 +19,26 @@ interface IaLaudoPanelProps {
   score?: number | null
   classificacao?: string | null
   threshold?: number | null
+  featureMode?: string | null
+  canaisProcessados?: string[]
+  canaisOmitidos?: string[]
+  canaisDestaque?: Array<{
+    canal: string
+    score: number
+    impacto?: number
+    score_sem_canal?: number
+  }>
+  nJanelasAnalisadas?: number | null
+  janelaPico?: {
+    start_seconds: number
+    end_seconds: number
+    score?: number
+  } | null
+  janelasTop?: Array<{
+    start_seconds: number
+    end_seconds: number
+    score: number
+  }>
   laudoTextoInicial?: string | null
   statusExameInicial?: string | null
   erro?: string | null
@@ -37,6 +57,13 @@ export function IaLaudoPanel({
   score,
   classificacao,
   threshold,
+  featureMode,
+  canaisProcessados = [],
+  canaisOmitidos = [],
+  canaisDestaque = [],
+  nJanelasAnalisadas,
+  janelaPico,
+  janelasTop = [],
   laudoTextoInicial,
   statusExameInicial,
   erro,
@@ -65,9 +92,9 @@ export function IaLaudoPanel({
     try {
       await salvarLaudo(exameId, texto)
       setLaudoSalvo(true)
-      toastSucesso('Laudo emitido com sucesso! Registro clínico finalizado.')
+      toastSucesso('Laudo emitido com sucesso. Registro clinico finalizado.')
     } catch {
-      const msg = 'Não foi possível salvar o laudo. Tente novamente.'
+      const msg = 'Nao foi possivel salvar o laudo. Tente novamente.'
       setErroLaudo(msg)
       toastErro(msg)
     } finally {
@@ -89,6 +116,16 @@ export function IaLaudoPanel({
     semCanaisSelecionados ||
     carregandoCanais
 
+  const formatarPercentual = (valor?: number) => {
+    if (valor == null || Number.isNaN(valor)) return null
+    return `${(valor * 100).toFixed(2)}%`
+  }
+
+  const formatarTempo = (valor?: number) => {
+    if (valor == null || Number.isNaN(valor)) return '-'
+    return `${valor.toFixed(1)}s`
+  }
+
   return (
     <div className="relative flex h-full flex-col gap-4">
       <AnaliseLoadingOverlay
@@ -109,7 +146,7 @@ export function IaLaudoPanel({
           Motor de IA
         </h3>
         <p className="mt-2 text-sm text-clinical-600">
-          Enfileira inferência CNN-LSTM multicanal e geração do mapa SHAP no backend.
+          Executa a analise multicanal, calcula o score de suspeita e gera o mapa de explicabilidade.
         </p>
 
         <button
@@ -136,14 +173,14 @@ export function IaLaudoPanel({
             </svg>
           )}
           {analiseConcluida
-            ? 'Análise concluída'
+            ? 'Analise concluida'
             : analiseEmAndamento
-              ? 'Processando CNN-LSTM...'
+              ? 'Processando analise...'
               : solicitarDesabilitado
                 ? 'Aguardando upload do .edf'
                 : semCanaisSelecionados
                   ? 'Selecione canais EEG'
-                  : `Solicitar Análise IA (${canaisSelecionados.length} canal${canaisSelecionados.length !== 1 ? 'is' : ''})`}
+                  : `Iniciar analise IA (${canaisSelecionados.length} canal${canaisSelecionados.length !== 1 ? 'is' : ''})`}
         </button>
 
         {(erro || erroLaudo) && (
@@ -159,6 +196,130 @@ export function IaLaudoPanel({
         threshold={threshold}
         status={scoreStatus}
       />
+
+      {analiseConcluida && (
+        <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
+            Interpretacao por Canais
+          </h3>
+          <div className="mt-3 space-y-3 text-sm text-clinical-700">
+            <p>
+              <span className="font-medium text-clinical-800">Modo:</span>{' '}
+              {featureMode === 'per_channel' ? 'Analise por canal' : 'Analise agregada'}
+            </p>
+
+            {nJanelasAnalisadas != null && nJanelasAnalisadas > 0 && (
+              <div className="rounded-md bg-clinical-50 px-3 py-2">
+                <p>
+                  <span className="font-medium text-clinical-800">Janelas analisadas:</span>{' '}
+                  {nJanelasAnalisadas}
+                </p>
+                {janelaPico && (
+                  <p className="mt-1 text-xs text-clinical-600">
+                    Score calculado a partir da janela mais suspeita:{' '}
+                    {formatarTempo(janelaPico.start_seconds)} a {formatarTempo(janelaPico.end_seconds)}
+                    {janelaPico.score != null ? ` (${formatarPercentual(janelaPico.score)})` : ''}.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {janelasTop.length > 0 && (
+              <div>
+                <p className="font-medium text-clinical-800">Janelas com maior score</p>
+                <div className="mt-2 space-y-2">
+                  {janelasTop.slice(0, 3).map((janela) => (
+                    <div
+                      key={`${janela.start_seconds}-${janela.end_seconds}`}
+                      className="flex items-center justify-between gap-3 rounded-md bg-clinical-50 px-3 py-2 text-xs"
+                    >
+                      <span className="font-medium text-clinical-700">
+                        {formatarTempo(janela.start_seconds)} - {formatarTempo(janela.end_seconds)}
+                      </span>
+                      <span className="text-clinical-600">
+                        score {formatarPercentual(janela.score) ?? '-'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {canaisProcessados.length > 0 && (
+              <div>
+                <p className="font-medium text-clinical-800">Canais incluidos na analise</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {canaisProcessados.map((canal) => (
+                    <span
+                      key={canal}
+                      className="rounded-md bg-clinical-100 px-2 py-1 text-xs font-medium text-clinical-700"
+                    >
+                      {canal}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {canaisDestaque.length > 0 && (
+              <div>
+                <p className="font-medium text-clinical-800">Canais com maior influencia no resultado</p>
+                <p className="mt-1 text-xs text-clinical-500">
+                  O impacto mostra quanto o score muda quando o canal e removido da analise.
+                </p>
+                <div className="mt-2 space-y-2">
+                  {canaisDestaque.map((item) => (
+                    <div
+                      key={item.canal}
+                      className="rounded-md bg-clinical-50 px-3 py-2"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-medium text-clinical-800">{item.canal}</span>
+                        <span className="text-xs text-clinical-600">
+                          variacao absoluta do score {formatarPercentual(item.score) ?? '-'}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-clinical-600">
+                        <span>
+                          diferenca no score:{' '}
+                          <span className="font-medium text-clinical-700">
+                            {formatarPercentual(item.impacto) ?? '-'}
+                          </span>
+                        </span>
+                        <span>
+                          score estimado sem este canal:{' '}
+                          <span className="font-medium text-clinical-700">
+                            {formatarPercentual(item.score_sem_canal) ?? '-'}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {canaisOmitidos.length > 0 && (
+              <div>
+                <p className="font-medium text-clinical-800">Canais fora desta execucao</p>
+                <p className="mt-1 text-xs text-clinical-500">
+                  Estes canais nao entraram no calculo atual e nao influenciaram o score.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {canaisOmitidos.map((canal) => (
+                    <span
+                      key={canal}
+                      className="rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700"
+                    >
+                      {canal}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="flex-1">
         <ParecerMedico

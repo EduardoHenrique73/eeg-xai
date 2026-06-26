@@ -1,0 +1,128 @@
+{
+  "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid.keras",
+  "feature_mode": "mean",
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "files": [
+    {
+      "arquivo": "chb11_01.edf",
+      "n_janelas": 1798,
+      "n_janelas_crise": 0,
+      "score_agregado_top5_mean": 0.9972322583198547,
+      "score_pico": 0.9975086450576782,
+      "janela_pico": {
+        "start_seconds": 2016.0,
+        "end_seconds": 2020.0,
+        "label": 0
+      },
+      "percentis": {
+        "50": 0.9233060479164124,
+        "75": 0.9837804138660431,
+        "90": 0.9918929636478424,
+        "95": 0.9943016260862351,
+        "97": 0.9952480280399323,
+        "99": 0.9963552069664001,
+        "100": 0.9975086450576782
+      },
+      "proporcoes_acima": {
+        "0.5": 0.9310344827586207,
+        "0.7": 0.8259176863181312,
+        "0.9": 0.5489432703003337,
+        "0.95": 0.4421579532814238,
+        "0.99": 0.14293659621802002
+      },
+      "top_janelas": [
+        {
+          "start_seconds": 2016.0,
+          "end_seconds": 2020.0,
+          "score": 0.9975086450576782
+        },
+        {
+          "start_seconds": 1390.0,
+          "end_seconds": 1394.0,
+          "score": 0.997330367565155
+        },
+        {
+          "start_seconds": 1720.0,
+          "end_seconds": 1724.0,
+          "score": 0.9971796870231628
+        },
+        {
+          "start_seconds": 1842.0,
+          "end_seconds": 1846.0,
+          "score": 0.9970837831497192
+        },
+        {
+          "start_seconds": 2598.0,
+          "end_seconds": 2602.0,
+          "score": 0.9970588088035583
+        }
+      ]
+    },
+    {
+      "arquivo": "chb11_82.edf",
+      "n_janelas": 1799,
+      "n_janelas_crise": 12,
+      "score_agregado_top5_mean": 0.9978846311569214,
+      "score_pico": 0.9980482459068298,
+      "janela_pico": {
+        "start_seconds": 326.0,
+        "end_seconds": 330.0,
+        "label": 0
+      },
+      "percentis": {
+        "50": 0.8186755180358887,
+        "75": 0.9253371059894562,
+        "90": 0.9831897616386414,
+        "95": 0.9916018903255462,
+        "97": 0.9943217277526856,
+        "99": 0.9965268349647523,
+        "100": 0.9980482459068298
+      },
+      "proporcoes_acima": {
+        "0.5": 0.9305169538632574,
+        "0.7": 0.7554196775986659,
+        "0.9": 0.31183991106170095,
+        "0.95": 0.1895497498610339,
+        "0.99": 0.06448026681489717
+      },
+      "top_janelas": [
+        {
+          "start_seconds": 326.0,
+          "end_seconds": 330.0,
+          "score": 0.9980482459068298
+        },
+        {
+          "start_seconds": 356.0,
+          "end_seconds": 360.0,
+          "score": 0.9980277419090271
+        },
+        {
+          "start_seconds": 26.0,
+          "end_seconds": 30.0,
+          "score": 0.9978284239768982
+        },
+        {
+          "start_seconds": 758.0,
+          "end_seconds": 762.0,
+          "score": 0.9978087544441223
+        },
+        {
+          "start_seconds": 354.0,
+          "end_seconds": 358.0,
+          "score": 0.9977103471755981
+        }
+      ],
+      "crise": {
+        "score_medio": 0.9927940368652344,
+        "score_max": 0.9954743981361389,
+        "prop_acima_0_9": 1.0
+      },
+      "fora_crise": {
+        "score_medio": 0.7906053066253662,
+        "score_max": 0.9980482459068298,
+        "prop_acima_0_9": 0.3072188024622272
+      }
+    }
+  ]
+}

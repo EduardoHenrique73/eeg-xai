@@ -51,6 +51,14 @@ class DiagnosticoConcluido(DiagnosticoExameBase):
     classificacao_clinica: str
     mapa_shap_url: str | None = None
     threshold_confianca: float = Field(default=0.5, ge=0.0, le=1.0)
+    feature_mode: str | None = None
+    canais_processados: list[str] = Field(default_factory=list)
+    canais_omitidos: list[str] = Field(default_factory=list)
+    canais_destaque: list[dict[str, float | str]] = Field(default_factory=list)
+    n_janelas_analisadas: int | None = None
+    janela_pico: dict[str, float] | None = None
+    janelas_top: list[dict[str, float]] = Field(default_factory=list)
+    score_agregacao: str | None = None
     data_analise: datetime
 
 

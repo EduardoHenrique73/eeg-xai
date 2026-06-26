@@ -61,6 +61,27 @@ export interface DiagnosticoConcluido extends DiagnosticoExameBase {
   classificacao_clinica: string
   mapa_shap_url?: string | null
   threshold_confianca: number
+  feature_mode?: string | null
+  canais_processados: string[]
+  canais_omitidos: string[]
+  canais_destaque: Array<{
+    canal: string
+    score: number
+    impacto?: number
+    score_sem_canal?: number
+  }>
+  n_janelas_analisadas?: number | null
+  janela_pico?: {
+    start_seconds: number
+    end_seconds: number
+    score?: number
+  } | null
+  janelas_top: Array<{
+    start_seconds: number
+    end_seconds: number
+    score: number
+  }>
+  score_agregacao?: string | null
   data_analise: string
 }
 

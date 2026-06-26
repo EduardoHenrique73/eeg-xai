@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, String
+from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -31,6 +31,7 @@ class PredicaoIA(Base):
     )
     resultado_score: Mapped[float] = mapped_column(Float, nullable=False)
     mapa_shap_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    detalhes_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     data_analise: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

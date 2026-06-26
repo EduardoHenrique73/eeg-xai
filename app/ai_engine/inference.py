@@ -1,12 +1,14 @@
 """
-Pipeline de inferência CNN-LSTM híbrida — predição de probabilidade de crise epiléptica.
+Pipeline de inferencia CNN-LSTM hibrida.
 
-Porta a lógica de reshape e predict do ml_classifier legado (hybrid CNN-LSTM).
+Mantem compatibilidade com o modelo legado de 19 features e tambem suporta
+modelos treinados com vetor expandido por canal.
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
 import pickle
 from functools import lru_cache
 from pathlib import Path
@@ -15,14 +17,7 @@ from typing import Any
 import numpy as np
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
-from tensorflow.keras.layers import (
-    Conv1D,
-    Dense,
-    Dropout,
-    Input,
-    LSTM,
-    MaxPooling1D,
-)
+from tensorflow.keras.layers import Conv1D, Dense, Dropout, Input, LSTM, MaxPooling1D
 from tensorflow.keras.models import Sequential
 
 from app.ai_engine.feature_extractor import FEATURE_NAMES
@@ -31,12 +26,7 @@ N_FEATURES = len(FEATURE_NAMES)
 
 
 def criar_modelo_cnn_lstm_hibrido(n_features: int = N_FEATURES) -> tf.keras.Model:
-    """
-    Arquitetura CNN-LSTM híbrida compatível com o legado PIBITI.
-
-    Entrada: (batch, n_features, 1) — 19 features como sequência 1D para Conv1D.
-    Saída: probabilidade sigmoid [0, 1] (classe positiva = crise).
-    """
+    """Arquitetura CNN-LSTM hibrida usada no projeto."""
     return Sequential(
         [
             Input(shape=(n_features, 1)),
@@ -58,7 +48,7 @@ def criar_modelo_cnn_lstm_hibrido(n_features: int = N_FEATURES) -> tf.keras.Mode
 
 
 def criar_modelo_cnn_lstm_dummy(n_features: int = N_FEATURES) -> tf.keras.Model:
-    """Modelo leve com pesos aleatórios — apenas para testes e CI."""
+    """Modelo leve apenas para testes."""
     model = Sequential(
         [
             Input(shape=(n_features, 1)),
@@ -75,61 +65,96 @@ def criar_modelo_cnn_lstm_dummy(n_features: int = N_FEATURES) -> tf.keras.Model:
 
 
 class _ModeloCarregado:
-    """Recursos necessários para uma inferência."""
+    """Recursos necessarios para uma inferencia."""
 
-    __slots__ = ("model", "scaler")
+    __slots__ = ("model", "scaler", "metadata")
 
     def __init__(
         self,
         model: tf.keras.Model,
         scaler: StandardScaler | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         self.model = model
         self.scaler = scaler
+        self.metadata = metadata or {}
+
+
+def _carregar_metadata_sidecar(path: Path) -> dict[str, Any]:
+    metadata_path = path.with_name(f"{path.stem}_metadata.json")
+    if not metadata_path.exists():
+        return {}
+    return json.loads(metadata_path.read_text(encoding="utf-8"))
 
 
 @lru_cache(maxsize=8)
 def _carregar_modelo_cached(modelo_path: str) -> _ModeloCarregado:
     """
-    Carrega o modelo Keras (e scaler opcional) uma única vez por caminho.
+    Carrega o modelo Keras e scaler opcional uma unica vez por caminho.
 
     Formatos suportados:
-        - `.keras` / `.h5` — somente rede Keras
-        - `.pkl` — bundle legado {model, scaler, feature_names, ...}
+    - .keras / .h5
+    - .pkl legado com bundle {model, scaler, metadata}
     """
     path = Path(modelo_path)
     if not path.exists():
-        raise FileNotFoundError(f"Modelo não encontrado: {path}")
+        raise FileNotFoundError(f"Modelo nao encontrado: {path}")
 
     suffix = path.suffix.lower()
 
     if suffix == ".pkl":
         with path.open("rb") as arquivo:
             bundle = pickle.load(arquivo)
-        model = bundle["model"]
-        scaler = bundle.get("scaler")
-        return _ModeloCarregado(model=model, scaler=scaler)
+        return _ModeloCarregado(
+            model=bundle["model"],
+            scaler=bundle.get("scaler"),
+            metadata=bundle.get("metadata", {}),
+        )
 
     if suffix in {".keras", ".h5"}:
         model = tf.keras.models.load_model(path)
-        return _ModeloCarregado(model=model, scaler=None)
+        scaler_path = path.with_name(f"{path.stem}_scaler.pkl")
+        scaler = None
+        if scaler_path.exists():
+            with scaler_path.open("rb") as arquivo:
+                scaler = pickle.load(arquivo)
+        return _ModeloCarregado(
+            model=model,
+            scaler=scaler,
+            metadata=_carregar_metadata_sidecar(path),
+        )
 
-    raise ValueError(
-        f"Formato de modelo não suportado: {suffix}. Use .keras, .h5 ou .pkl"
-    )
+    raise ValueError(f"Formato de modelo nao suportado: {suffix}. Use .keras, .h5 ou .pkl")
 
 
-def extrair_feature_vector(features: dict[str, Any]) -> np.ndarray:
-    """Obtém vetor ordenado (19,) a partir do dicionário de features."""
+def _n_features_esperadas(recursos: _ModeloCarregado) -> int:
+    if recursos.scaler is not None and hasattr(recursos.scaler, "n_features_in_"):
+        return int(recursos.scaler.n_features_in_)
+
+    input_shape = recursos.model.input_shape
+    if isinstance(input_shape, list):
+        input_shape = input_shape[0]
+    if not isinstance(input_shape, tuple) or len(input_shape) < 2 or input_shape[1] is None:
+        raise ValueError("Nao foi possivel determinar o numero de features esperado pelo modelo.")
+    return int(input_shape[1])
+
+
+def extrair_feature_vector(
+    features: dict[str, Any],
+    expected_n_features: int | None = None,
+) -> np.ndarray:
+    """Obtem vetor ordenado a partir do dicionario de features."""
     if "feature_vector" in features:
         vetor = features["feature_vector"]
     else:
         vetor = [features[nome] for nome in FEATURE_NAMES]
 
     array = np.asarray(vetor, dtype=np.float32)
-    if array.shape != (N_FEATURES,):
+    if array.ndim != 1:
+        raise ValueError(f"feature_vector deve ser 1D, recebeu {array.shape}")
+    if expected_n_features is not None and array.shape != (expected_n_features,):
         raise ValueError(
-            f"feature_vector deve ter {N_FEATURES} elementos, recebeu {array.shape}"
+            f"feature_vector deve ter {expected_n_features} elementos, recebeu {array.shape}"
         )
     return array
 
@@ -137,66 +162,77 @@ def extrair_feature_vector(features: dict[str, Any]) -> np.ndarray:
 def preparar_tensor_entrada(
     features: dict[str, Any],
     scaler: StandardScaler | None = None,
+    expected_n_features: int | None = None,
 ) -> np.ndarray:
     """
-    Converte features em tensor 3D `(1, 19, 1)` para Conv1D/LSTM.
+    Converte features em tensor 3D `(1, n_features, 1)` para Conv1D/LSTM.
 
-    Aplica StandardScaler quando disponível (bundle .pkl legado).
+    Aplica StandardScaler quando disponivel.
     """
-    vetor = extrair_feature_vector(features).reshape(1, -1)
-
+    vetor = extrair_feature_vector(features, expected_n_features=expected_n_features).reshape(1, -1)
     if scaler is not None:
         vetor = scaler.transform(vetor)
-
     return vetor.reshape(1, vetor.shape[1], 1).astype(np.float32)
 
 
 def _executar_predicao(features: dict[str, Any], modelo_path: str) -> float:
-    """Predição síncrona — executada em thread pelo wrapper assíncrono."""
+    """Predicao sincrona executada em thread pelo wrapper assincrono."""
     recursos = _carregar_modelo_cached(modelo_path)
-    tensor = preparar_tensor_entrada(features, recursos.scaler)
-
+    tensor = preparar_tensor_entrada(
+        features,
+        recursos.scaler,
+        expected_n_features=_n_features_esperadas(recursos),
+    )
     saida = recursos.model.predict(tensor, verbose=0)
     probabilidade = float(np.asarray(saida).reshape(-1)[0])
-
     return float(max(0.0, min(1.0, probabilidade)))
 
 
 def obter_vetor_escalonado(features: dict[str, Any], modelo_path: str) -> np.ndarray:
-    """Retorna feature_vector 1D no mesmo espaço usado pelo modelo (com scaler se houver)."""
+    """Retorna feature_vector 1D no mesmo espaco usado pelo modelo."""
     recursos = _carregar_modelo_cached(modelo_path)
-    vetor = extrair_feature_vector(features).reshape(1, -1)
+    vetor = extrair_feature_vector(
+        features,
+        expected_n_features=_n_features_esperadas(recursos),
+    ).reshape(1, -1)
     if recursos.scaler is not None:
         vetor = recursos.scaler.transform(vetor)
     return vetor.flatten().astype(np.float32)
 
 
 def obter_modelo_keras(modelo_path: str) -> tf.keras.Model:
-    """Retorna o modelo Keras em cache para inferência ou SHAP."""
+    """Retorna o modelo Keras em cache para inferencia ou SHAP."""
     return _carregar_modelo_cached(modelo_path).model
+
+
+def obter_metadados_modelo(modelo_path: str) -> dict[str, Any]:
+    """Retorna metadados opcionais do modelo carregado."""
+    return dict(_carregar_modelo_cached(modelo_path).metadata)
+
+
+def obter_scaler_modelo(modelo_path: str) -> StandardScaler | None:
+    """Retorna o scaler associado ao modelo, quando existir."""
+    return _carregar_modelo_cached(modelo_path).scaler
 
 
 async def realizar_inferencia(features: dict[str, Any], modelo_path: str) -> float:
     """
-    Executa inferência CNN-LSTM de forma assíncrona (não bloqueia o event loop).
+    Executa inferencia CNN-LSTM de forma assincrona.
 
     Args:
-        features: Dicionário retornado por `extrair_features_edf` (com `feature_vector`).
-        modelo_path: Caminho absoluto do modelo (.keras, .h5 ou .pkl).
-
-    Returns:
-        Probabilidade da classe positiva (crise epiléptica), entre 0.0 e 1.0.
+        features: Dicionario retornado por `extrair_features_edf`.
+        modelo_path: Caminho absoluto do modelo.
     """
     return await asyncio.to_thread(_executar_predicao, features, modelo_path)
 
 
 def limpar_cache_modelos() -> None:
-    """Libera modelos em cache (útil em testes e hot-reload)."""
+    """Libera modelos em cache."""
     _carregar_modelo_cached.cache_clear()
 
 
 class CNNLSTMInferencePipeline:
-    """Facade orientada a objetos para o pipeline de inferência."""
+    """Facade OO para o pipeline de inferencia."""
 
     def __init__(self, model_path: Path | str) -> None:
         self.model_path = str(Path(model_path).resolve())

@@ -1,0 +1,128 @@
+{
+  "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid_expanded_23ch_balanced_normal_mean.keras",
+  "feature_mode": "mean",
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "files": [
+    {
+      "arquivo": "chb11_01.edf",
+      "n_janelas": 1798,
+      "n_janelas_crise": 0,
+      "score_agregado_top5_mean": 0.9980478286743164,
+      "score_pico": 0.9981437921524048,
+      "janela_pico": {
+        "start_seconds": 1720.0,
+        "end_seconds": 1724.0,
+        "label": 0
+      },
+      "percentis": {
+        "50": 0.7636358737945557,
+        "75": 0.9763085246086121,
+        "90": 0.9934288322925567,
+        "95": 0.9960885018110275,
+        "97": 0.9968308848142624,
+        "99": 0.9975266271829605,
+        "100": 0.9981437921524048
+      },
+      "proporcoes_acima": {
+        "0.5": 0.7363737486095662,
+        "0.7": 0.542825361512792,
+        "0.9": 0.38542825361512795,
+        "0.95": 0.3248053392658509,
+        "0.99": 0.14794215795328142
+      },
+      "top_janelas": [
+        {
+          "start_seconds": 1720.0,
+          "end_seconds": 1724.0,
+          "score": 0.9981437921524048
+        },
+        {
+          "start_seconds": 1840.0,
+          "end_seconds": 1844.0,
+          "score": 0.9980757832527161
+        },
+        {
+          "start_seconds": 1390.0,
+          "end_seconds": 1394.0,
+          "score": 0.9980507493019104
+        },
+        {
+          "start_seconds": 1638.0,
+          "end_seconds": 1642.0,
+          "score": 0.9980042576789856
+        },
+        {
+          "start_seconds": 1036.0,
+          "end_seconds": 1040.0,
+          "score": 0.9979647397994995
+        }
+      ]
+    },
+    {
+      "arquivo": "chb11_82.edf",
+      "n_janelas": 1799,
+      "n_janelas_crise": 12,
+      "score_agregado_top5_mean": 0.9983435869216919,
+      "score_pico": 0.9984506368637085,
+      "janela_pico": {
+        "start_seconds": 26.0,
+        "end_seconds": 30.0,
+        "label": 0
+      },
+      "percentis": {
+        "50": 0.6179796457290649,
+        "75": 0.8212555348873138,
+        "90": 0.9768949389457703,
+        "95": 0.9930735409259795,
+        "97": 0.9959826862812042,
+        "99": 0.9977154922485352,
+        "100": 0.9984506368637085
+      },
+      "proporcoes_acima": {
+        "0.5": 0.6931628682601445,
+        "0.7": 0.3718732629238466,
+        "0.9": 0.1801000555864369,
+        "0.95": 0.13618677042801555,
+        "0.99": 0.06448026681489717
+      },
+      "top_janelas": [
+        {
+          "start_seconds": 26.0,
+          "end_seconds": 30.0,
+          "score": 0.9984506368637085
+        },
+        {
+          "start_seconds": 28.0,
+          "end_seconds": 32.0,
+          "score": 0.9984130859375
+        },
+        {
+          "start_seconds": 748.0,
+          "end_seconds": 752.0,
+          "score": 0.9983305931091309
+        },
+        {
+          "start_seconds": 758.0,
+          "end_seconds": 762.0,
+          "score": 0.9983158707618713
+        },
+        {
+          "start_seconds": 24.0,
+          "end_seconds": 28.0,
+          "score": 0.9982077479362488
+        }
+      ],
+      "crise": {
+        "score_medio": 0.9951288104057312,
+        "score_max": 0.9974157214164734,
+        "prop_acima_0_9": 1.0
+      },
+      "fora_crise": {
+        "score_medio": 0.6457108855247498,
+        "score_max": 0.9984506368637085,
+        "prop_acima_0_9": 0.17459429210968103
+      }
+    }
+  ]
+}

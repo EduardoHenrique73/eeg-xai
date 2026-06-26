@@ -1,4 +1,4 @@
-"""Testes do extrator de features (dinâmica simbólica + EDF)."""
+"""Testes do extrator de features."""
 
 from pathlib import Path
 
@@ -11,6 +11,7 @@ from app.ai_engine.feature_extractor import (
     carregar_sinal_edf,
     extrair_features_de_valores,
     extrair_features_edf,
+    selecionar_canais_eeg_validos,
 )
 from app.ai_engine.symbolic_dynamics import (
     aplicar_dinamica_simbolica,
@@ -24,8 +25,6 @@ from app.ai_engine.symbolic_dynamics import (
 
 
 class TestDinamicaSimbolicaLegado:
-    """Valida a matemática portada do dinamica_simbolica.py."""
-
     def test_entropia_distribuicao_uniforme(self):
         freq = {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.25}
         assert calcular_entropia_shannon(freq) == pytest.approx(1.0, abs=1e-6)
@@ -64,8 +63,6 @@ class TestDinamicaSimbolicaLegado:
 
 
 class TestExtrairFeatures:
-    """Valida as 19 features do ml_classifier legado."""
-
     SINAL_REFERENCIA = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
 
     def test_retorna_19_features_mais_metadados(self):
@@ -95,17 +92,14 @@ class TestExtrairFeatures:
         assert features["entropia_frequencias"] == pytest.approx(1.918296, abs=1e-5)
 
     def test_sinal_curto_demais_levanta_erro(self):
-        with pytest.raises(ValueError, match="Frequências de padrões vazias"):
+        with pytest.raises(ValueError, match="Frequencias de padroes vazias"):
             extrair_features_de_valores(np.array([1.0, 2.0]))
 
 
 class TestExtrairFeaturesEdf:
-    """Integração com mne-python via arquivo .edf sintético."""
-
     @pytest.fixture
     def edf_sintetico(self, tmp_path) -> tuple[Path, np.ndarray, float]:
         sfreq = 256.0
-        # Onda com alternância acima/abaixo da média para padrões ricos
         t = np.arange(0, 2.0, 1.0 / sfreq)
         sinal = np.sin(2 * np.pi * 10 * t) + 0.5 * np.sin(2 * np.pi * 3 * t)
         data = sinal.reshape(1, -1)
@@ -134,3 +128,16 @@ class TestExtrairFeaturesEdf:
     def test_arquivo_inexistente_levanta_erro(self):
         with pytest.raises(FileNotFoundError):
             extrair_features_edf("/caminho/inexistente.edf")
+
+
+def test_selecionar_canais_eeg_validos_descarta_placeholders():
+    info = mne.create_info(
+        ch_names=["FP1-F7", "-", "T8-P8", "--0"],
+        sfreq=256.0,
+        ch_types=["eeg", "eeg", "eeg", "eeg"],
+    )
+    raw = mne.io.RawArray(np.zeros((4, 64)), info, verbose=False)
+
+    canais = selecionar_canais_eeg_validos(raw)
+
+    assert canais == ["FP1-F7", "T8-P8"]

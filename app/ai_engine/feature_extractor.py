@@ -1,8 +1,8 @@
 """
-Extrator de features EEG — dinâmica simbólica + estatísticas (porte PIBITI).
+Extrator de features EEG baseado em dinamica simbolica e estatisticas.
 
-Carrega arquivos .edf reais via mne-python (canais EEG) e produz as 19 features
-do ml_classifier legado para alimentar a rede CNN-LSTM híbrida.
+Carrega arquivos .edf via mne-python e produz as 19 features do pipeline
+legado para alimentar a rede CNN-LSTM hibrida.
 """
 
 from __future__ import annotations
@@ -18,7 +18,9 @@ from app.ai_engine.symbolic_dynamics import (
     aplicar_dinamica_simbolica,
 )
 
-# Ordem estável para alimentar a rede neural híbrida
+FEATURE_MODE_MEAN = "mean"
+FEATURE_MODE_PER_CHANNEL = "per_channel"
+
 FEATURE_NAMES: list[str] = [
     "entropia_shannon",
     "limiar",
@@ -41,12 +43,33 @@ FEATURE_NAMES: list[str] = [
     "entropia_frequencias",
 ]
 
-# Limite opcional para gravações longas (evita pico de memória em exames de horas)
 MAX_DURATION_SECONDS: float | None = None
 
 
+def _canal_eeg_valido(nome: str) -> bool:
+    nome_limpo = nome.strip()
+    return bool(nome_limpo) and nome_limpo != "-" and not nome_limpo.startswith("--")
+
+
+def selecionar_canais_eeg_validos(
+    raw: mne.io.BaseRaw,
+    canais_selecionados: list[str] | None = None,
+) -> list[str]:
+    raw.pick("eeg")
+    canais_validos = [canal for canal in raw.ch_names if _canal_eeg_valido(canal)]
+    if not canais_validos:
+        raise ValueError("Nenhum canal EEG valido encontrado no arquivo EDF.")
+
+    if canais_selecionados:
+        invalidos = [canal for canal in canais_selecionados if canal not in canais_validos]
+        if invalidos:
+            raise ValueError(f"Canais EEG invalidos: {', '.join(invalidos)}")
+        return canais_selecionados
+
+    return canais_validos
+
+
 def _calcular_skewness(data: np.ndarray) -> float:
-    """Assimetria — porte de ml_classifier.py."""
     n = len(data)
     if n < 3:
         return 0.0
@@ -58,7 +81,6 @@ def _calcular_skewness(data: np.ndarray) -> float:
 
 
 def _calcular_kurtosis(data: np.ndarray) -> float:
-    """Curtose — porte de ml_classifier.py."""
     n = len(data)
     if n < 4:
         return 0.0
@@ -73,16 +95,12 @@ def _calcular_kurtosis(data: np.ndarray) -> float:
 
 
 def _contar_transicoes(sequencia: np.ndarray) -> int:
-    """Conta transições 0→1 e 1→0 na sequência binária."""
     if len(sequencia) < 2:
         return 0
     return int(np.sum(sequencia[1:] != sequencia[:-1]))
 
 
 def _calcular_entropia_frequencias(valores: list[float]) -> float:
-    """
-    Entropia das frequências dos padrões (log₂) — porte de EEGClassifier._calcular_entropia_shannon.
-    """
     if not valores:
         return 0.0
     total = sum(valores)
@@ -100,18 +118,14 @@ def _preparar_raw_edf(
     arquivo_path: str | Path,
     max_duration_seconds: float | None = MAX_DURATION_SECONDS,
 ) -> mne.io.BaseRaw:
-    """Carrega .edf, filtra canais EEG e aplica recorte temporal opcional."""
     path = Path(arquivo_path)
     if not path.exists():
-        raise FileNotFoundError(f"Arquivo EDF não encontrado: {path}")
+        raise FileNotFoundError(f"Arquivo EDF nao encontrado: {path}")
     if path.suffix.lower() != ".edf":
-        raise ValueError(f"Extensão inválida (esperado .edf): {path.suffix}")
+        raise ValueError(f"Extensao invalida (esperado .edf): {path.suffix}")
 
     raw = mne.io.read_raw_edf(path, preload=True, verbose=False)
-    raw.pick_types(eeg=True)
-
-    if len(raw.ch_names) == 0:
-        raise ValueError(f"Nenhum canal EEG encontrado em {path}")
+    raw.pick(selecionar_canais_eeg_validos(raw))
 
     if max_duration_seconds is not None and max_duration_seconds > 0:
         duracao = float(raw.times[-1])
@@ -125,15 +139,11 @@ def listar_canais_eeg_edf(
     arquivo_path: str | Path,
     max_duration_seconds: float | None = MAX_DURATION_SECONDS,
 ) -> list[str]:
-    """Retorna os nomes dos canais EEG presentes no arquivo .edf."""
     raw = _preparar_raw_edf(arquivo_path, max_duration_seconds=max_duration_seconds)
     return list(raw.ch_names)
 
 
 def extrair_metadados_edf(arquivo_path: str | Path) -> dict[str, object]:
-    """
-    Extrai metadados leves do EDF sem carregar o sinal inteiro em memoria.
-    """
     path = Path(arquivo_path)
     if not path.exists():
         raise FileNotFoundError(f"Arquivo EDF nao encontrado: {path}")
@@ -141,13 +151,11 @@ def extrair_metadados_edf(arquivo_path: str | Path) -> dict[str, object]:
         raise ValueError(f"Extensao invalida (esperado .edf): {path.suffix}")
 
     raw = mne.io.read_raw_edf(path, preload=False, verbose=False)
-    raw.pick_types(eeg=True)
-    if len(raw.ch_names) == 0:
-        raise ValueError(f"Nenhum canal EEG encontrado em {path}")
+    canais_eeg = selecionar_canais_eeg_validos(raw)
 
     return {
         "taxa_amostragem": float(raw.info["sfreq"]),
-        "canais_eeg": list(raw.ch_names),
+        "canais_eeg": canais_eeg,
     }
 
 
@@ -155,12 +163,6 @@ def carregar_sinal_edf(
     arquivo_path: str | Path,
     max_duration_seconds: float | None = MAX_DURATION_SECONDS,
 ) -> tuple[np.ndarray, float, int]:
-    """
-    Carrega canais EEG de um .edf e retorna sinal 1D (média entre canais).
-
-    Returns:
-        tuple: (sinal_1d, taxa_amostragem_hz, n_canais_eeg)
-    """
     raw = _preparar_raw_edf(arquivo_path, max_duration_seconds=max_duration_seconds)
     n_canais = len(raw.ch_names)
     dados = raw.get_data()
@@ -174,18 +176,15 @@ def extrair_features_de_valores(
     valores: np.ndarray,
     m: int = SYMBOLIC_M_DEFAULT,
 ) -> dict[str, Any]:
-    """
-    Extrai as 19 features a partir de um array 1D (útil para testes e pipelines internos).
-    """
     resultado = aplicar_dinamica_simbolica(valores, m=m)
     if not resultado["sequencia_binaria"]:
-        raise ValueError("Sequência binária vazia após dinâmica simbólica.")
+        raise ValueError("Sequencia binaria vazia apos dinamica simbolica.")
 
     sinal = np.asarray(valores, dtype=float).ravel()
     sequencia_binaria = np.array([int(b) for b in resultado["sequencia_binaria"]])
     freq_values = list(resultado["frequencias"].values())
     if not freq_values:
-        raise ValueError("Frequências de padrões vazias.")
+        raise ValueError("Frequencias de padroes vazias.")
 
     features: dict[str, Any] = {
         "entropia_shannon": resultado["entropia"],
@@ -219,50 +218,221 @@ def extrair_features_edf(
     m: int = SYMBOLIC_M_DEFAULT,
     max_duration_seconds: float | None = MAX_DURATION_SECONDS,
     canais_selecionados: list[str] | None = None,
+    feature_mode: str = FEATURE_MODE_MEAN,
+    canais_referencia: list[str] | None = None,
 ) -> dict[str, Any]:
-    """
-    Carrega um .edf real com mne e retorna dicionário consolidado de features.
-
-    Para múltiplos canais, extrai as 19 features de cada canal e retorna a média
-    (compatível com a CNN-LSTM atual que espera vetor único de 19 dimensões).
-    """
     raw = _preparar_raw_edf(arquivo_path, max_duration_seconds=max_duration_seconds)
     canais_disponiveis = list(raw.ch_names)
+    canais_validos = selecionar_canais_eeg_validos(raw)
 
-    alvos = canais_selecionados if canais_selecionados else canais_disponiveis
-    invalidos = [c for c in alvos if c not in canais_disponiveis]
-    if invalidos:
-        raise ValueError(f"Canais EEG inválidos: {', '.join(invalidos)}")
-    if not alvos:
-        raise ValueError("Nenhum canal EEG selecionado para extração.")
+    if canais_selecionados is not None:
+        invalidos = [canal for canal in canais_selecionados if canal not in canais_validos]
+        if invalidos:
+            raise ValueError(f"Canais EEG invalidos: {', '.join(invalidos)}")
+        canais_usuario = list(canais_selecionados)
+    else:
+        canais_usuario = list(canais_validos)
 
-    vetores: list[list[float]] = []
-    for canal in alvos:
-        idx = canais_disponiveis.index(canal)
-        sinal_canal = np.asarray(raw.get_data(picks=[idx])[0], dtype=float)
-        feat = extrair_features_de_valores(sinal_canal, m=m)
-        vetores.append(feat["feature_vector"])
+    if feature_mode == FEATURE_MODE_MEAN:
+        alvos = canais_usuario
+        vetores: list[list[float]] = []
+        for canal in alvos:
+            idx = canais_disponiveis.index(canal)
+            sinal_canal = np.asarray(raw.get_data(picks=[idx])[0], dtype=float)
+            feat = extrair_features_de_valores(sinal_canal, m=m)
+            vetores.append(feat["feature_vector"])
 
-    vetor_medio = np.mean(np.array(vetores), axis=0)
-    features = extrair_features_de_valores(
-        np.asarray(raw.get_data(picks=[canais_disponiveis.index(alvos[0])])[0], dtype=float),
-        m=m,
-    )
-    for i, name in enumerate(FEATURE_NAMES):
-        features[name] = float(vetor_medio[i])
-    features["feature_vector"] = [float(v) for v in vetor_medio]
+        vetor_medio = np.mean(np.array(vetores), axis=0)
+        features = extrair_features_de_valores(
+            np.asarray(raw.get_data(picks=[canais_disponiveis.index(alvos[0])])[0], dtype=float),
+            m=m,
+        )
+        for i, name in enumerate(FEATURE_NAMES):
+            features[name] = float(vetor_medio[i])
+        features["feature_vector"] = [float(v) for v in vetor_medio]
+        features["feature_names"] = FEATURE_NAMES
+        canais_omitidos: list[str] = []
+    elif feature_mode == FEATURE_MODE_PER_CHANNEL:
+        referencia = list(canais_referencia or canais_usuario)
+        if not referencia:
+            raise ValueError("Nenhum canal de referencia disponivel para inferencia per_channel.")
+
+        vetores_expandidos: list[float] = []
+        nomes_expandidos: list[str] = []
+        canais_processados: list[str] = []
+        canais_omitidos = []
+
+        for canal in referencia:
+            nomes_expandidos.extend([f"{canal}::{nome}" for nome in FEATURE_NAMES])
+            if canal not in canais_usuario or canal not in canais_validos:
+                vetores_expandidos.extend([0.0] * len(FEATURE_NAMES))
+                canais_omitidos.append(canal)
+                continue
+
+            idx = canais_disponiveis.index(canal)
+            sinal_canal = np.asarray(raw.get_data(picks=[idx])[0], dtype=float)
+            feat = extrair_features_de_valores(sinal_canal, m=m)
+            vetores_expandidos.extend(float(v) for v in feat["feature_vector"])
+            canais_processados.append(canal)
+
+        features = {
+            "feature_names": nomes_expandidos,
+            "feature_vector": vetores_expandidos,
+        }
+        alvos = canais_processados
+    else:
+        raise ValueError(f"feature_mode invalido: {feature_mode}")
 
     features["arquivo_path"] = str(Path(arquivo_path).resolve())
     features["taxa_amostragem"] = float(raw.info["sfreq"])
     features["n_canais_eeg"] = len(alvos)
-    features["canais_processados"] = alvos
+    features["canais_processados"] = list(alvos)
+    features["canais_omitidos"] = canais_omitidos
+    features["feature_mode"] = feature_mode
+    features["canais_referencia"] = list(canais_referencia or alvos)
     features["total_amostras_brutas"] = int(raw.n_times)
     return features
 
 
-class FeatureExtractor:
-    """Wrapper orientado a objetos para o pipeline de features."""
+def _montar_features_de_janela(
+    *,
+    raw: mne.io.BaseRaw,
+    canais_usuario: list[str],
+    canais_validos: list[str],
+    canais_referencia: list[str] | None,
+    inicio: int,
+    fim: int,
+    feature_mode: str,
+    m: int,
+) -> dict[str, Any]:
+    canais_disponiveis = list(raw.ch_names)
 
+    if feature_mode == FEATURE_MODE_MEAN:
+        alvos = canais_usuario
+        vetores: list[list[float]] = []
+        for canal in alvos:
+            idx = canais_disponiveis.index(canal)
+            sinal_canal = np.asarray(raw.get_data(picks=[idx], start=inicio, stop=fim)[0], dtype=float)
+            feat = extrair_features_de_valores(sinal_canal, m=m)
+            vetores.append(feat["feature_vector"])
+
+        vetor_medio = np.mean(np.array(vetores), axis=0)
+        features: dict[str, Any] = {
+            name: float(vetor_medio[i])
+            for i, name in enumerate(FEATURE_NAMES)
+        }
+        features["feature_names"] = FEATURE_NAMES
+        features["feature_vector"] = [float(v) for v in vetor_medio]
+        canais_processados = list(alvos)
+        canais_omitidos: list[str] = []
+    elif feature_mode == FEATURE_MODE_PER_CHANNEL:
+        referencia = list(canais_referencia or canais_usuario)
+        if not referencia:
+            raise ValueError("Nenhum canal de referencia disponivel para inferencia per_channel.")
+
+        vetores_expandidos: list[float] = []
+        nomes_expandidos: list[str] = []
+        canais_processados = []
+        canais_omitidos = []
+
+        for canal in referencia:
+            nomes_expandidos.extend([f"{canal}::{nome}" for nome in FEATURE_NAMES])
+            if canal not in canais_usuario or canal not in canais_validos:
+                vetores_expandidos.extend([0.0] * len(FEATURE_NAMES))
+                canais_omitidos.append(canal)
+                continue
+
+            idx = canais_disponiveis.index(canal)
+            sinal_canal = np.asarray(raw.get_data(picks=[idx], start=inicio, stop=fim)[0], dtype=float)
+            feat = extrair_features_de_valores(sinal_canal, m=m)
+            vetores_expandidos.extend(float(v) for v in feat["feature_vector"])
+            canais_processados.append(canal)
+
+        features = {
+            "feature_names": nomes_expandidos,
+            "feature_vector": vetores_expandidos,
+        }
+    else:
+        raise ValueError(f"feature_mode invalido: {feature_mode}")
+
+    features["taxa_amostragem"] = float(raw.info["sfreq"])
+    features["n_canais_eeg"] = len(canais_processados)
+    features["canais_processados"] = list(canais_processados)
+    features["canais_omitidos"] = canais_omitidos
+    features["feature_mode"] = feature_mode
+    features["canais_referencia"] = list(canais_referencia or canais_processados)
+    features["total_amostras_brutas"] = int(raw.n_times)
+    return features
+
+
+def extrair_features_edf_janelado(
+    arquivo_path: str,
+    m: int = SYMBOLIC_M_DEFAULT,
+    max_duration_seconds: float | None = MAX_DURATION_SECONDS,
+    canais_selecionados: list[str] | None = None,
+    feature_mode: str = FEATURE_MODE_MEAN,
+    canais_referencia: list[str] | None = None,
+    window_seconds: float = 4.0,
+    step_seconds: float = 2.0,
+) -> list[dict[str, Any]]:
+    """Extrai features em janelas temporais, alinhado ao treino dos modelos."""
+    if window_seconds <= 0:
+        raise ValueError("window_seconds deve ser maior que zero.")
+    if step_seconds <= 0:
+        raise ValueError("step_seconds deve ser maior que zero.")
+
+    raw = _preparar_raw_edf(arquivo_path, max_duration_seconds=max_duration_seconds)
+    canais_validos = list(raw.ch_names)
+
+    if canais_selecionados is not None:
+        invalidos = [canal for canal in canais_selecionados if canal not in canais_validos]
+        if invalidos:
+            raise ValueError(f"Canais EEG invalidos: {', '.join(invalidos)}")
+        canais_usuario = list(canais_selecionados)
+    else:
+        canais_usuario = list(canais_validos)
+
+    sfreq = float(raw.info["sfreq"])
+    janela_amostras = int(round(window_seconds * sfreq))
+    passo_amostras = int(round(step_seconds * sfreq))
+    if raw.n_times < janela_amostras:
+        return [
+            _montar_features_de_janela(
+                raw=raw,
+                canais_usuario=canais_usuario,
+                canais_validos=canais_validos,
+                canais_referencia=canais_referencia,
+                inicio=0,
+                fim=raw.n_times,
+                feature_mode=feature_mode,
+                m=m,
+            )
+        ]
+
+    janelas: list[dict[str, Any]] = []
+    inicio = 0
+    while inicio + janela_amostras <= raw.n_times:
+        fim = inicio + janela_amostras
+        features = _montar_features_de_janela(
+            raw=raw,
+            canais_usuario=canais_usuario,
+            canais_validos=canais_validos,
+            canais_referencia=canais_referencia,
+            inicio=inicio,
+            fim=fim,
+            feature_mode=feature_mode,
+            m=m,
+        )
+        features["arquivo_path"] = str(Path(arquivo_path).resolve())
+        features["window_start_seconds"] = float(inicio / sfreq)
+        features["window_end_seconds"] = float(fim / sfreq)
+        janelas.append(features)
+        inicio += passo_amostras
+
+    return janelas
+
+
+class FeatureExtractor:
     def __init__(
         self,
         symbolic_m: int = SYMBOLIC_M_DEFAULT,

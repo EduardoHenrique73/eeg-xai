@@ -271,6 +271,13 @@ export function VisualizadorClinico() {
               score={concluido?.resultado_score}
               classificacao={concluido?.classificacao_clinica}
               threshold={concluido?.threshold_confianca ?? medico?.threshold_confianca}
+              featureMode={concluido?.feature_mode}
+              canaisProcessados={concluido?.canais_processados ?? []}
+              canaisOmitidos={concluido?.canais_omitidos ?? []}
+              canaisDestaque={concluido?.canais_destaque ?? []}
+              nJanelasAnalisadas={concluido?.n_janelas_analisadas}
+              janelaPico={concluido?.janela_pico}
+              janelasTop={concluido?.janelas_top ?? []}
               laudoTextoInicial={diagnostico?.laudo_texto}
               statusExameInicial={diagnostico?.status_exame}
               erro={erroUpload ?? erroDiagnostico}

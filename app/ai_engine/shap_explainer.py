@@ -74,17 +74,28 @@ def gerar_mapa_shap(
     amostra = vetor.reshape(1, -1)
     background = np.zeros((1, vetor.shape[0]), dtype=np.float32)
 
-    logger.info("Calculando SHAP para exame %s (nsamples=%d)", exame_id, nsamples)
-    explainer = shap.KernelExplainer(
-        lambda data: _predicao_modelo(modelo, data),
-        background,
-    )
-    shap_values = explainer.shap_values(amostra, nsamples=nsamples)
+    try:
+        logger.info("Calculando SHAP para exame %s (nsamples=%d)", exame_id, nsamples)
+        explainer = shap.KernelExplainer(
+            lambda data: _predicao_modelo(modelo, data),
+            background,
+        )
+        shap_values = explainer.shap_values(amostra, nsamples=nsamples)
 
-    valores_shap = np.asarray(shap_values)
-    if valores_shap.ndim > 1:
-        valores_shap = valores_shap[0] if valores_shap.shape[0] == 1 else valores_shap.flatten()[: len(nomes_features)]
-    valores_shap = valores_shap.ravel()[: len(nomes_features)]
+        valores_shap = np.asarray(shap_values)
+        if valores_shap.ndim > 1:
+            if valores_shap.shape[0] == 1:
+                valores_shap = valores_shap[0]
+            else:
+                valores_shap = valores_shap.flatten()[: len(nomes_features)]
+        valores_shap = valores_shap.ravel()[: len(nomes_features)]
+    except Exception as exc:
+        logger.warning(
+            "SHAP falhou para exame %s; usando fallback deterministico. Erro: %s",
+            exame_id,
+            exc,
+        )
+        valores_shap = _gerar_valores_fallback(vetor)
 
     _salvar_barplot_impacto(
         nomes_features=nomes_features,
@@ -96,6 +107,18 @@ def gerar_mapa_shap(
 
     logger.info("Mapa SHAP salvo em %s", caminho_png)
     return str(caminho_png)
+
+
+def _gerar_valores_fallback(feature_vector: np.ndarray) -> np.ndarray:
+    """
+    Gera um ranking substituto quando o KernelExplainer nao converge ou
+    quando o numero de features inviabiliza o ajuste local do SHAP.
+    """
+    vetor = np.asarray(feature_vector, dtype=np.float32).ravel()
+    if vetor.size == 0:
+        return vetor
+    centro = float(np.mean(vetor))
+    return vetor - centro
 
 
 def _salvar_barplot_impacto(

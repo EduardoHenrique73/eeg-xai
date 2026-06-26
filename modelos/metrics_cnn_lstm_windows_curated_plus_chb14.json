@@ -1,0 +1,133 @@
+{
+  "arquivos_treino": {
+    "chb01_01.edf": {
+      "janelas_total": 30,
+      "normal": 30,
+      "crise": 0
+    },
+    "chb01_03.edf": {
+      "janelas_total": 51,
+      "normal": 30,
+      "crise": 21
+    },
+    "chb01_04.edf": {
+      "janelas_total": 45,
+      "normal": 30,
+      "crise": 15
+    },
+    "chb01_15.edf": {
+      "janelas_total": 51,
+      "normal": 30,
+      "crise": 21
+    },
+    "chb02_16.edf": {
+      "janelas_total": 60,
+      "normal": 30,
+      "crise": 30
+    },
+    "chb03_01.edf": {
+      "janelas_total": 57,
+      "normal": 30,
+      "crise": 27
+    },
+    "chb03_05.edf": {
+      "janelas_total": 30,
+      "normal": 30,
+      "crise": 0
+    },
+    "chb04_01.edf": {
+      "janelas_total": 30,
+      "normal": 30,
+      "crise": 0
+    },
+    "chb05_01.edf": {
+      "janelas_total": 30,
+      "normal": 30,
+      "crise": 0
+    },
+    "chb05_06.edf": {
+      "janelas_total": 60,
+      "normal": 30,
+      "crise": 30
+    },
+    "chb06_01.edf": {
+      "janelas_total": 56,
+      "normal": 30,
+      "crise": 26
+    },
+    "chb14_01.edf": {
+      "janelas_total": 30,
+      "normal": 30,
+      "crise": 0
+    },
+    "chb14_03.edf": {
+      "janelas_total": 38,
+      "normal": 30,
+      "crise": 8
+    }
+  },
+  "dataset_treino": {
+    "n_samples": 568,
+    "class_counts": {
+      "0": 390,
+      "1": 178
+    }
+  },
+  "kfold": {
+    "n_samples": 568,
+    "n_features": 19,
+    "n_splits": 3,
+    "epochs": 4,
+    "batch_size": 8,
+    "class_counts": {
+      "0": 390,
+      "1": 178
+    },
+    "folds": [
+      {
+        "accuracy": 0.8631578947368421,
+        "precision": 0.9047619047619048,
+        "recall": 0.6333333333333333,
+        "f1": 0.7450980392156863
+      },
+      {
+        "accuracy": 0.7301587301587301,
+        "precision": 0.5555555555555556,
+        "recall": 0.6779661016949152,
+        "f1": 0.6106870229007634
+      },
+      {
+        "accuracy": 0.7407407407407407,
+        "precision": 0.5609756097560976,
+        "recall": 0.7796610169491526,
+        "f1": 0.6524822695035462
+      }
+    ],
+    "mean": {
+      "accuracy": 0.778019121878771,
+      "precision": 0.6737643566911861,
+      "recall": 0.6969868173258004,
+      "f1": 0.6694224438733319
+    }
+  },
+  "artefatos": {
+    "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid.keras",
+    "scaler_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid_scaler.pkl"
+  },
+  "holdout_chb11": {
+    "n_samples": 72,
+    "class_counts": {
+      "0": 60,
+      "1": 12
+    },
+    "accuracy": 0.8333333333333334,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "tp": 0,
+    "tn": 60,
+    "fp": 0,
+    "fn": 12,
+    "predicted_positive": 0
+  }
+}

@@ -113,6 +113,20 @@ O script:
 
 Esta etapa ainda nao substitui o treinamento clinico final da CNN-LSTM; ela serve como base reprodutivel para documentar janelamento, data augmentation e validacao cruzada no TCC.
 
+Tambem ha um treino preliminar da arquitetura CNN-LSTM sobre as janelas:
+
+```powershell
+.venv\Scripts\python.exe scripts\train_cnn_lstm_windows.py --epochs 5
+```
+
+Por padrao, ele salva:
+
+- `modelos/cnn_lstm_hybrid_prelim.keras`
+- `modelos/cnn_lstm_hybrid_prelim_scaler.pkl`
+- `modelos/metrics_cnn_lstm_windows.json`
+
+Esse modelo preliminar fica separado do `cnn_lstm_hybrid.keras` usado pela aplicacao, para evitar substituir o motor atual sem validacao maior.
+
 ## Executar API
 
 ```powershell

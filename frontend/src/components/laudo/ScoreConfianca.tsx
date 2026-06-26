@@ -18,19 +18,19 @@ export function ScoreConfianca({
   return (
     <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
-        Score de Confianca (IA)
+        Score de Suspeita
       </h3>
 
       {status === 'idle' && (
         <p className="mt-4 text-sm text-clinical-500">
-          Aguardando solicitacao de analise.
+          A analise ainda nao foi iniciada.
         </p>
       )}
 
       {status === 'processando' && (
         <div className="mt-4">
           <p className="text-sm font-medium text-accent-dark">
-            Processando CNN-LSTM + SHAP...
+            Processando sinais, score e explicabilidade...
           </p>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-clinical-100">
             <div className="h-full w-2/3 animate-pulse rounded-full bg-accent" />
@@ -67,7 +67,10 @@ export function ScoreConfianca({
           </div>
 
           <p className="mt-2 text-xs text-clinical-500">
-            Probabilidade estimada de crise epileptica (limiar clinico: {Math.round(limiar * 100)}%)
+            Estimativa do modelo para atividade compativel com crise epileptica.
+          </p>
+          <p className="mt-1 text-xs text-clinical-500">
+            Limiar clinico configurado: {Math.round(limiar * 100)}%.
           </p>
         </div>
       )}

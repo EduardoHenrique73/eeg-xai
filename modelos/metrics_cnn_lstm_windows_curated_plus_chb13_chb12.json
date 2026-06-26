@@ -1,0 +1,184 @@
+{
+  "n_samples": 1009,
+  "n_features": 19,
+  "n_splits": 3,
+  "epochs": 4,
+  "batch_size": 8,
+  "class_counts": {
+    "0": 660,
+    "1": 349
+  },
+  "folds": [
+    {
+      "accuracy": 0.7359050445103857,
+      "precision": 0.6458333333333334,
+      "recall": 0.5299145299145299,
+      "f1": 0.5821596244131455
+    },
+    {
+      "accuracy": 0.7559523809523809,
+      "precision": 0.7741935483870968,
+      "recall": 0.41379310344827586,
+      "f1": 0.5393258426966292
+    },
+    {
+      "accuracy": 0.5892857142857143,
+      "precision": 0.44554455445544555,
+      "recall": 0.7758620689655172,
+      "f1": 0.5660377358490566
+    }
+  ],
+  "mean": {
+    "accuracy": 0.6937143799161604,
+    "precision": 0.6218571453919585,
+    "recall": 0.5731899007761077,
+    "f1": 0.5625077343196104
+  },
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "augmentation": "overlapping_temporal_windows",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\curated_train_files.txt",
+  "artifacts": {
+    "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid.keras",
+    "scaler_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\cnn_lstm_hybrid_scaler.pkl"
+  },
+  "windows_preview": [
+    {
+      "start_seconds": 0.0,
+      "end_seconds": 4.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 124.0,
+      "end_seconds": 128.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 248.0,
+      "end_seconds": 252.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 372.0,
+      "end_seconds": 376.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 496.0,
+      "end_seconds": 500.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 620.0,
+      "end_seconds": 624.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 744.0,
+      "end_seconds": 748.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 868.0,
+      "end_seconds": 872.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 992.0,
+      "end_seconds": 996.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1116.0,
+      "end_seconds": 1120.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1240.0,
+      "end_seconds": 1244.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1364.0,
+      "end_seconds": 1368.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1488.0,
+      "end_seconds": 1492.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1612.0,
+      "end_seconds": 1616.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1736.0,
+      "end_seconds": 1740.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1860.0,
+      "end_seconds": 1864.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 1984.0,
+      "end_seconds": 1988.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2108.0,
+      "end_seconds": 2112.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2232.0,
+      "end_seconds": 2236.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    },
+    {
+      "start_seconds": 2356.0,
+      "end_seconds": 2360.0,
+      "label": 0,
+      "arquivo": "chb01_01.edf"
+    }
+  ],
+  "holdout_chb11": {
+    "n_samples": 72,
+    "class_counts": {
+      "0": 60,
+      "1": 12
+    },
+    "accuracy": 0.8611111111111112,
+    "precision": 0.75,
+    "recall": 0.25,
+    "f1": 0.375,
+    "tp": 3,
+    "tn": 59,
+    "fp": 1,
+    "fn": 9,
+    "predicted_positive": 4
+  }
+}

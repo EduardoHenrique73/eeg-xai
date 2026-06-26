@@ -69,7 +69,9 @@ async def test_processar_exame_ia_salva_predicao_com_mapa_shap(
 
     mapa_esperado = str((shap_dir / f"exame_{exame_com_arquivo.id}_shap.png").resolve())
 
-    mock_extrair = lambda arquivo_path, max_duration_seconds=None, canais_selecionados=None: features_fake
+    mock_extrair = (
+        lambda arquivo_path, max_duration_seconds=None, canais_selecionados=None, **kwargs: features_fake
+    )
     mock_inferir = AsyncMock(return_value=0.73)
     mock_shap = lambda modelo, vetor, nomes, exame_id, **kwargs: mapa_esperado
 
@@ -90,13 +92,16 @@ async def test_processar_exame_ia_salva_predicao_com_mapa_shap(
     assert predicao.resultado_score == pytest.approx(0.73)
     assert predicao.mapa_shap_path == mapa_esperado
     assert predicao.mapa_shap_path.endswith("_shap.png")
+    assert predicao.detalhes_json is not None
     mock_inferir.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_processar_exame_inexistente_nao_levanta_erro(async_engine, features_fake):
     session_factory = async_sessionmaker(async_engine, expire_on_commit=False)
-    mock_extrair = lambda arquivo_path, max_duration_seconds=None, canais_selecionados=None: features_fake
+    mock_extrair = (
+        lambda arquivo_path, max_duration_seconds=None, canais_selecionados=None, **kwargs: features_fake
+    )
 
     with patch("app.services.exame_pipeline.AsyncSessionLocal", session_factory):
         await processar_exame_ia(

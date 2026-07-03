@@ -1,0 +1,11 @@
+{
+  "model_type": "sequence_cnn_lstm",
+  "feature_mode": "mean",
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "n_features": 19,
+  "canais_referencia": [],
+  "aggregation": "continuous_suspicious_sequence"
+}

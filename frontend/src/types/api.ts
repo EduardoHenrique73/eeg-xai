@@ -55,15 +55,35 @@ export interface DiagnosticoEmProcessamento extends DiagnosticoExameBase {
   message: string
 }
 
+export interface TrechoSuspeito {
+  start_seconds: number
+  end_seconds: number
+  duration_seconds: number
+  n_janelas: number
+  n_sequences?: number
+  score_medio: number
+  score_max: number
+  threshold: number
+  atingiu_duracao_minima: boolean
+  coverage_ratio?: number
+  cobertura_excessiva?: boolean
+  max_suspicious_coverage?: number
+}
+
 export interface DiagnosticoConcluido extends DiagnosticoExameBase {
   status: 'concluido'
   resultado_score: number
   classificacao_clinica: string
   mapa_shap_url?: string | null
   threshold_confianca: number
+  model_type?: string | null
   feature_mode?: string | null
   canais_processados: string[]
   canais_omitidos: string[]
+  montagem_incompleta: boolean
+  cobertura_excessiva: boolean
+  resultado_conclusivo: boolean
+  resultado_positivo_conclusivo: boolean
   canais_destaque: Array<{
     canal: string
     score: number
@@ -71,6 +91,7 @@ export interface DiagnosticoConcluido extends DiagnosticoExameBase {
     score_sem_canal?: number
   }>
   n_janelas_analisadas?: number | null
+  n_sequences_analisadas?: number | null
   janela_pico?: {
     start_seconds: number
     end_seconds: number
@@ -81,6 +102,11 @@ export interface DiagnosticoConcluido extends DiagnosticoExameBase {
     end_seconds: number
     score: number
   }>
+  trecho_suspeito?: TrechoSuspeito | null
+  top_trechos_suspeitos: TrechoSuspeito[]
+  threshold?: number | null
+  min_duration_seconds?: number | null
+  max_suspicious_coverage?: number | null
   score_agregacao?: string | null
   data_analise: string
 }

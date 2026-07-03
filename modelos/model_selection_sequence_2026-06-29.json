@@ -1,0 +1,266 @@
+{
+  "date": "2026-06-29T07:37:46",
+  "decision": "promover_sequence_cnn_lstm_features_per_channel_w3",
+  "reason": "Foi o primeiro candidato a separar chb11_01 normal de chb11_82 com crise no holdout e localizar o trecho suspeito sobrepondo a crise real.",
+  "promoted_model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_per_channel_w3.keras",
+  "promoted_calibration_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\calibration_sequence_cnn_lstm_per_channel_w3.json",
+  "calibration_rule": {
+    "threshold": 0.4,
+    "min_duration_seconds": 10.0
+  },
+  "important_limitation": "Promocao pragmatica baseada no holdout CHB11; ainda precisa validacao leave-one-patient mais ampla antes de alegacao clinica forte.",
+  "candidates": [
+    {
+      "metrics_file": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\metrics_sequence_cnn_lstm_features.json",
+      "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features.keras",
+      "feature_mode": null,
+      "class_weight_mode": "balanced_legacy",
+      "class_weight": null,
+      "early_stopping_patience": null,
+      "sequence_metrics": {
+        "accuracy": 0.5915178571428571,
+        "precision": 0.00816326530612245,
+        "recall": 0.6666666666666666,
+        "f1": 0.016129032258064516
+      },
+      "edf_metrics": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "holdout_files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 1,
+          "score_mean": 0.35294631123542786,
+          "score_max": 0.9921259880065918,
+          "trecho_duration_seconds": 174.0,
+          "trecho_score_mean": 0.8115726709365845,
+          "trecho_score_max": 0.9674255847930908
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "score_mean": 0.5367723703384399,
+          "score_max": 0.9795233011245728,
+          "trecho_duration_seconds": 370.0,
+          "trecho_score_mean": 0.8144055604934692,
+          "trecho_score_max": 0.9782505631446838
+        }
+      ]
+    },
+    {
+      "metrics_file": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\metrics_sequence_cnn_lstm_features_quick_balanced.json",
+      "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_quick_balanced.keras",
+      "feature_mode": "mean",
+      "class_weight_mode": "balanced_legacy",
+      "class_weight": null,
+      "early_stopping_patience": null,
+      "sequence_metrics": {
+        "accuracy": 0.9157366071428571,
+        "precision": 0.006944444444444444,
+        "recall": 0.1111111111111111,
+        "f1": 0.013071895424836602
+      },
+      "edf_metrics": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "holdout_files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 1,
+          "score_mean": 0.25437840819358826,
+          "score_max": 0.9648539423942566,
+          "trecho_duration_seconds": 78.0,
+          "trecho_score_mean": 0.73920738697052,
+          "trecho_score_max": 0.9180047512054443
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "score_mean": 0.19715043902397156,
+          "score_max": 0.9282408952713013,
+          "trecho_duration_seconds": 30.0,
+          "trecho_score_mean": 0.609045147895813,
+          "trecho_score_max": 0.759939432144165
+        }
+      ]
+    },
+    {
+      "metrics_file": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\metrics_sequence_cnn_lstm_features_manual_w2.json",
+      "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_manual_w2.keras",
+      "feature_mode": "mean",
+      "class_weight_mode": "manual",
+      "class_weight": {
+        "0": 1.0,
+        "1": 2.0
+      },
+      "early_stopping_patience": null,
+      "sequence_metrics": {
+        "accuracy": 0.9642857142857143,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "edf_metrics": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "holdout_files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 1,
+          "score_mean": 0.13686704635620117,
+          "score_max": 0.9071540236473083,
+          "trecho_duration_seconds": 34.0,
+          "trecho_score_mean": 0.7813994884490967,
+          "trecho_score_max": 0.9025276899337769
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "score_mean": 0.12515801191329956,
+          "score_max": 0.8369399309158325,
+          "trecho_duration_seconds": 26.0,
+          "trecho_score_mean": 0.7176796793937683,
+          "trecho_score_max": 0.8369399309158325
+        }
+      ]
+    },
+    {
+      "metrics_file": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\metrics_sequence_cnn_lstm_features_manual_w3.json",
+      "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_manual_w3.keras",
+      "feature_mode": "mean",
+      "class_weight_mode": "manual",
+      "class_weight": {
+        "0": 1.0,
+        "1": 3.0
+      },
+      "early_stopping_patience": null,
+      "sequence_metrics": {
+        "accuracy": 0.8794642857142857,
+        "precision": 0.018604651162790697,
+        "recall": 0.4444444444444444,
+        "f1": 0.03571428571428571
+      },
+      "edf_metrics": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "holdout_files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 1,
+          "score_mean": 0.21054576337337494,
+          "score_max": 0.9372207522392273,
+          "trecho_duration_seconds": 82.0,
+          "trecho_score_mean": 0.7511333227157593,
+          "trecho_score_max": 0.9000561833381653
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "score_mean": 0.22566543519496918,
+          "score_max": 0.9178624749183655,
+          "trecho_duration_seconds": 34.0,
+          "trecho_score_mean": 0.6008375883102417,
+          "trecho_score_max": 0.6806939840316772
+        }
+      ]
+    },
+    {
+      "metrics_file": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\metrics_sequence_cnn_lstm_features_per_channel_w3.json",
+      "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_per_channel_w3.keras",
+      "feature_mode": "per_channel",
+      "class_weight_mode": "manual",
+      "class_weight": {
+        "0": 1.0,
+        "1": 3.0
+      },
+      "early_stopping_patience": 2,
+      "sequence_metrics": {
+        "accuracy": 0.9972098214285714,
+        "precision": 0.7,
+        "recall": 0.7777777777777778,
+        "f1": 0.7368421052631579
+      },
+      "edf_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "holdout_files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 0,
+          "score_mean": 0.0799078494310379,
+          "score_max": 0.32297012209892273,
+          "trecho_duration_seconds": 18.0,
+          "trecho_score_mean": 0.32297012209892273,
+          "trecho_score_max": 0.32297012209892273
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "score_mean": 0.07392792403697968,
+          "score_max": 0.6885077357292175,
+          "trecho_duration_seconds": 42.0,
+          "trecho_score_mean": 0.5945426225662231,
+          "trecho_score_max": 0.6885077357292175
+        }
+      ]
+    }
+  ],
+  "external_holdout_smoke": {
+    "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\promoted_sequence_holdout_eval_smoke.json",
+    "metrics": {
+      "accuracy": 0.75,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6666666666666666,
+      "tp": 1,
+      "tn": 2,
+      "fp": 0,
+      "fn": 1
+    },
+    "metrics_conclusivos": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 1,
+      "tn": 0,
+      "fp": 0,
+      "fn": 0
+    },
+    "total": {
+      "arquivos": 4,
+      "arquivos_conclusivos": 1,
+      "arquivos_limitados": 3,
+      "arquivos_crise": 2,
+      "arquivos_normais": 2,
+      "crises_localizadas": 1,
+      "crises_localizadas_conclusivas": 1
+    },
+    "interpretation": "Arquivos com montagem divergente sao tratados como resultado limitado; metricas conclusivas consideram apenas inferencias sem canais de referencia omitidos."
+  }
+}

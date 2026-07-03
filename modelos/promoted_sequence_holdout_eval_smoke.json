@@ -1,0 +1,549 @@
+{
+  "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_per_channel_w3.keras",
+  "metadata": {
+    "model_type": "sequence_cnn_lstm",
+    "feature_mode": "per_channel",
+    "sequence_length": 8,
+    "sequence_stride": 2,
+    "window_seconds": 4.0,
+    "step_seconds": 2.0,
+    "n_features": 437,
+    "canais_referencia": [
+      "FP1-F7",
+      "F7-T7",
+      "T7-P7",
+      "P7-O1",
+      "FP1-F3",
+      "F3-C3",
+      "C3-P3",
+      "P3-O1",
+      "FP2-F4",
+      "F4-C4",
+      "C4-P4",
+      "P4-O2",
+      "FP2-F8",
+      "F8-T8",
+      "T8-P8-0",
+      "P8-O2",
+      "FZ-CZ",
+      "CZ-PZ",
+      "P7-T7",
+      "T7-FT9",
+      "FT9-FT10",
+      "FT10-T8",
+      "T8-P8-1"
+    ],
+    "aggregation": "continuous_suspicious_sequence"
+  },
+  "calibration": {
+    "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\calibration_sequence_cnn_lstm_per_channel_w3.json",
+    "best": {
+      "threshold": 0.4,
+      "min_duration_seconds": 10.0,
+      "metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "false_positives": 0,
+      "false_negatives": 0,
+      "positive_overlap_seconds_sum": 46.0,
+      "positive_predictions": 1,
+      "positive_predictions_with_overlap": 1,
+      "files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 896,
+          "score_max": 0.32297012209892273,
+          "score_mean": 0.0799078494310379,
+          "trecho_suspeito": {
+            "start_seconds": 1864.0,
+            "end_seconds": 1882.0,
+            "duration_seconds": 18.0,
+            "n_sequences": 1,
+            "score_mean": 0.32297012209892273,
+            "score_max": 0.32297012209892273,
+            "threshold": 0.4,
+            "overlap_crise_real_seconds": 0.0
+          },
+          "top_trechos_suspeitos": [],
+          "crise_real": null
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.6885077357292175,
+          "score_mean": 0.07392792403697968,
+          "trecho_suspeito": {
+            "start_seconds": 284.0,
+            "end_seconds": 330.0,
+            "duration_seconds": 46.0,
+            "n_sequences": 8,
+            "score_mean": 0.5744665861129761,
+            "score_max": 0.6885077357292175,
+            "threshold": 0.4,
+            "overlap_crise_real_seconds": 46.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 284.0,
+              "end_seconds": 330.0,
+              "duration_seconds": 46.0,
+              "n_sequences": 8,
+              "score_mean": 0.5744665861129761,
+              "score_max": 0.6885077357292175,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 46.0
+            },
+            {
+              "start_seconds": 132.0,
+              "end_seconds": 162.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.5236772894859314,
+              "score_max": 0.6304805278778076,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 16.0,
+              "end_seconds": 42.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.46837010979652405,
+              "score_max": 0.5032446384429932,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 256.0,
+              "end_seconds": 278.0,
+              "duration_seconds": 22.0,
+              "n_sequences": 2,
+              "score_mean": 0.4352969229221344,
+              "score_max": 0.4452870786190033,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 432.0,
+              "end_seconds": 450.0,
+              "duration_seconds": 18.0,
+              "n_sequences": 1,
+              "score_mean": 0.47439730167388916,
+              "score_max": 0.47439730167388916,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 284.0,
+            "end_seconds": 334.0,
+            "n_sequences": 9,
+            "score_mean": 0.5463244318962097,
+            "score_max": 0.6885077357292175,
+            "n_sequences_above_threshold": 8
+          }
+        }
+      ]
+    },
+    "best_aligned": {
+      "threshold": 0.4,
+      "min_duration_seconds": 10.0,
+      "metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "false_positives": 0,
+      "false_negatives": 0,
+      "positive_overlap_seconds_sum": 46.0,
+      "positive_predictions": 1,
+      "positive_predictions_with_overlap": 1,
+      "files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 896,
+          "score_max": 0.32297012209892273,
+          "score_mean": 0.0799078494310379,
+          "trecho_suspeito": {
+            "start_seconds": 1864.0,
+            "end_seconds": 1882.0,
+            "duration_seconds": 18.0,
+            "n_sequences": 1,
+            "score_mean": 0.32297012209892273,
+            "score_max": 0.32297012209892273,
+            "threshold": 0.4,
+            "overlap_crise_real_seconds": 0.0
+          },
+          "top_trechos_suspeitos": [],
+          "crise_real": null
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.6885077357292175,
+          "score_mean": 0.07392792403697968,
+          "trecho_suspeito": {
+            "start_seconds": 284.0,
+            "end_seconds": 330.0,
+            "duration_seconds": 46.0,
+            "n_sequences": 8,
+            "score_mean": 0.5744665861129761,
+            "score_max": 0.6885077357292175,
+            "threshold": 0.4,
+            "overlap_crise_real_seconds": 46.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 284.0,
+              "end_seconds": 330.0,
+              "duration_seconds": 46.0,
+              "n_sequences": 8,
+              "score_mean": 0.5744665861129761,
+              "score_max": 0.6885077357292175,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 46.0
+            },
+            {
+              "start_seconds": 132.0,
+              "end_seconds": 162.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.5236772894859314,
+              "score_max": 0.6304805278778076,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 16.0,
+              "end_seconds": 42.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.46837010979652405,
+              "score_max": 0.5032446384429932,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 256.0,
+              "end_seconds": 278.0,
+              "duration_seconds": 22.0,
+              "n_sequences": 2,
+              "score_mean": 0.4352969229221344,
+              "score_max": 0.4452870786190033,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 432.0,
+              "end_seconds": 450.0,
+              "duration_seconds": 18.0,
+              "n_sequences": 1,
+              "score_mean": 0.47439730167388916,
+              "score_max": 0.47439730167388916,
+              "threshold": 0.4,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 284.0,
+            "end_seconds": 334.0,
+            "n_sequences": 9,
+            "score_mean": 0.5463244318962097,
+            "score_max": 0.6885077357292175,
+            "n_sequences_above_threshold": 8
+          }
+        }
+      ]
+    }
+  },
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\curated_train_files_expanded_23ch.txt",
+  "files": [
+    {
+      "arquivo": "chb13_47.edf",
+      "usado_no_treino": false,
+      "label": 0,
+      "pred": 0,
+      "montagem_incompleta": true,
+      "resultado_conclusivo": false,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "P8-O2",
+        "FZ-CZ",
+        "CZ-PZ"
+      ],
+      "canais_omitidos": [
+        "T8-P8-0",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "crises_reais": [],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Resultado limitado: canais de referencia ausentes ou omitidos reduzem a confiabilidade da analise",
+      "score_geral": 0.29102563858032227,
+      "threshold": 0.4,
+      "min_duration_seconds": 10.0,
+      "feature_mode": "per_channel",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 1876.0,
+        "end_seconds": 1894.0,
+        "duration_seconds": 18.0,
+        "n_sequences": 1,
+        "n_janelas": 1,
+        "score_medio": 0.29102563858032227,
+        "score_max": 0.29102563858032227,
+        "threshold": 0.4,
+        "atingiu_duracao_minima": false,
+        "coverage_ratio": 0.005002779321845469,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb15_01.edf",
+      "usado_no_treino": false,
+      "label": 0,
+      "pred": 0,
+      "montagem_incompleta": true,
+      "resultado_conclusivo": false,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "P8-O2",
+        "FZ-CZ",
+        "CZ-PZ"
+      ],
+      "canais_omitidos": [
+        "T8-P8-0",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "crises_reais": [],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Resultado limitado: canais de referencia ausentes ou omitidos reduzem a confiabilidade da analise",
+      "score_geral": 0.2807493805885315,
+      "threshold": 0.4,
+      "min_duration_seconds": 10.0,
+      "feature_mode": "per_channel",
+      "n_sequences_analisadas": 897,
+      "trecho_suspeito": {
+        "start_seconds": 248.0,
+        "end_seconds": 266.0,
+        "duration_seconds": 18.0,
+        "n_sequences": 1,
+        "n_janelas": 1,
+        "score_medio": 0.2807493805885315,
+        "score_max": 0.2807493805885315,
+        "threshold": 0.4,
+        "atingiu_duracao_minima": false,
+        "coverage_ratio": 0.004997223764575236,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb13_40.edf",
+      "usado_no_treino": false,
+      "label": 1,
+      "pred": 0,
+      "montagem_incompleta": true,
+      "resultado_conclusivo": false,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "P8-O2",
+        "FZ-CZ",
+        "CZ-PZ"
+      ],
+      "canais_omitidos": [
+        "T8-P8-0",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "crises_reais": [
+        {
+          "start_seconds": 142.0,
+          "end_seconds": 173.0
+        },
+        {
+          "start_seconds": 530.0,
+          "end_seconds": 594.0
+        }
+      ],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Resultado limitado: canais de referencia ausentes ou omitidos reduzem a confiabilidade da analise",
+      "score_geral": 0.2744083106517792,
+      "threshold": 0.4,
+      "min_duration_seconds": 10.0,
+      "feature_mode": "per_channel",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 3064.0,
+        "end_seconds": 3082.0,
+        "duration_seconds": 18.0,
+        "n_sequences": 1,
+        "n_janelas": 1,
+        "score_medio": 0.2744083106517792,
+        "score_max": 0.2744083106517792,
+        "threshold": 0.4,
+        "atingiu_duracao_minima": false,
+        "coverage_ratio": 0.005002779321845469,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb20_12.edf",
+      "usado_no_treino": false,
+      "label": 1,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8-0",
+        "P8-O2",
+        "FZ-CZ",
+        "CZ-PZ",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [
+        {
+          "start_seconds": 94.0,
+          "end_seconds": 123.0
+        }
+      ],
+      "overlap_crise_real_seconds": 19.0,
+      "localizou_crise": true,
+      "classificacao_clinica": "Padrao sugestivo de atividade epileptiforme (revisao medica necessaria)",
+      "score_geral": 0.49816569685935974,
+      "threshold": 0.4,
+      "min_duration_seconds": 10.0,
+      "feature_mode": "per_channel",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 104.0,
+        "end_seconds": 126.0,
+        "duration_seconds": 22.0,
+        "n_sequences": 2,
+        "n_janelas": 2,
+        "score_medio": 0.4551156163215637,
+        "score_max": 0.49816569685935974,
+        "threshold": 0.4,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 0.006114508060033352,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    }
+  ],
+  "metrics": {
+    "accuracy": 0.75,
+    "precision": 1.0,
+    "recall": 0.5,
+    "f1": 0.6666666666666666,
+    "tp": 1,
+    "tn": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  "metrics_conclusivos": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "tp": 1,
+    "tn": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  "total": {
+    "arquivos": 4,
+    "arquivos_conclusivos": 1,
+    "arquivos_limitados": 3,
+    "arquivos_crise": 2,
+    "arquivos_normais": 2,
+    "crises_localizadas": 1,
+    "crises_localizadas_conclusivas": 1
+  }
+}

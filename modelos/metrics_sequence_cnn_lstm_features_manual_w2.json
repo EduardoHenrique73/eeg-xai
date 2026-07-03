@@ -1,0 +1,134 @@
+{
+  "model_type": "sequence_cnn_lstm",
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\curated_train_files_expanded_23ch.txt",
+  "train_files": [
+    "chb01_01.edf",
+    "chb01_03.edf",
+    "chb01_04.edf",
+    "chb01_15.edf",
+    "chb02_16.edf",
+    "chb03_01.edf",
+    "chb03_02.edf",
+    "chb03_05.edf",
+    "chb04_01.edf",
+    "chb04_05.edf",
+    "chb05_01.edf",
+    "chb05_06.edf",
+    "chb06_01.edf",
+    "chb08_21.edf",
+    "chb12_06.edf",
+    "chb13_02.edf",
+    "chb13_19.edf",
+    "chb13_21.edf",
+    "chb13_22.edf",
+    "chb13_55.edf",
+    "chb13_58.edf",
+    "chb13_59.edf",
+    "chb13_60.edf",
+    "chb13_62.edf",
+    "chb14_01.edf",
+    "chb14_03.edf",
+    "chb14_04.edf",
+    "chb14_06.edf",
+    "chb14_11.edf",
+    "chb14_17.edf",
+    "chb14_18.edf",
+    "chb10_27.edf",
+    "chb16_10.edf",
+    "chb16_17.edf",
+    "chb19_28.edf",
+    "chb21_19.edf",
+    "chb22_20.edf",
+    "chb23_06.edf",
+    "chb24_01.edf"
+  ],
+  "holdout_files": [
+    "chb11_01.edf",
+    "chb11_82.edf"
+  ],
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "feature_mode": "mean",
+  "canais_referencia": [],
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "max_normal_windows_per_file": 260,
+  "max_seizure_windows_per_file": 80,
+  "class_weight_mode": "manual",
+  "class_weight": {
+    "0": 1.0,
+    "1": 2.0
+  },
+  "threshold": 0.5,
+  "min_duration_seconds": 10.0,
+  "train": {
+    "n_sequences": 5423,
+    "class_counts": {
+      "0": 4795,
+      "1": 628
+    }
+  },
+  "holdout": {
+    "n_sequences": 1792,
+    "class_counts": {
+      "0": 1783,
+      "1": 9
+    },
+    "sequence_metrics": {
+      "accuracy": 0.9642857142857143,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "edf_metrics": {
+      "metrics": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "files": [
+        {
+          "arquivo": "chb11_01.edf",
+          "label": 0,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.9071540236473083,
+          "score_mean": 0.13686704635620117,
+          "trecho_suspeito": {
+            "start_seconds": 964.0,
+            "end_seconds": 998.0,
+            "duration_seconds": 34.0,
+            "n_sequences": 5,
+            "score_mean": 0.7813994884490967,
+            "score_max": 0.9025276899337769,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb11_82.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.8369399309158325,
+          "score_mean": 0.12515801191329956,
+          "trecho_suspeito": {
+            "start_seconds": 260.0,
+            "end_seconds": 286.0,
+            "duration_seconds": 26.0,
+            "n_sequences": 3,
+            "score_mean": 0.7176796793937683,
+            "score_max": 0.8369399309158325,
+            "threshold": 0.5
+          }
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_manual_w2.keras",
+    "scaler_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_manual_w2_scaler.pkl",
+    "metadata_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_features_manual_w2_metadata.json"
+  }
+}

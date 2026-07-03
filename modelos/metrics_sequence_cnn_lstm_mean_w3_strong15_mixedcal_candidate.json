@@ -1,0 +1,183 @@
+{
+  "model_type": "sequence_cnn_lstm",
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\train_mean_candidate_exclude_test_cal_mixed.txt",
+  "train_files": [
+    "chb01_01.edf",
+    "chb01_03.edf",
+    "chb01_04.edf",
+    "chb01_15.edf",
+    "chb02_16.edf",
+    "chb04_01.edf",
+    "chb04_05.edf",
+    "chb05_01.edf",
+    "chb05_06.edf",
+    "chb06_01.edf",
+    "chb07_12.edf",
+    "chb07_13.edf",
+    "chb08_02.edf",
+    "chb08_21.edf",
+    "chb09_06.edf",
+    "chb09_19.edf",
+    "chb10_12.edf",
+    "chb10_27.edf",
+    "chb12_06.edf",
+    "chb16_10.edf",
+    "chb16_17.edf",
+    "chb18_29.edf",
+    "chb19_28.edf",
+    "chb21_19.edf",
+    "chb22_20.edf",
+    "chb23_06.edf",
+    "chb24_01.edf"
+  ],
+  "holdout_files": [
+    "chb15_01.edf",
+    "chb15_06.edf",
+    "chb20_12.edf"
+  ],
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "feature_mode": "mean",
+  "canais_referencia": [],
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "max_normal_windows_per_file": 80,
+  "max_seizure_windows_per_file": 30,
+  "class_weight_mode": "manual",
+  "class_weight": {
+    "0": 1.0,
+    "1": 3.0
+  },
+  "early_stopping_patience": 4,
+  "threshold": 0.5,
+  "min_duration_seconds": 45.0,
+  "training_history": {
+    "accuracy": [
+      0.7466307282447815,
+      0.808625340461731,
+      0.808625340461731,
+      0.8167116045951843,
+      0.8346810340881348,
+      0.8499550819396973,
+      0.8544474244117737,
+      0.8679245114326477
+    ],
+    "loss": [
+      0.897283673286438,
+      0.7416399717330933,
+      0.674502968788147,
+      0.6169832348823547,
+      0.5699970722198486,
+      0.548301637172699,
+      0.5034803152084351,
+      0.4550713002681732
+    ],
+    "val_accuracy": [
+      0.8578680157661438,
+      0.8375634551048279,
+      0.7918781638145447,
+      0.8375634551048279,
+      0.796954333782196,
+      0.8121827244758606,
+      0.807106614112854,
+      0.8223350048065186
+    ],
+    "val_loss": [
+      0.4916589856147766,
+      0.47155478596687317,
+      0.4875864088535309,
+      0.424246609210968,
+      0.44826069474220276,
+      0.5089712142944336,
+      0.5132811665534973,
+      0.5400620102882385
+    ]
+  },
+  "train": {
+    "n_sequences": 1310,
+    "class_counts": {
+      "0": 896,
+      "1": 414
+    }
+  },
+  "holdout": {
+    "n_sequences": 2689,
+    "class_counts": {
+      "0": 2642,
+      "1": 47
+    },
+    "sequence_metrics": {
+      "accuracy": 0.709929341762737,
+      "precision": 0.0389937106918239,
+      "recall": 0.6595744680851063,
+      "f1": 0.07363420427553444
+    },
+    "edf_metrics": {
+      "metrics": {
+        "accuracy": 0.6666666666666666,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "files": [
+        {
+          "arquivo": "chb15_01.edf",
+          "label": 0,
+          "pred": 1,
+          "n_sequences": 897,
+          "score_max": 0.9991312623023987,
+          "score_mean": 0.28490862250328064,
+          "trecho_suspeito": {
+            "start_seconds": 2884.0,
+            "end_seconds": 2938.0,
+            "duration_seconds": 54.0,
+            "n_sequences": 10,
+            "score_mean": 0.7802020311355591,
+            "score_max": 0.9103363752365112,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb15_06.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.9537028670310974,
+          "score_mean": 0.47361570596694946,
+          "trecho_suspeito": {
+            "start_seconds": 1192.0,
+            "end_seconds": 1294.0,
+            "duration_seconds": 102.0,
+            "n_sequences": 22,
+            "score_mean": 0.760790228843689,
+            "score_max": 0.9302555322647095,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb20_12.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.8586640357971191,
+          "score_mean": 0.4229147732257843,
+          "trecho_suspeito": {
+            "start_seconds": 956.0,
+            "end_seconds": 1022.0,
+            "duration_seconds": 66.0,
+            "n_sequences": 13,
+            "score_mean": 0.6207714676856995,
+            "score_max": 0.8199810981750488,
+            "threshold": 0.5
+          }
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_mean_w3_strong15_mixedcal_candidate.keras",
+    "scaler_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_mean_w3_strong15_mixedcal_candidate_scaler.pkl",
+    "metadata_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_mean_w3_strong15_mixedcal_candidate_metadata.json"
+  }
+}

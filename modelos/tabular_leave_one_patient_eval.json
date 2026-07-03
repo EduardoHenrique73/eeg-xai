@@ -1,0 +1,2382 @@
+{
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\curated_train_files_expanded_23ch.txt",
+  "feature_mode": "mean",
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "max_windows_per_class": null,
+  "max_normal_windows_per_file": 180,
+  "max_seizure_windows_per_file": 30,
+  "window_threshold": 0.5,
+  "min_duration_seconds": 10.0,
+  "results": [
+    {
+      "model": "random_forest",
+      "n_folds": 17,
+      "window_mean": {
+        "accuracy": 0.8833596352022026,
+        "precision": 0.5280808516102634,
+        "recall": 0.35503193695165924,
+        "f1": 0.4197565664258724
+      },
+      "edf_mean": {
+        "accuracy": 0.8160597572362278,
+        "precision": 0.8627450980392156,
+        "recall": 0.8179271708683473,
+        "f1": 0.8303167420814479
+      },
+      "folds": [
+        {
+          "paciente_teste": "chb01",
+          "n_train": 6977,
+          "n_test": 777,
+          "class_counts_test": {
+            "0": 720,
+            "1": 57
+          },
+          "window_metrics": {
+            "accuracy": 0.9665379665379665,
+            "precision": 0.8974358974358975,
+            "recall": 0.6140350877192983,
+            "f1": 0.7291666666666666
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb01_01.edf",
+                "paciente": "chb01",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.33965706795093853,
+                "score_medio": 0.05065777516687909,
+                "trecho_suspeito": {
+                  "start_seconds": 1786.0,
+                  "end_seconds": 1790.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.33965706795093853,
+                  "score_max": 0.33965706795093853,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb01_03.edf",
+                "paciente": "chb01",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 201,
+                "n_janelas_crise": 21,
+                "score_max": 0.9422643909817134,
+                "score_medio": 0.15982712940546484,
+                "trecho_suspeito": {
+                  "start_seconds": 3000.0,
+                  "end_seconds": 3030.0,
+                  "duration_seconds": 30.0,
+                  "n_janelas": 14,
+                  "score_medio": 0.7656392090207019,
+                  "score_max": 0.9422643909817134,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb01_04.edf",
+                "paciente": "chb01",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 195,
+                "n_janelas_crise": 15,
+                "score_max": 0.9632982401443062,
+                "score_medio": 0.1323895405364625,
+                "trecho_suspeito": {
+                  "start_seconds": 1482.0,
+                  "end_seconds": 1494.0,
+                  "duration_seconds": 12.0,
+                  "n_janelas": 5,
+                  "score_medio": 0.8664217891554514,
+                  "score_max": 0.9632982401443062,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb01_15.edf",
+                "paciente": "chb01",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 201,
+                "n_janelas_crise": 21,
+                "score_max": 0.9545945822115087,
+                "score_medio": 0.19459405055014983,
+                "trecho_suspeito": {
+                  "start_seconds": 1754.0,
+                  "end_seconds": 1772.0,
+                  "duration_seconds": 18.0,
+                  "n_janelas": 8,
+                  "score_medio": 0.8292087020245136,
+                  "score_max": 0.9545945822115087,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb02",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9285714285714286,
+            "precision": 0.8,
+            "recall": 0.6666666666666666,
+            "f1": 0.7272727272727273
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb02_16.edf",
+                "paciente": "chb02",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9631455620480496,
+                "score_medio": 0.20259141593750501,
+                "trecho_suspeito": {
+                  "start_seconds": 164.0,
+                  "end_seconds": 204.0,
+                  "duration_seconds": 40.0,
+                  "n_janelas": 14,
+                  "score_medio": 0.8368428236972455,
+                  "score_max": 0.9631455620480496,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb03",
+          "n_train": 7157,
+          "n_test": 597,
+          "class_counts_test": {
+            "0": 540,
+            "1": 57
+          },
+          "window_metrics": {
+            "accuracy": 0.9128978224455612,
+            "precision": 0.5925925925925926,
+            "recall": 0.2807017543859649,
+            "f1": 0.38095238095238093
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb03_01.edf",
+                "paciente": "chb03",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 207,
+                "n_janelas_crise": 27,
+                "score_max": 0.9669933540970694,
+                "score_medio": 0.16595467613385803,
+                "trecho_suspeito": {
+                  "start_seconds": 428.0,
+                  "end_seconds": 452.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.7980086364447916,
+                  "score_max": 0.9154627403936516,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb03_02.edf",
+                "paciente": "chb03",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9829662036387139,
+                "score_medio": 0.14717597619351655,
+                "trecho_suspeito": {
+                  "start_seconds": 788.0,
+                  "end_seconds": 798.0,
+                  "duration_seconds": 10.0,
+                  "n_janelas": 3,
+                  "score_medio": 0.8963877955104639,
+                  "score_max": 0.9829662036387139,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb03_05.edf",
+                "paciente": "chb03",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.4094475128337786,
+                "score_medio": 0.0738655381408409,
+                "trecho_suspeito": {
+                  "start_seconds": 2390.0,
+                  "end_seconds": 2394.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.4094475128337786,
+                  "score_max": 0.4094475128337786,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb04",
+          "n_train": 7368,
+          "n_test": 386,
+          "class_counts_test": {
+            "0": 360,
+            "1": 26
+          },
+          "window_metrics": {
+            "accuracy": 0.582901554404145,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb04_01.edf",
+                "paciente": "chb04",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.43223941698686524,
+                "score_medio": 0.06544700952908865,
+                "trecho_suspeito": {
+                  "start_seconds": 7076.0,
+                  "end_seconds": 7080.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.43223941698686524,
+                  "score_max": 0.43223941698686524,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb04_05.edf",
+                "paciente": "chb04",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 206,
+                "n_janelas_crise": 26,
+                "score_max": 0.948975078290217,
+                "score_medio": 0.6447952546196852,
+                "trecho_suspeito": {
+                  "start_seconds": 160.0,
+                  "end_seconds": 7350.0,
+                  "duration_seconds": 7190.0,
+                  "n_janelas": 135,
+                  "score_medio": 0.9284573626280133,
+                  "score_max": 0.948975078290217,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb05",
+          "n_train": 7364,
+          "n_test": 390,
+          "class_counts_test": {
+            "0": 360,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9641025641025641,
+            "precision": 0.7857142857142857,
+            "recall": 0.7333333333333333,
+            "f1": 0.7586206896551724
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb05_01.edf",
+                "paciente": "chb05",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.5672061456087358,
+                "score_medio": 0.14063278896033274,
+                "trecho_suspeito": {
+                  "start_seconds": 846.0,
+                  "end_seconds": 850.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.5672061456087358,
+                  "score_max": 0.5672061456087358,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb05_06.edf",
+                "paciente": "chb05",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9916817526663017,
+                "score_medio": 0.20870280346281725,
+                "trecho_suspeito": {
+                  "start_seconds": 450.0,
+                  "end_seconds": 534.0,
+                  "duration_seconds": 84.0,
+                  "n_janelas": 21,
+                  "score_medio": 0.795660536548687,
+                  "score_max": 0.9916817526663017,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb06",
+          "n_train": 7548,
+          "n_test": 206,
+          "class_counts_test": {
+            "0": 180,
+            "1": 26
+          },
+          "window_metrics": {
+            "accuracy": 0.8106796116504854,
+            "precision": 0.06666666666666667,
+            "recall": 0.038461538461538464,
+            "f1": 0.04878048780487805
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb06_01.edf",
+                "paciente": "chb06",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 206,
+                "n_janelas_crise": 26,
+                "score_max": 0.8561244420236969,
+                "score_medio": 0.2539214593027814,
+                "trecho_suspeito": {
+                  "start_seconds": 10148.0,
+                  "end_seconds": 10232.0,
+                  "duration_seconds": 84.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.6254363555223863,
+                  "score_max": 0.6877921368132691,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb08",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9047619047619048,
+            "precision": 0.7272727272727273,
+            "recall": 0.5333333333333333,
+            "f1": 0.6153846153846154
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb08_21.edf",
+                "paciente": "chb08",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9837676340349676,
+                "score_medio": 0.21990365013184351,
+                "trecho_suspeito": {
+                  "start_seconds": 2098.0,
+                  "end_seconds": 2202.0,
+                  "duration_seconds": 104.0,
+                  "n_janelas": 12,
+                  "score_medio": 0.8932941066130592,
+                  "score_max": 0.9837676340349676,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb10",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9476190476190476,
+            "precision": 0.9523809523809523,
+            "recall": 0.6666666666666666,
+            "f1": 0.7843137254901961
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb10_27.edf",
+                "paciente": "chb10",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9897208512293326,
+                "score_medio": 0.19466731862494277,
+                "trecho_suspeito": {
+                  "start_seconds": 2414.0,
+                  "end_seconds": 2450.0,
+                  "duration_seconds": 36.0,
+                  "n_janelas": 15,
+                  "score_medio": 0.9268331335522448,
+                  "score_max": 0.9897208512293326,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb12",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.8571428571428571,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "files": [
+              {
+                "arquivo": "chb12_06.edf",
+                "paciente": "chb12",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.4188132703308343,
+                "score_medio": 0.09699079302919181,
+                "trecho_suspeito": {
+                  "start_seconds": 3582.0,
+                  "end_seconds": 3586.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.4188132703308343,
+                  "score_max": 0.4188132703308343,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb13",
+          "n_train": 5977,
+          "n_test": 1777,
+          "class_counts_test": {
+            "0": 1620,
+            "1": 157
+          },
+          "window_metrics": {
+            "accuracy": 0.8255486775464266,
+            "precision": 0.1076923076923077,
+            "recall": 0.1337579617834395,
+            "f1": 0.11931818181818182
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.4444444444444444,
+              "precision": 0.6666666666666666,
+              "recall": 0.5714285714285714,
+              "f1": 0.6153846153846154
+            },
+            "files": [
+              {
+                "arquivo": "chb13_02.edf",
+                "paciente": "chb13",
+                "label": 0,
+                "pred": 1,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.89907557274599,
+                "score_medio": 0.2774738223780948,
+                "trecho_suspeito": {
+                  "start_seconds": 1848.0,
+                  "end_seconds": 1912.0,
+                  "duration_seconds": 64.0,
+                  "n_janelas": 4,
+                  "score_medio": 0.582163322366293,
+                  "score_max": 0.6351533766210631,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_19.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 204,
+                "n_janelas_crise": 24,
+                "score_max": 0.8176801166799413,
+                "score_medio": 0.27483302488789463,
+                "trecho_suspeito": {
+                  "start_seconds": 2020.0,
+                  "end_seconds": 2044.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.6970936438523487,
+                  "score_max": 0.7715458673716666,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_21.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.8916491468025826,
+                "score_medio": 0.24207820086858747,
+                "trecho_suspeito": {
+                  "start_seconds": 1016.0,
+                  "end_seconds": 1080.0,
+                  "duration_seconds": 64.0,
+                  "n_janelas": 4,
+                  "score_medio": 0.6192413224175946,
+                  "score_max": 0.758128348130034,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_22.edf",
+                "paciente": "chb13",
+                "label": 0,
+                "pred": 1,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.8998197915332232,
+                "score_medio": 0.3706952669240946,
+                "trecho_suspeito": {
+                  "start_seconds": 502.0,
+                  "end_seconds": 566.0,
+                  "duration_seconds": 64.0,
+                  "n_janelas": 4,
+                  "score_medio": 0.6628837551268766,
+                  "score_max": 0.8217792658771294,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_55.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 201,
+                "n_janelas_crise": 21,
+                "score_max": 0.8776591096093275,
+                "score_medio": 0.21500575955340986,
+                "trecho_suspeito": {
+                  "start_seconds": 498.0,
+                  "end_seconds": 542.0,
+                  "duration_seconds": 44.0,
+                  "n_janelas": 3,
+                  "score_medio": 0.5363135879341718,
+                  "score_max": 0.595859630598115,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_58.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 190,
+                "n_janelas_crise": 10,
+                "score_max": 0.9347829784269894,
+                "score_medio": 0.06842018285896459,
+                "trecho_suspeito": {
+                  "start_seconds": 2976.0,
+                  "end_seconds": 2980.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.9347829784269894,
+                  "score_max": 0.9347829784269894,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_59.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.6424757021147378,
+                "score_medio": 0.10149046410913315,
+                "trecho_suspeito": {
+                  "start_seconds": 1104.0,
+                  "end_seconds": 1108.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.6424757021147378,
+                  "score_max": 0.6424757021147378,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_60.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 192,
+                "n_janelas_crise": 12,
+                "score_max": 0.2008641224445953,
+                "score_medio": 0.042481663061472746,
+                "trecho_suspeito": {
+                  "start_seconds": 158.0,
+                  "end_seconds": 162.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.2008641224445953,
+                  "score_max": 0.2008641224445953,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_62.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.8454046036547478,
+                "score_medio": 0.0834160914607576,
+                "trecho_suspeito": {
+                  "start_seconds": 1648.0,
+                  "end_seconds": 1660.0,
+                  "duration_seconds": 12.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.7823250286257137,
+                  "score_max": 0.8454046036547478,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb14",
+          "n_train": 6406,
+          "n_test": 1348,
+          "class_counts_test": {
+            "0": 1260,
+            "1": 88
+          },
+          "window_metrics": {
+            "accuracy": 0.8961424332344213,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.42857142857142855,
+              "precision": 1.0,
+              "recall": 0.3333333333333333,
+              "f1": 0.5
+            },
+            "files": [
+              {
+                "arquivo": "chb14_01.edf",
+                "paciente": "chb14",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.6286150773348059,
+                "score_medio": 0.17276660184518694,
+                "trecho_suspeito": {
+                  "start_seconds": 622.0,
+                  "end_seconds": 626.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.6286150773348059,
+                  "score_max": 0.6286150773348059,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_03.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 188,
+                "n_janelas_crise": 8,
+                "score_max": 0.9081249362866027,
+                "score_medio": 0.16289413400552363,
+                "trecho_suspeito": {
+                  "start_seconds": 2736.0,
+                  "end_seconds": 2760.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.6808525473676532,
+                  "score_max": 0.7405326471174974,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_04.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 204,
+                "n_janelas_crise": 24,
+                "score_max": 0.8042490805945998,
+                "score_medio": 0.1834736312280163,
+                "trecho_suspeito": {
+                  "start_seconds": 2862.0,
+                  "end_seconds": 2886.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.718895075358928,
+                  "score_max": 0.7447637456301679,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_06.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 189,
+                "n_janelas_crise": 9,
+                "score_max": 0.6757446117235635,
+                "score_medio": 0.14195933322822304,
+                "trecho_suspeito": {
+                  "start_seconds": 2696.0,
+                  "end_seconds": 2700.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.6757446117235635,
+                  "score_max": 0.6757446117235635,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_11.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 202,
+                "n_janelas_crise": 22,
+                "score_max": 0.9478018172919958,
+                "score_medio": 0.19921847515899505,
+                "trecho_suspeito": {
+                  "start_seconds": 2404.0,
+                  "end_seconds": 2408.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.9478018172919958,
+                  "score_max": 0.9478018172919958,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_17.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 192,
+                "n_janelas_crise": 12,
+                "score_max": 0.8274699472579968,
+                "score_medio": 0.14310015966591147,
+                "trecho_suspeito": {
+                  "start_seconds": 438.0,
+                  "end_seconds": 442.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.8274699472579968,
+                  "score_max": 0.8274699472579968,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_18.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 193,
+                "n_janelas_crise": 13,
+                "score_max": 0.6518496409019999,
+                "score_medio": 0.14402240942938088,
+                "trecho_suspeito": {
+                  "start_seconds": 1540.0,
+                  "end_seconds": 1544.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.6518496409019999,
+                  "score_max": 0.6518496409019999,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb16",
+          "n_train": 7368,
+          "n_test": 386,
+          "class_counts_test": {
+            "0": 360,
+            "1": 26
+          },
+          "window_metrics": {
+            "accuracy": 0.9119170984455959,
+            "precision": 0.21428571428571427,
+            "recall": 0.11538461538461539,
+            "f1": 0.15
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "files": [
+              {
+                "arquivo": "chb16_10.edf",
+                "paciente": "chb16",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 186,
+                "n_janelas_crise": 6,
+                "score_max": 0.8965268772959247,
+                "score_medio": 0.13785787662125304,
+                "trecho_suspeito": {
+                  "start_seconds": 3534.0,
+                  "end_seconds": 3538.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.8965268772959247,
+                  "score_max": 0.8965268772959247,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb16_17.edf",
+                "paciente": "chb16",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 200,
+                "n_janelas_crise": 20,
+                "score_max": 0.7205908422463441,
+                "score_medio": 0.10233233697741939,
+                "trecho_suspeito": {
+                  "start_seconds": 3376.0,
+                  "end_seconds": 3380.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.7205908422463441,
+                  "score_max": 0.7205908422463441,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb19",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.919047619047619,
+            "precision": 0.9333333333333333,
+            "recall": 0.4666666666666667,
+            "f1": 0.6222222222222222
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb19_28.edf",
+                "paciente": "chb19",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9844952920438365,
+                "score_medio": 0.18763052356725723,
+                "trecho_suspeito": {
+                  "start_seconds": 350.0,
+                  "end_seconds": 376.0,
+                  "duration_seconds": 26.0,
+                  "n_janelas": 9,
+                  "score_medio": 0.8653800822047989,
+                  "score_max": 0.9844952920438365,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb21",
+          "n_train": 7545,
+          "n_test": 209,
+          "class_counts_test": {
+            "0": 180,
+            "1": 29
+          },
+          "window_metrics": {
+            "accuracy": 0.8564593301435407,
+            "precision": 0.47368421052631576,
+            "recall": 0.3103448275862069,
+            "f1": 0.375
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb21_19.edf",
+                "paciente": "chb21",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 209,
+                "n_janelas_crise": 29,
+                "score_max": 0.9156120358014476,
+                "score_medio": 0.14155633209869858,
+                "trecho_suspeito": {
+                  "start_seconds": 1560.0,
+                  "end_seconds": 1582.0,
+                  "duration_seconds": 22.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.7692553904362214,
+                  "score_max": 0.9156120358014476,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb22",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.861904761904762,
+            "precision": 0.5263157894736842,
+            "recall": 0.3333333333333333,
+            "f1": 0.40816326530612246
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb22_20.edf",
+                "paciente": "chb22",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9580102935951856,
+                "score_medio": 0.18777203293856007,
+                "trecho_suspeito": {
+                  "start_seconds": 3476.0,
+                  "end_seconds": 3500.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.8332289167016889,
+                  "score_max": 0.8690876628913758,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb23",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9285714285714286,
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "paciente": "chb23",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.969419252043288,
+                "score_medio": 0.12058712861568502,
+                "trecho_suspeito": {
+                  "start_seconds": 4026.0,
+                  "end_seconds": 4050.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 6,
+                  "score_medio": 0.7255921640079364,
+                  "score_max": 0.9087250416005105,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb24",
+          "n_train": 7546,
+          "n_test": 208,
+          "class_counts_test": {
+            "0": 180,
+            "1": 28
+          },
+          "window_metrics": {
+            "accuracy": 0.9423076923076923,
+            "precision": 0.9,
+            "recall": 0.6428571428571429,
+            "f1": 0.75
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb24_01.edf",
+                "paciente": "chb24",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 208,
+                "n_janelas_crise": 28,
+                "score_max": 0.9533863786904961,
+                "score_medio": 0.1715869554785452,
+                "trecho_suspeito": {
+                  "start_seconds": 482.0,
+                  "end_seconds": 504.0,
+                  "duration_seconds": 22.0,
+                  "n_janelas": 10,
+                  "score_medio": 0.8635775359241968,
+                  "score_max": 0.9533863786904961,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "model": "hist_gradient_boosting",
+      "n_folds": 17,
+      "window_mean": {
+        "accuracy": 0.8886545588620257,
+        "precision": 0.5749986977673193,
+        "recall": 0.30951747496268883,
+        "f1": 0.3945477388698317
+      },
+      "edf_mean": {
+        "accuracy": 0.7341269841269842,
+        "precision": 0.8039215686274509,
+        "recall": 0.7296918767507004,
+        "f1": 0.7471234647705236
+      },
+      "folds": [
+        {
+          "paciente_teste": "chb01",
+          "n_train": 6977,
+          "n_test": 777,
+          "class_counts_test": {
+            "0": 720,
+            "1": 57
+          },
+          "window_metrics": {
+            "accuracy": 0.9601029601029601,
+            "precision": 0.9333333333333333,
+            "recall": 0.49122807017543857,
+            "f1": 0.6436781609195402
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.75,
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1": 0.8
+            },
+            "files": [
+              {
+                "arquivo": "chb01_01.edf",
+                "paciente": "chb01",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.1998451962938443,
+                "score_medio": 0.019248830065379963,
+                "trecho_suspeito": {
+                  "start_seconds": 1786.0,
+                  "end_seconds": 1790.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.1998451962938443,
+                  "score_max": 0.1998451962938443,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb01_03.edf",
+                "paciente": "chb01",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 201,
+                "n_janelas_crise": 21,
+                "score_max": 0.9854960073976744,
+                "score_medio": 0.10182514749817877,
+                "trecho_suspeito": {
+                  "start_seconds": 3008.0,
+                  "end_seconds": 3028.0,
+                  "duration_seconds": 20.0,
+                  "n_janelas": 9,
+                  "score_medio": 0.6912441038256857,
+                  "score_max": 0.9854960073976744,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb01_04.edf",
+                "paciente": "chb01",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 195,
+                "n_janelas_crise": 15,
+                "score_max": 0.9530477387156323,
+                "score_medio": 0.078663830834304,
+                "trecho_suspeito": {
+                  "start_seconds": 1468.0,
+                  "end_seconds": 1476.0,
+                  "duration_seconds": 8.0,
+                  "n_janelas": 3,
+                  "score_medio": 0.9191117096895144,
+                  "score_max": 0.9366561251714555,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb01_15.edf",
+                "paciente": "chb01",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 201,
+                "n_janelas_crise": 21,
+                "score_max": 0.8990166122786234,
+                "score_medio": 0.1203274277485633,
+                "trecho_suspeito": {
+                  "start_seconds": 1754.0,
+                  "end_seconds": 1764.0,
+                  "duration_seconds": 10.0,
+                  "n_janelas": 4,
+                  "score_medio": 0.7346104769527614,
+                  "score_max": 0.8990166122786234,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb02",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9333333333333333,
+            "precision": 0.9,
+            "recall": 0.6,
+            "f1": 0.72
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb02_16.edf",
+                "paciente": "chb02",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.944731872521714,
+                "score_medio": 0.13862304559546137,
+                "trecho_suspeito": {
+                  "start_seconds": 164.0,
+                  "end_seconds": 204.0,
+                  "duration_seconds": 40.0,
+                  "n_janelas": 14,
+                  "score_medio": 0.8142845016682446,
+                  "score_max": 0.944731872521714,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb03",
+          "n_train": 7157,
+          "n_test": 597,
+          "class_counts_test": {
+            "0": 540,
+            "1": 57
+          },
+          "window_metrics": {
+            "accuracy": 0.9095477386934674,
+            "precision": 0.5882352941176471,
+            "recall": 0.17543859649122806,
+            "f1": 0.2702702702702703
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb03_01.edf",
+                "paciente": "chb03",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 207,
+                "n_janelas_crise": 27,
+                "score_max": 0.9248142482180537,
+                "score_medio": 0.08798559477258006,
+                "trecho_suspeito": {
+                  "start_seconds": 428.0,
+                  "end_seconds": 472.0,
+                  "duration_seconds": 44.0,
+                  "n_janelas": 3,
+                  "score_medio": 0.6490065505165318,
+                  "score_max": 0.6813747727462437,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb03_02.edf",
+                "paciente": "chb03",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9503654703975014,
+                "score_medio": 0.07507371402217279,
+                "trecho_suspeito": {
+                  "start_seconds": 788.0,
+                  "end_seconds": 798.0,
+                  "duration_seconds": 10.0,
+                  "n_janelas": 3,
+                  "score_medio": 0.7874305248910899,
+                  "score_max": 0.9503654703975014,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb03_05.edf",
+                "paciente": "chb03",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.4048223456366915,
+                "score_medio": 0.019852916064914978,
+                "trecho_suspeito": {
+                  "start_seconds": 2390.0,
+                  "end_seconds": 2394.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.4048223456366915,
+                  "score_max": 0.4048223456366915,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb04",
+          "n_train": 7368,
+          "n_test": 386,
+          "class_counts_test": {
+            "0": 360,
+            "1": 26
+          },
+          "window_metrics": {
+            "accuracy": 0.582901554404145,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb04_01.edf",
+                "paciente": "chb04",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.31869907623600535,
+                "score_medio": 0.01366343328899487,
+                "trecho_suspeito": {
+                  "start_seconds": 7076.0,
+                  "end_seconds": 7080.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.31869907623600535,
+                  "score_max": 0.31869907623600535,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb04_05.edf",
+                "paciente": "chb04",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 206,
+                "n_janelas_crise": 26,
+                "score_max": 0.9941314162914031,
+                "score_medio": 0.6583061811194987,
+                "trecho_suspeito": {
+                  "start_seconds": 160.0,
+                  "end_seconds": 7350.0,
+                  "duration_seconds": 7190.0,
+                  "n_janelas": 135,
+                  "score_medio": 0.9857985589976513,
+                  "score_max": 0.9941314162914031,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb05",
+          "n_train": 7364,
+          "n_test": 390,
+          "class_counts_test": {
+            "0": 360,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9717948717948718,
+            "precision": 0.88,
+            "recall": 0.7333333333333333,
+            "f1": 0.8
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb05_01.edf",
+                "paciente": "chb05",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.5709263287023437,
+                "score_medio": 0.07061512899697872,
+                "trecho_suspeito": {
+                  "start_seconds": 2518.0,
+                  "end_seconds": 2522.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.5709263287023437,
+                  "score_max": 0.5709263287023437,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb05_06.edf",
+                "paciente": "chb05",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9929549679244103,
+                "score_medio": 0.16113765323615692,
+                "trecho_suspeito": {
+                  "start_seconds": 446.0,
+                  "end_seconds": 518.0,
+                  "duration_seconds": 72.0,
+                  "n_janelas": 18,
+                  "score_medio": 0.8666132858287202,
+                  "score_max": 0.9929549679244103,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb06",
+          "n_train": 7548,
+          "n_test": 206,
+          "class_counts_test": {
+            "0": 180,
+            "1": 26
+          },
+          "window_metrics": {
+            "accuracy": 0.8398058252427184,
+            "precision": 0.18181818181818182,
+            "recall": 0.07692307692307693,
+            "f1": 0.10810810810810811
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "files": [
+              {
+                "arquivo": "chb06_01.edf",
+                "paciente": "chb06",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 206,
+                "n_janelas_crise": 26,
+                "score_max": 0.7032152179484691,
+                "score_medio": 0.1605990715407717,
+                "trecho_suspeito": {
+                  "start_seconds": 6518.0,
+                  "end_seconds": 6522.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.7032152179484691,
+                  "score_max": 0.7032152179484691,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb08",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9047619047619048,
+            "precision": 0.8125,
+            "recall": 0.43333333333333335,
+            "f1": 0.5652173913043478
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb08_21.edf",
+                "paciente": "chb08",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9798253136593236,
+                "score_medio": 0.14159359807708377,
+                "trecho_suspeito": {
+                  "start_seconds": 2098.0,
+                  "end_seconds": 2166.0,
+                  "duration_seconds": 68.0,
+                  "n_janelas": 8,
+                  "score_medio": 0.8934366822571899,
+                  "score_max": 0.9793253748555392,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb10",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.9476190476190476,
+            "precision": 1.0,
+            "recall": 0.6333333333333333,
+            "f1": 0.7755102040816326
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb10_27.edf",
+                "paciente": "chb10",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9941263592584559,
+                "score_medio": 0.1354256512256969,
+                "trecho_suspeito": {
+                  "start_seconds": 2414.0,
+                  "end_seconds": 2450.0,
+                  "duration_seconds": 36.0,
+                  "n_janelas": 15,
+                  "score_medio": 0.9297272447711239,
+                  "score_max": 0.9941263592584559,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb12",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.8571428571428571,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "files": [
+              {
+                "arquivo": "chb12_06.edf",
+                "paciente": "chb12",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.4641235393724284,
+                "score_medio": 0.04706079454269915,
+                "trecho_suspeito": {
+                  "start_seconds": 918.0,
+                  "end_seconds": 922.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.4641235393724284,
+                  "score_max": 0.4641235393724284,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb13",
+          "n_train": 5977,
+          "n_test": 1777,
+          "class_counts_test": {
+            "0": 1620,
+            "1": 157
+          },
+          "window_metrics": {
+            "accuracy": 0.8486212718064153,
+            "precision": 0.12162162162162163,
+            "recall": 0.11464968152866242,
+            "f1": 0.1180327868852459
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.4444444444444444,
+              "precision": 0.6666666666666666,
+              "recall": 0.5714285714285714,
+              "f1": 0.6153846153846154
+            },
+            "files": [
+              {
+                "arquivo": "chb13_02.edf",
+                "paciente": "chb13",
+                "label": 0,
+                "pred": 1,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.8794494389450808,
+                "score_medio": 0.1993464773161277,
+                "trecho_suspeito": {
+                  "start_seconds": 2912.0,
+                  "end_seconds": 2936.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.8636553108861649,
+                  "score_max": 0.8674217761633408,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_19.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 204,
+                "n_janelas_crise": 24,
+                "score_max": 0.9219174124058352,
+                "score_medio": 0.19483019559849615,
+                "trecho_suspeito": {
+                  "start_seconds": 2020.0,
+                  "end_seconds": 2044.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.7956676324580254,
+                  "score_max": 0.9174103373777301,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_21.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9736091383562903,
+                "score_medio": 0.17137176105463392,
+                "trecho_suspeito": {
+                  "start_seconds": 1016.0,
+                  "end_seconds": 1060.0,
+                  "duration_seconds": 44.0,
+                  "n_janelas": 3,
+                  "score_medio": 0.6194663731419651,
+                  "score_max": 0.6368086596252288,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_22.edf",
+                "paciente": "chb13",
+                "label": 0,
+                "pred": 1,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.9566479588706371,
+                "score_medio": 0.31001028909018524,
+                "trecho_suspeito": {
+                  "start_seconds": 420.0,
+                  "end_seconds": 486.0,
+                  "duration_seconds": 66.0,
+                  "n_janelas": 4,
+                  "score_medio": 0.7630671087345654,
+                  "score_max": 0.9566479588706371,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_55.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 201,
+                "n_janelas_crise": 21,
+                "score_max": 0.9225030190916338,
+                "score_medio": 0.1519282100546311,
+                "trecho_suspeito": {
+                  "start_seconds": 498.0,
+                  "end_seconds": 542.0,
+                  "duration_seconds": 44.0,
+                  "n_janelas": 3,
+                  "score_medio": 0.611075979139545,
+                  "score_max": 0.7674894465312526,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_58.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 190,
+                "n_janelas_crise": 10,
+                "score_max": 0.8732818546973627,
+                "score_medio": 0.02753087552238511,
+                "trecho_suspeito": {
+                  "start_seconds": 2976.0,
+                  "end_seconds": 2980.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.8732818546973627,
+                  "score_max": 0.8732818546973627,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_59.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.7529931082193811,
+                "score_medio": 0.044202360292955004,
+                "trecho_suspeito": {
+                  "start_seconds": 38.0,
+                  "end_seconds": 42.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.7529931082193811,
+                  "score_max": 0.7529931082193811,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_60.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 192,
+                "n_janelas_crise": 12,
+                "score_max": 0.14462778242885746,
+                "score_medio": 0.013390097211619692,
+                "trecho_suspeito": {
+                  "start_seconds": 3016.0,
+                  "end_seconds": 3020.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.14462778242885746,
+                  "score_max": 0.14462778242885746,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb13_62.edf",
+                "paciente": "chb13",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9118547412094752,
+                "score_medio": 0.03798039771485744,
+                "trecho_suspeito": {
+                  "start_seconds": 1648.0,
+                  "end_seconds": 1660.0,
+                  "duration_seconds": 12.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.6955219290914016,
+                  "score_max": 0.8506143877678604,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb14",
+          "n_train": 6406,
+          "n_test": 1348,
+          "class_counts_test": {
+            "0": 1260,
+            "1": 88
+          },
+          "window_metrics": {
+            "accuracy": 0.913946587537092,
+            "precision": 0.03333333333333333,
+            "recall": 0.011363636363636364,
+            "f1": 0.01694915254237288
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.2857142857142857,
+              "precision": 1.0,
+              "recall": 0.16666666666666666,
+              "f1": 0.2857142857142857
+            },
+            "files": [
+              {
+                "arquivo": "chb14_01.edf",
+                "paciente": "chb14",
+                "label": 0,
+                "pred": 0,
+                "n_janelas": 180,
+                "n_janelas_crise": 0,
+                "score_max": 0.6204893215883753,
+                "score_medio": 0.0976306124791844,
+                "trecho_suspeito": {
+                  "start_seconds": 420.0,
+                  "end_seconds": 424.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.6204893215883753,
+                  "score_max": 0.6204893215883753,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_03.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 188,
+                "n_janelas_crise": 8,
+                "score_max": 0.8394766748777259,
+                "score_medio": 0.09687992684297089,
+                "trecho_suspeito": {
+                  "start_seconds": 1060.0,
+                  "end_seconds": 1064.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.8394766748777259,
+                  "score_max": 0.8394766748777259,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_04.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 204,
+                "n_janelas_crise": 24,
+                "score_max": 0.7782191515507879,
+                "score_medio": 0.11448177314751411,
+                "trecho_suspeito": {
+                  "start_seconds": 296.0,
+                  "end_seconds": 300.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.7782191515507879,
+                  "score_max": 0.7782191515507879,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_06.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 189,
+                "n_janelas_crise": 9,
+                "score_max": 0.8254543252308252,
+                "score_medio": 0.07625851221090767,
+                "trecho_suspeito": {
+                  "start_seconds": 2696.0,
+                  "end_seconds": 2700.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.8254543252308252,
+                  "score_max": 0.8254543252308252,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_11.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 202,
+                "n_janelas_crise": 22,
+                "score_max": 0.9621232060816584,
+                "score_medio": 0.1297145366102756,
+                "trecho_suspeito": {
+                  "start_seconds": 1388.0,
+                  "end_seconds": 1412.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.6245243874336641,
+                  "score_max": 0.676585082678693,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_17.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 192,
+                "n_janelas_crise": 12,
+                "score_max": 0.7944607911226493,
+                "score_medio": 0.08345904154213223,
+                "trecho_suspeito": {
+                  "start_seconds": 438.0,
+                  "end_seconds": 442.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.7944607911226493,
+                  "score_max": 0.7944607911226493,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb14_18.edf",
+                "paciente": "chb14",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 193,
+                "n_janelas_crise": 13,
+                "score_max": 0.5473983845801692,
+                "score_medio": 0.07887753548639974,
+                "trecho_suspeito": {
+                  "start_seconds": 1040.0,
+                  "end_seconds": 1044.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.5473983845801692,
+                  "score_max": 0.5473983845801692,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb16",
+          "n_train": 7368,
+          "n_test": 386,
+          "class_counts_test": {
+            "0": 360,
+            "1": 26
+          },
+          "window_metrics": {
+            "accuracy": 0.9196891191709845,
+            "precision": 0.2222222222222222,
+            "recall": 0.07692307692307693,
+            "f1": 0.11428571428571428
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "files": [
+              {
+                "arquivo": "chb16_10.edf",
+                "paciente": "chb16",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 186,
+                "n_janelas_crise": 6,
+                "score_max": 0.8658939389744883,
+                "score_medio": 0.06616289942158345,
+                "trecho_suspeito": {
+                  "start_seconds": 420.0,
+                  "end_seconds": 424.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.8658939389744883,
+                  "score_max": 0.8658939389744883,
+                  "threshold": 0.5
+                }
+              },
+              {
+                "arquivo": "chb16_17.edf",
+                "paciente": "chb16",
+                "label": 1,
+                "pred": 0,
+                "n_janelas": 200,
+                "n_janelas_crise": 20,
+                "score_max": 0.755128794677761,
+                "score_medio": 0.046740626662009725,
+                "trecho_suspeito": {
+                  "start_seconds": 3048.0,
+                  "end_seconds": 3052.0,
+                  "duration_seconds": 4.0,
+                  "n_janelas": 1,
+                  "score_medio": 0.755128794677761,
+                  "score_max": 0.755128794677761,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb19",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.919047619047619,
+            "precision": 1.0,
+            "recall": 0.43333333333333335,
+            "f1": 0.6046511627906976
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb19_28.edf",
+                "paciente": "chb19",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.995467979368091,
+                "score_medio": 0.12399050826825794,
+                "trecho_suspeito": {
+                  "start_seconds": 352.0,
+                  "end_seconds": 376.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 8,
+                  "score_medio": 0.9054882090128717,
+                  "score_max": 0.995467979368091,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb21",
+          "n_train": 7545,
+          "n_test": 209,
+          "class_counts_test": {
+            "0": 180,
+            "1": 29
+          },
+          "window_metrics": {
+            "accuracy": 0.8564593301435407,
+            "precision": 0.45454545454545453,
+            "recall": 0.1724137931034483,
+            "f1": 0.25
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb21_19.edf",
+                "paciente": "chb21",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 209,
+                "n_janelas_crise": 29,
+                "score_max": 0.8604122425593022,
+                "score_medio": 0.07416657215299956,
+                "trecho_suspeito": {
+                  "start_seconds": 2232.0,
+                  "end_seconds": 2254.0,
+                  "duration_seconds": 22.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.6986639136881586,
+                  "score_max": 0.7719365774921919,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb22",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.8761904761904762,
+            "precision": 0.7,
+            "recall": 0.23333333333333334,
+            "f1": 0.35
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb22_20.edf",
+                "paciente": "chb22",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.8882973185236827,
+                "score_medio": 0.11386250216849052,
+                "trecho_suspeito": {
+                  "start_seconds": 3476.0,
+                  "end_seconds": 3500.0,
+                  "duration_seconds": 24.0,
+                  "n_janelas": 2,
+                  "score_medio": 0.7047966572451556,
+                  "score_max": 0.823785902044287,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb23",
+          "n_train": 7544,
+          "n_test": 210,
+          "class_counts_test": {
+            "0": 180,
+            "1": 30
+          },
+          "window_metrics": {
+            "accuracy": 0.919047619047619,
+            "precision": 1.0,
+            "recall": 0.43333333333333335,
+            "f1": 0.6046511627906976
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "paciente": "chb23",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 210,
+                "n_janelas_crise": 30,
+                "score_max": 0.9759921704313993,
+                "score_medio": 0.07796941202332491,
+                "trecho_suspeito": {
+                  "start_seconds": 3998.0,
+                  "end_seconds": 4018.0,
+                  "duration_seconds": 20.0,
+                  "n_janelas": 5,
+                  "score_medio": 0.7841507611389436,
+                  "score_max": 0.946347362893332,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "paciente_teste": "chb24",
+          "n_train": 7546,
+          "n_test": 208,
+          "class_counts_test": {
+            "0": 180,
+            "1": 28
+          },
+          "window_metrics": {
+            "accuracy": 0.9471153846153846,
+            "precision": 0.9473684210526315,
+            "recall": 0.6428571428571429,
+            "f1": 0.7659574468085106
+          },
+          "edf_metrics": {
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "files": [
+              {
+                "arquivo": "chb24_01.edf",
+                "paciente": "chb24",
+                "label": 1,
+                "pred": 1,
+                "n_janelas": 208,
+                "n_janelas_crise": 28,
+                "score_max": 0.99375691259599,
+                "score_medio": 0.12491108930987373,
+                "trecho_suspeito": {
+                  "start_seconds": 482.0,
+                  "end_seconds": 504.0,
+                  "duration_seconds": 22.0,
+                  "n_janelas": 10,
+                  "score_medio": 0.9350121551514423,
+                  "score_max": 0.993495990661933,
+                  "threshold": 0.5
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

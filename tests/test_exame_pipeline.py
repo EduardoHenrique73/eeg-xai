@@ -97,6 +97,68 @@ async def test_processar_exame_ia_salva_predicao_com_mapa_shap(
 
 
 @pytest.mark.asyncio
+async def test_processar_exame_usa_fluxo_sequencial_quando_habilitado(
+    async_engine,
+    exame_com_arquivo,
+    tmp_path,
+    monkeypatch,
+):
+    """Com AI_MODEL_TYPE=sequence_cnn_lstm e recursos disponiveis, usa o fluxo global."""
+    session_factory = async_sessionmaker(async_engine, expire_on_commit=False)
+    settings = get_settings()
+    monkeypatch.setattr(settings, "ai_model_type", "sequence_cnn_lstm")
+
+    resultado_fake = {
+        "model_type": "sequence_cnn_lstm",
+        "score_geral": 0.91,
+        "classificacao_clinica": "Padrão sugestivo de atividade epileptiforme (revisão médica necessária)",
+        "threshold": 0.85,
+        "min_duration_seconds": 60.0,
+        "feature_mode": "mean",
+        "canais_processados": ["FP1", "F7"],
+        "canais_omitidos": [],
+        "n_sequences_analisadas": 120,
+        "n_janelas_analisadas": 240,
+        "score_agregacao": "continuous_suspicious_sequence",
+        "janela_pico": {"start_seconds": 10.0, "end_seconds": 30.0, "score": 0.97},
+        "trecho_suspeito": {
+            "start_seconds": 8.0,
+            "end_seconds": 80.0,
+            "duration_seconds": 72.0,
+            "n_sequences": 30,
+            "n_janelas": 30,
+            "score_medio": 0.9,
+            "score_max": 0.97,
+            "threshold": 0.85,
+            "atingiu_duracao_minima": True,
+        },
+        "top_trechos_suspeitos": [],
+    }
+
+    with patch("app.services.exame_pipeline.AsyncSessionLocal", session_factory):
+        with patch(
+            "app.services.exame_pipeline.carregar_recursos_sequenciais",
+            return_value=object(),
+        ):
+            with patch(
+                "app.services.exame_pipeline.analisar_exame_sequencial",
+                return_value=resultado_fake,
+            ):
+                await processar_exame_ia(exame_com_arquivo.id)
+
+    async with session_factory() as session:
+        result = await session.execute(
+            select(PredicaoIA).where(PredicaoIA.id_exame == exame_com_arquivo.id)
+        )
+        predicao = result.scalar_one()
+
+    assert predicao.resultado_score == pytest.approx(0.91)
+    assert predicao.mapa_shap_path == ""
+    assert predicao.detalhes_json is not None
+    assert "sequence_cnn_lstm" in predicao.detalhes_json
+
+
+@pytest.mark.asyncio
 async def test_processar_exame_inexistente_nao_levanta_erro(async_engine, features_fake):
     session_factory = async_sessionmaker(async_engine, expire_on_commit=False)
     mock_extrair = (

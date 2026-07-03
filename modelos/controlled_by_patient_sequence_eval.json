@@ -1,0 +1,1054 @@
+{
+  "experiment": "controlled_by_patient_sequence_cnn_lstm",
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "threshold": 0.5,
+  "min_duration_seconds": 45.0,
+  "epochs": 4,
+  "summary": [
+    {
+      "paciente": "chb01",
+      "teste_crise_arquivo": "chb01_15.edf",
+      "teste_crise_pred": 1,
+      "localizou_crise_real": true,
+      "overlap_crise_real_seconds": 62.0,
+      "teste_normal_arquivo": "chb01_01.edf",
+      "teste_normal_pred": 0,
+      "falso_positivo_normal": false
+    },
+    {
+      "paciente": "chb03",
+      "teste_crise_arquivo": "chb03_02.edf",
+      "teste_crise_pred": 1,
+      "localizou_crise_real": true,
+      "overlap_crise_real_seconds": 70.0,
+      "teste_normal_arquivo": "chb03_05.edf",
+      "teste_normal_pred": 0,
+      "falso_positivo_normal": false
+    },
+    {
+      "paciente": "chb13",
+      "teste_crise_arquivo": "chb13_62.edf",
+      "teste_crise_pred": 1,
+      "localizou_crise_real": true,
+      "overlap_crise_real_seconds": 950.0,
+      "teste_normal_arquivo": "chb13_02.edf",
+      "teste_normal_pred": 1,
+      "falso_positivo_normal": true
+    },
+    {
+      "paciente": "chb14",
+      "teste_crise_arquivo": "chb14_18.edf",
+      "teste_crise_pred": 1,
+      "localizou_crise_real": false,
+      "overlap_crise_real_seconds": 0.0,
+      "teste_normal_arquivo": "chb14_01.edf",
+      "teste_normal_pred": 1,
+      "falso_positivo_normal": true
+    },
+    {
+      "paciente": "chb15",
+      "teste_crise_arquivo": "chb15_31.edf",
+      "teste_crise_pred": 1,
+      "localizou_crise_real": true,
+      "overlap_crise_real_seconds": 110.0,
+      "teste_normal_arquivo": "chb15_01.edf",
+      "teste_normal_pred": 1,
+      "falso_positivo_normal": true
+    }
+  ],
+  "skipped": [],
+  "splits": [
+    {
+      "name": "chb01_crise_holdout_chb01_15",
+      "train_files": [
+        "chb01_01.edf",
+        "chb01_03.edf",
+        "chb01_04.edf"
+      ],
+      "holdout_files": [
+        "chb01_15.edf"
+      ],
+      "train": {
+        "n_sequences": 398,
+        "class_counts": {
+          "0": 373,
+          "1": 25
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 882,
+          "1": 14
+        },
+        "sequence_metrics": {
+          "accuracy": 0.796875,
+          "precision": 0.0625,
+          "recall": 0.8571428571428571,
+          "f1": 0.11650485436893204
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 62.0,
+          "positive_predictions": 1,
+          "positive_predictions_with_overlap": 1,
+          "files": [
+            {
+              "arquivo": "chb01_15.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.9953218102455139,
+              "score_mean": 0.22646847367286682,
+              "trecho_suspeito": {
+                "start_seconds": 1724.0,
+                "end_seconds": 1786.0,
+                "duration_seconds": 62.0,
+                "n_sequences": 12,
+                "score_mean": 0.9937450289726257,
+                "score_max": 0.9953218102455139,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 62.0
+              },
+              "crise_real": {
+                "start_seconds": 1716.0,
+                "end_seconds": 1786.0,
+                "n_sequences": 14,
+                "score_mean": 0.8819505572319031,
+                "score_max": 0.9953218102455139,
+                "n_sequences_above_threshold": 12
+              }
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.8639053106307983,
+          0.9082840085029602,
+          0.9585798978805542,
+          0.9615384340286255
+        ],
+        "loss": [
+          0.5439203381538391,
+          0.29680460691452026,
+          0.19345758855342865,
+          0.09325321763753891
+        ],
+        "val_accuracy": [
+          1.0,
+          1.0,
+          0.9666666388511658,
+          1.0
+        ],
+        "val_loss": [
+          0.2017715722322464,
+          0.14960508048534393,
+          0.14278504252433777,
+          0.026760658249258995
+        ]
+      },
+      "paciente": "chb01",
+      "split_type": "crise_holdout"
+    },
+    {
+      "name": "chb01_normal_holdout_chb01_01",
+      "train_files": [
+        "chb01_03.edf",
+        "chb01_04.edf",
+        "chb01_15.edf"
+      ],
+      "holdout_files": [
+        "chb01_01.edf"
+      ],
+      "train": {
+        "n_sequences": 408,
+        "class_counts": {
+          "0": 369,
+          "1": 39
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 896,
+          "1": 0
+        },
+        "sequence_metrics": {
+          "accuracy": 0.9776785714285714,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 0.0,
+          "positive_predictions": 0,
+          "positive_predictions_with_overlap": 0,
+          "files": [
+            {
+              "arquivo": "chb01_01.edf",
+              "label": 0,
+              "pred": 0,
+              "n_sequences": 896,
+              "score_max": 0.9892086982727051,
+              "score_mean": 0.029377637431025505,
+              "trecho_suspeito": {
+                "start_seconds": 1772.0,
+                "end_seconds": 1806.0,
+                "duration_seconds": 34.0,
+                "n_sequences": 5,
+                "score_mean": 0.9548341631889343,
+                "score_max": 0.9892086982727051,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "crise_real": null
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.7254335284233093,
+          0.910404622554779,
+          0.9075144529342651,
+          0.910404622554779
+        ],
+        "loss": [
+          0.5387932062149048,
+          0.2783109247684479,
+          0.20684002339839935,
+          0.1876581609249115
+        ],
+        "val_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          0.9677419066429138
+        ],
+        "val_loss": [
+          0.20153668522834778,
+          0.06934937089681625,
+          0.026943163946270943,
+          0.0739312693476677
+        ]
+      },
+      "paciente": "chb01",
+      "split_type": "normal_holdout"
+    },
+    {
+      "name": "chb03_crise_holdout_chb03_02",
+      "train_files": [
+        "chb03_05.edf",
+        "chb03_01.edf"
+      ],
+      "holdout_files": [
+        "chb03_02.edf"
+      ],
+      "train": {
+        "n_sequences": 267,
+        "class_counts": {
+          "0": 250,
+          "1": 17
+        }
+      },
+      "holdout": {
+        "n_sequences": 927,
+        "class_counts": {
+          "0": 907,
+          "1": 20
+        },
+        "sequence_metrics": {
+          "accuracy": 0.8694714131607335,
+          "precision": 0.10852713178294573,
+          "recall": 0.7,
+          "f1": 0.18791946308724833
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 70.0,
+          "positive_predictions": 1,
+          "positive_predictions_with_overlap": 1,
+          "files": [
+            {
+              "arquivo": "chb03_02.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 927,
+              "score_max": 0.9819999933242798,
+              "score_mean": 0.16151581704616547,
+              "trecho_suspeito": {
+                "start_seconds": 736.0,
+                "end_seconds": 806.0,
+                "duration_seconds": 70.0,
+                "n_sequences": 14,
+                "score_mean": 0.9687030911445618,
+                "score_max": 0.9819999933242798,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 70.0
+              },
+              "crise_real": {
+                "start_seconds": 716.0,
+                "end_seconds": 810.0,
+                "n_sequences": 20,
+                "score_mean": 0.688616931438446,
+                "score_max": 0.9819999933242798,
+                "n_sequences_above_threshold": 14
+              }
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.752212405204773,
+          0.8849557638168335,
+          0.9336283206939697,
+          0.9159291982650757
+        ],
+        "loss": [
+          0.6879096627235413,
+          0.44307348132133484,
+          0.27330201864242554,
+          0.2213568091392517
+        ],
+        "val_accuracy": [
+          0.9268292784690857,
+          1.0,
+          0.8780487775802612,
+          1.0
+        ],
+        "val_loss": [
+          0.5355780124664307,
+          0.1947551667690277,
+          0.3906036913394928,
+          0.06247958168387413
+        ]
+      },
+      "paciente": "chb03",
+      "split_type": "crise_holdout"
+    },
+    {
+      "name": "chb03_normal_holdout_chb03_05",
+      "train_files": [
+        "chb03_01.edf",
+        "chb03_02.edf"
+      ],
+      "holdout_files": [
+        "chb03_05.edf"
+      ],
+      "train": {
+        "n_sequences": 284,
+        "class_counts": {
+          "0": 247,
+          "1": 37
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 896,
+          "1": 0
+        },
+        "sequence_metrics": {
+          "accuracy": 1.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 0.0,
+          "positive_predictions": 0,
+          "positive_predictions_with_overlap": 0,
+          "files": [
+            {
+              "arquivo": "chb03_05.edf",
+              "label": 0,
+              "pred": 0,
+              "n_sequences": 896,
+              "score_max": 0.30178216099739075,
+              "score_mean": 0.10156469792127609,
+              "trecho_suspeito": {
+                "start_seconds": 2800.0,
+                "end_seconds": 2818.0,
+                "duration_seconds": 18.0,
+                "n_sequences": 1,
+                "score_mean": 0.30178216099739075,
+                "score_max": 0.30178216099739075,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "crise_real": null
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.7095435857772827,
+          0.908713698387146,
+          0.9211618304252625,
+          0.9294605851173401
+        ],
+        "loss": [
+          0.6494373679161072,
+          0.389614075422287,
+          0.32715463638305664,
+          0.2756255269050598
+        ],
+        "val_accuracy": [
+          0.09302325546741486,
+          0.1860465109348297,
+          0.11627907305955887,
+          0.3488371968269348
+        ],
+        "val_loss": [
+          1.0447553396224976,
+          2.1122853755950928,
+          2.4761390686035156,
+          1.497335433959961
+        ]
+      },
+      "paciente": "chb03",
+      "split_type": "normal_holdout"
+    },
+    {
+      "name": "chb13_crise_holdout_chb13_62",
+      "train_files": [
+        "chb13_22.edf",
+        "chb13_02.edf",
+        "chb13_19.edf",
+        "chb13_21.edf",
+        "chb13_40.edf"
+      ],
+      "holdout_files": [
+        "chb13_62.edf"
+      ],
+      "train": {
+        "n_sequences": 690,
+        "class_counts": {
+          "0": 621,
+          "1": 69
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 837,
+          "1": 59
+        },
+        "sequence_metrics": {
+          "accuracy": 0.09933035714285714,
+          "precision": 0.06812933025404157,
+          "recall": 1.0,
+          "f1": 0.12756756756756757
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 950.0,
+          "positive_predictions": 1,
+          "positive_predictions_with_overlap": 1,
+          "files": [
+            {
+              "arquivo": "chb13_62.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.9932858347892761,
+              "score_mean": 0.9531942009925842,
+              "trecho_suspeito": {
+                "start_seconds": 0.0,
+                "end_seconds": 1786.0,
+                "duration_seconds": 1786.0,
+                "n_sequences": 443,
+                "score_mean": 0.9849548935890198,
+                "score_max": 0.9929673671722412,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 950.0
+              },
+              "crise_real": {
+                "start_seconds": 836.0,
+                "end_seconds": 2738.0,
+                "n_sequences": 59,
+                "score_mean": 0.9869773387908936,
+                "score_max": 0.9932739734649658,
+                "n_sequences_above_threshold": 59
+              }
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.8105801939964294,
+          0.9163822531700134,
+          0.9300341010093689,
+          0.935153603553772
+        ],
+        "loss": [
+          0.5754318833351135,
+          0.3799780011177063,
+          0.31279894709587097,
+          0.24592572450637817
+        ],
+        "val_accuracy": [
+          0.1538461595773697,
+          0.2211538404226303,
+          0.25961539149284363,
+          0.21153846383094788
+        ],
+        "val_loss": [
+          2.444812297821045,
+          2.6805760860443115,
+          2.4341654777526855,
+          3.3990907669067383
+        ]
+      },
+      "paciente": "chb13",
+      "split_type": "crise_holdout"
+    },
+    {
+      "name": "chb13_normal_holdout_chb13_02",
+      "train_files": [
+        "chb13_22.edf",
+        "chb13_19.edf",
+        "chb13_21.edf",
+        "chb13_40.edf"
+      ],
+      "holdout_files": [
+        "chb13_02.edf"
+      ],
+      "train": {
+        "n_sequences": 563,
+        "class_counts": {
+          "0": 494,
+          "1": 69
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 896,
+          "1": 0
+        },
+        "sequence_metrics": {
+          "accuracy": 0.9185267857142857,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "false_positives": 1,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 0.0,
+          "positive_predictions": 0,
+          "positive_predictions_with_overlap": 0,
+          "files": [
+            {
+              "arquivo": "chb13_02.edf",
+              "label": 0,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.9723796844482422,
+              "score_mean": 0.23449812829494476,
+              "trecho_suspeito": {
+                "start_seconds": 3152.0,
+                "end_seconds": 3198.0,
+                "duration_seconds": 46.0,
+                "n_sequences": 8,
+                "score_mean": 0.8671402931213379,
+                "score_max": 0.9065385460853577,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "crise_real": null
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.7531380653381348,
+          0.8786610960960388,
+          0.8828451633453369,
+          0.8974895477294922
+        ],
+        "loss": [
+          0.648288369178772,
+          0.4841528534889221,
+          0.41306743025779724,
+          0.36030313372612
+        ],
+        "val_accuracy": [
+          0.10588235408067703,
+          0.3176470696926117,
+          0.20000000298023224,
+          0.15294118225574493
+        ],
+        "val_loss": [
+          1.728131651878357,
+          1.3489562273025513,
+          2.6855506896972656,
+          1.9830142259597778
+        ]
+      },
+      "paciente": "chb13",
+      "split_type": "normal_holdout"
+    },
+    {
+      "name": "chb14_crise_holdout_chb14_18",
+      "train_files": [
+        "chb14_01.edf",
+        "chb14_03.edf",
+        "chb14_04.edf",
+        "chb14_06.edf"
+      ],
+      "holdout_files": [
+        "chb14_18.edf"
+      ],
+      "train": {
+        "n_sequences": 528,
+        "class_counts": {
+          "0": 494,
+          "1": 34
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 886,
+          "1": 10
+        },
+        "sequence_metrics": {
+          "accuracy": 0.6216517857142857,
+          "precision": 0.02318840579710145,
+          "recall": 0.8,
+          "f1": 0.04507042253521127
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 0.0,
+          "positive_predictions": 1,
+          "positive_predictions_with_overlap": 0,
+          "files": [
+            {
+              "arquivo": "chb14_18.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.9449028968811035,
+              "score_mean": 0.46907898783683777,
+              "trecho_suspeito": {
+                "start_seconds": 1864.0,
+                "end_seconds": 2026.0,
+                "duration_seconds": 162.0,
+                "n_sequences": 37,
+                "score_mean": 0.802501916885376,
+                "score_max": 0.9344488978385925,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "crise_real": {
+                "start_seconds": 1024.0,
+                "end_seconds": 1078.0,
+                "n_sequences": 10,
+                "score_mean": 0.7444646954536438,
+                "score_max": 0.9449028968811035,
+                "n_sequences_above_threshold": 8
+              }
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.9308035969734192,
+          0.8191964030265808,
+          0.8549107313156128,
+          0.859375
+        ],
+        "loss": [
+          0.6995372176170349,
+          0.6338581442832947,
+          0.5514370799064636,
+          0.45126286149024963
+        ],
+        "val_accuracy": [
+          0.8999999761581421,
+          0.550000011920929,
+          0.6000000238418579,
+          0.8125
+        ],
+        "val_loss": [
+          0.6367961764335632,
+          0.6779853701591492,
+          0.7014296054840088,
+          0.45973309874534607
+        ]
+      },
+      "paciente": "chb14",
+      "split_type": "crise_holdout"
+    },
+    {
+      "name": "chb14_normal_holdout_chb14_01",
+      "train_files": [
+        "chb14_03.edf",
+        "chb14_04.edf",
+        "chb14_06.edf"
+      ],
+      "holdout_files": [
+        "chb14_01.edf"
+      ],
+      "train": {
+        "n_sequences": 401,
+        "class_counts": {
+          "0": 367,
+          "1": 34
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 896,
+          "1": 0
+        },
+        "sequence_metrics": {
+          "accuracy": 0.7131696428571429,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "false_positives": 1,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 0.0,
+          "positive_predictions": 0,
+          "positive_predictions_with_overlap": 0,
+          "files": [
+            {
+              "arquivo": "chb14_01.edf",
+              "label": 0,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.9507827758789062,
+              "score_mean": 0.30909326672554016,
+              "trecho_suspeito": {
+                "start_seconds": 2204.0,
+                "end_seconds": 2286.0,
+                "duration_seconds": 82.0,
+                "n_sequences": 17,
+                "score_mean": 0.7906509041786194,
+                "score_max": 0.9080342054367065,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "crise_real": null
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.6058823466300964,
+          0.6941176652908325,
+          0.8352941274642944,
+          0.8088235259056091
+        ],
+        "loss": [
+          0.7080164551734924,
+          0.6380318403244019,
+          0.43801984190940857,
+          0.3902304768562317
+        ],
+        "val_accuracy": [
+          0.5081967115402222,
+          0.5573770403862,
+          0.7540983557701111,
+          0.7540983557701111
+        ],
+        "val_loss": [
+          0.6898192167282104,
+          0.666856586933136,
+          0.5183188915252686,
+          0.4207116961479187
+        ]
+      },
+      "paciente": "chb14",
+      "split_type": "normal_holdout"
+    },
+    {
+      "name": "chb15_crise_holdout_chb15_31",
+      "train_files": [
+        "chb15_01.edf",
+        "chb15_06.edf",
+        "chb15_10.edf",
+        "chb15_17.edf"
+      ],
+      "holdout_files": [
+        "chb15_31.edf"
+      ],
+      "train": {
+        "n_sequences": 557,
+        "class_counts": {
+          "0": 496,
+          "1": 61
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 862,
+          "1": 34
+        },
+        "sequence_metrics": {
+          "accuracy": 0.9040178571428571,
+          "precision": 0.24,
+          "recall": 0.7058823529411765,
+          "f1": 0.3582089552238806
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 110.0,
+          "positive_predictions": 1,
+          "positive_predictions_with_overlap": 1,
+          "files": [
+            {
+              "arquivo": "chb15_31.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.756599485874176,
+              "score_mean": 0.1415054202079773,
+              "trecho_suspeito": {
+                "start_seconds": 1760.0,
+                "end_seconds": 1870.0,
+                "duration_seconds": 110.0,
+                "n_sequences": 24,
+                "score_mean": 0.6875715851783752,
+                "score_max": 0.756599485874176,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 110.0
+              },
+              "crise_real": {
+                "start_seconds": 1736.0,
+                "end_seconds": 1886.0,
+                "n_sequences": 34,
+                "score_mean": 0.5487871766090393,
+                "score_max": 0.756599485874176,
+                "n_sequences_above_threshold": 24
+              }
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.621564507484436,
+          0.579281210899353,
+          0.6257928013801575,
+          0.6955602765083313
+        ],
+        "loss": [
+          0.5925185680389404,
+          0.48455142974853516,
+          0.4695497751235962,
+          0.42691925168037415
+        ],
+        "val_accuracy": [
+          0.8571428656578064,
+          0.8690476417541504,
+          0.8928571343421936,
+          0.8690476417541504
+        ],
+        "val_loss": [
+          0.32002633810043335,
+          0.5181124210357666,
+          0.4777703583240509,
+          0.5921244621276855
+        ]
+      },
+      "paciente": "chb15",
+      "split_type": "crise_holdout"
+    },
+    {
+      "name": "chb15_normal_holdout_chb15_01",
+      "train_files": [
+        "chb15_06.edf",
+        "chb15_10.edf",
+        "chb15_17.edf"
+      ],
+      "holdout_files": [
+        "chb15_01.edf"
+      ],
+      "train": {
+        "n_sequences": 430,
+        "class_counts": {
+          "0": 369,
+          "1": 61
+        }
+      },
+      "holdout": {
+        "n_sequences": 897,
+        "class_counts": {
+          "0": 897,
+          "1": 0
+        },
+        "sequence_metrics": {
+          "accuracy": 0.8963210702341137,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 45.0,
+          "metrics": {
+            "accuracy": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "false_positives": 1,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 0.0,
+          "positive_predictions": 0,
+          "positive_predictions_with_overlap": 0,
+          "files": [
+            {
+              "arquivo": "chb15_01.edf",
+              "label": 0,
+              "pred": 1,
+              "n_sequences": 897,
+              "score_max": 0.8335025906562805,
+              "score_mean": 0.20137396454811096,
+              "trecho_suspeito": {
+                "start_seconds": 1520.0,
+                "end_seconds": 1570.0,
+                "duration_seconds": 50.0,
+                "n_sequences": 9,
+                "score_mean": 0.7011135816574097,
+                "score_max": 0.7973158955574036,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "crise_real": null
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.4986301362514496,
+          0.619178056716919,
+          0.734246551990509,
+          0.6904109716415405
+        ],
+        "loss": [
+          0.6802892684936523,
+          0.6403331756591797,
+          0.5703599452972412,
+          0.5445957183837891
+        ],
+        "val_accuracy": [
+          0.8615384697914124,
+          0.892307698726654,
+          0.9384615421295166,
+          0.9538461565971375
+        ],
+        "val_loss": [
+          0.4036010205745697,
+          0.2725375294685364,
+          0.2720477283000946,
+          0.23947086930274963
+        ]
+      },
+      "paciente": "chb15",
+      "split_type": "normal_holdout"
+    }
+  ]
+}

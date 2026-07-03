@@ -1,0 +1,221 @@
+{
+  "experiment": "controlled_chb01_sequence_cnn_lstm",
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "threshold": 0.5,
+  "min_duration_seconds": 10.0,
+  "splits": [
+    {
+      "name": "chb01_crise_holdout_15",
+      "train_files": [
+        "chb01_01.edf",
+        "chb01_03.edf",
+        "chb01_04.edf"
+      ],
+      "holdout_files": [
+        "chb01_15.edf"
+      ],
+      "train": {
+        "n_sequences": 398,
+        "class_counts": {
+          "0": 373,
+          "1": 25
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 882,
+          "1": 14
+        },
+        "sequence_metrics": {
+          "accuracy": 0.9185267857142857,
+          "precision": 0.14457831325301204,
+          "recall": 0.8571428571428571,
+          "f1": 0.24742268041237114
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 10.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 62.0,
+          "positive_predictions": 1,
+          "positive_predictions_with_overlap": 1,
+          "files": [
+            {
+              "arquivo": "chb01_15.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.9985163807868958,
+              "score_mean": 0.10693416744470596,
+              "trecho_suspeito": {
+                "start_seconds": 1724.0,
+                "end_seconds": 1786.0,
+                "duration_seconds": 62.0,
+                "n_sequences": 12,
+                "score_mean": 0.989098310470581,
+                "score_max": 0.9985163807868958,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 62.0
+              },
+              "crise_real": {
+                "start_seconds": 1716.0,
+                "end_seconds": 1786.0,
+                "n_sequences": 14,
+                "score_mean": 0.8485884666442871,
+                "score_max": 0.9985163807868958,
+                "n_sequences_above_threshold": 12
+              }
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.8639053106307983,
+          0.9082840085029602,
+          0.9585798978805542,
+          0.9615384340286255,
+          0.9852070808410645,
+          0.9940828680992126
+        ],
+        "loss": [
+          0.5439203381538391,
+          0.29680460691452026,
+          0.19345758855342865,
+          0.09325321763753891,
+          0.05563189834356308,
+          0.1512959599494934
+        ],
+        "val_accuracy": [
+          1.0,
+          1.0,
+          0.9666666388511658,
+          1.0,
+          0.9833333492279053,
+          1.0
+        ],
+        "val_loss": [
+          0.2017715722322464,
+          0.14960508048534393,
+          0.14278504252433777,
+          0.026760658249258995,
+          0.056289441883563995,
+          0.008536492474377155
+        ]
+      }
+    },
+    {
+      "name": "chb01_normal_holdout_01",
+      "train_files": [
+        "chb01_03.edf",
+        "chb01_04.edf",
+        "chb01_15.edf"
+      ],
+      "holdout_files": [
+        "chb01_01.edf"
+      ],
+      "train": {
+        "n_sequences": 408,
+        "class_counts": {
+          "0": 369,
+          "1": 39
+        }
+      },
+      "holdout": {
+        "n_sequences": 896,
+        "class_counts": {
+          "0": 896,
+          "1": 0
+        },
+        "sequence_metrics": {
+          "accuracy": 0.9720982142857143,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 10.0,
+          "metrics": {
+            "accuracy": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "false_positives": 1,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 0.0,
+          "positive_predictions": 0,
+          "positive_predictions_with_overlap": 0,
+          "files": [
+            {
+              "arquivo": "chb01_01.edf",
+              "label": 0,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.9945386648178101,
+              "score_mean": 0.029845494776964188,
+              "trecho_suspeito": {
+                "start_seconds": 1772.0,
+                "end_seconds": 1810.0,
+                "duration_seconds": 38.0,
+                "n_sequences": 6,
+                "score_mean": 0.9566949009895325,
+                "score_max": 0.9945386648178101,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "crise_real": null
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.7254335284233093,
+          0.910404622554779,
+          0.9075144529342651,
+          0.910404622554779,
+          0.9277456402778625,
+          0.9710982441902161
+        ],
+        "loss": [
+          0.5387932062149048,
+          0.2783109247684479,
+          0.20684002339839935,
+          0.1876581609249115,
+          0.15065789222717285,
+          0.07788663357496262
+        ],
+        "val_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          0.9677419066429138,
+          1.0,
+          0.9677419066429138
+        ],
+        "val_loss": [
+          0.20153668522834778,
+          0.06934937089681625,
+          0.026943163946270943,
+          0.0739312693476677,
+          0.012371299788355827,
+          0.0707201436161995
+        ]
+      }
+    }
+  ]
+}

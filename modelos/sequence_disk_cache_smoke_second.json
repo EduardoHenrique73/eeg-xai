@@ -1,0 +1,1460 @@
+{
+  "experiment": "sequence_cnn_lstm_leave_one_patient_out",
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\curated_train_files_expanded_23ch.txt",
+  "test_patients": [
+    "chb03"
+  ],
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "feature_mode": "mean",
+  "canais_referencia": [],
+  "max_normal_windows_per_file": 10,
+  "max_seizure_windows_per_file": 6,
+  "calibration_patients_per_fold": 2,
+  "epochs": 1,
+  "thresholds": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.85,
+    0.9,
+    0.95
+  ],
+  "durations": [
+    10.0,
+    20.0,
+    30.0,
+    45.0,
+    60.0,
+    90.0,
+    120.0,
+    180.0
+  ],
+  "disk_cache_enabled": true,
+  "disk_cache_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\storage\\feature_cache\\sequence",
+  "summary": [
+    {
+      "paciente_teste": "chb03",
+      "threshold_calibrado": 0.5,
+      "duracao_minima_calibrada": 10.0,
+      "arquivos_teste": 3,
+      "arquivos_crise": 2,
+      "arquivos_normais": 1,
+      "crises_localizadas": 2,
+      "falsos_positivos": 1,
+      "falsos_negativos": 0,
+      "edf_accuracy": 0.6666666666666666,
+      "edf_precision": 0.6666666666666666,
+      "edf_recall": 1.0,
+      "edf_f1": 0.8,
+      "window_f1": 0.026850507982583455
+    }
+  ],
+  "mean": {
+    "edf_accuracy": 0.6666666666666666,
+    "edf_precision": 0.6666666666666666,
+    "edf_recall": 1.0,
+    "edf_f1": 0.8,
+    "window_f1": 0.026850507982583455
+  },
+  "total": {
+    "arquivos_crise": 2,
+    "arquivos_normais": 1,
+    "crises_localizadas": 2,
+    "falsos_positivos": 1,
+    "falsos_negativos": 0
+  },
+  "skipped": [],
+  "folds": [
+    {
+      "paciente_teste": "chb03",
+      "train_files": [
+        "chb01_01.edf",
+        "chb01_03.edf",
+        "chb01_04.edf",
+        "chb01_15.edf",
+        "chb02_16.edf",
+        "chb04_01.edf",
+        "chb04_05.edf",
+        "chb05_01.edf",
+        "chb05_06.edf",
+        "chb06_01.edf",
+        "chb08_21.edf",
+        "chb10_27.edf",
+        "chb12_06.edf",
+        "chb13_02.edf",
+        "chb13_19.edf",
+        "chb13_21.edf",
+        "chb13_22.edf",
+        "chb13_55.edf",
+        "chb13_58.edf",
+        "chb13_59.edf",
+        "chb13_60.edf",
+        "chb13_62.edf",
+        "chb14_01.edf",
+        "chb14_03.edf",
+        "chb14_04.edf",
+        "chb14_06.edf",
+        "chb14_11.edf",
+        "chb14_17.edf",
+        "chb14_18.edf",
+        "chb16_10.edf",
+        "chb16_17.edf",
+        "chb19_28.edf",
+        "chb21_19.edf",
+        "chb22_20.edf"
+      ],
+      "calibration_files": [
+        "chb23_06.edf",
+        "chb24_01.edf"
+      ],
+      "calibration_patients": [
+        "chb23",
+        "chb24"
+      ],
+      "test_files": [
+        "chb03_01.edf",
+        "chb03_02.edf",
+        "chb03_05.edf"
+      ],
+      "calibration": {
+        "threshold": 0.5,
+        "min_duration_seconds": 10.0,
+        "train_best": {
+          "threshold": 0.5,
+          "min_duration_seconds": 10.0,
+          "metrics": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "false_positives": 0,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 2168.0,
+          "positive_predictions": 2,
+          "positive_predictions_with_overlap": 2,
+          "files": [
+            {
+              "arquivo": "chb23_06.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 1868,
+              "score_max": 0.5639581084251404,
+              "score_mean": 0.5180048942565918,
+              "trecho_suspeito": {
+                "start_seconds": 0.0,
+                "end_seconds": 7486.0,
+                "duration_seconds": 7486.0,
+                "n_sequences": 1868,
+                "score_mean": 0.5180048942565918,
+                "score_max": 0.5639581084251404,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 142.0
+              },
+              "top_trechos_suspeitos": [
+                {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                }
+              ],
+              "crise_real": {
+                "start_seconds": 3948.0,
+                "end_seconds": 4090.0,
+                "n_sequences": 32,
+                "score_mean": 0.5414407849311829,
+                "score_max": 0.5639581084251404,
+                "n_sequences_above_threshold": 32
+              }
+            },
+            {
+              "arquivo": "chb24_01.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.60297691822052,
+              "score_mean": 0.5176451802253723,
+              "trecho_suspeito": {
+                "start_seconds": 0.0,
+                "end_seconds": 3598.0,
+                "duration_seconds": 3598.0,
+                "n_sequences": 896,
+                "score_mean": 0.5176451802253723,
+                "score_max": 0.60297691822052,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 2026.0
+              },
+              "top_trechos_suspeitos": [
+                {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                }
+              ],
+              "crise_real": {
+                "start_seconds": 464.0,
+                "end_seconds": 2490.0,
+                "n_sequences": 21,
+                "score_mean": 0.5599844455718994,
+                "score_max": 0.60297691822052,
+                "n_sequences_above_threshold": 21
+              }
+            }
+          ]
+        },
+        "train_top_10": [
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 10.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 20.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 30.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 45.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 60.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 90.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 120.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.5,
+            "min_duration_seconds": 180.0,
+            "metrics": {
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "false_positives": 0,
+            "false_negatives": 0,
+            "positive_overlap_seconds_sum": 2168.0,
+            "positive_predictions": 2,
+            "positive_predictions_with_overlap": 2,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 7486.0,
+                  "duration_seconds": 7486.0,
+                  "n_sequences": 1868,
+                  "score_mean": 0.5180048942565918,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 142.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 7486.0,
+                    "duration_seconds": 7486.0,
+                    "n_sequences": 1868,
+                    "score_mean": 0.5180048942565918,
+                    "score_max": 0.5639581084251404,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 142.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 32
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5176451802253723,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 2026.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 0.0,
+                    "end_seconds": 3598.0,
+                    "duration_seconds": 3598.0,
+                    "n_sequences": 896,
+                    "score_mean": 0.5176451802253723,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.5,
+                    "overlap_crise_real_seconds": 2026.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 21
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.6,
+            "min_duration_seconds": 10.0,
+            "metrics": {
+              "accuracy": 0.5,
+              "precision": 1.0,
+              "recall": 0.5,
+              "f1": 0.6666666666666666
+            },
+            "false_positives": 0,
+            "false_negatives": 1,
+            "positive_overlap_seconds_sum": 22.0,
+            "positive_predictions": 1,
+            "positive_predictions_with_overlap": 1,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 0,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 4000.0,
+                  "end_seconds": 4018.0,
+                  "duration_seconds": 18.0,
+                  "n_sequences": 1,
+                  "score_mean": 0.5639581084251404,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.6,
+                  "overlap_crise_real_seconds": 18.0
+                },
+                "top_trechos_suspeitos": [],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 0
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 480.0,
+                  "end_seconds": 502.0,
+                  "duration_seconds": 22.0,
+                  "n_sequences": 2,
+                  "score_mean": 0.6020543575286865,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.6,
+                  "overlap_crise_real_seconds": 22.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 480.0,
+                    "end_seconds": 502.0,
+                    "duration_seconds": 22.0,
+                    "n_sequences": 2,
+                    "score_mean": 0.6020543575286865,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.6,
+                    "overlap_crise_real_seconds": 22.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 2
+                }
+              }
+            ]
+          },
+          {
+            "threshold": 0.6,
+            "min_duration_seconds": 20.0,
+            "metrics": {
+              "accuracy": 0.5,
+              "precision": 1.0,
+              "recall": 0.5,
+              "f1": 0.6666666666666666
+            },
+            "false_positives": 0,
+            "false_negatives": 1,
+            "positive_overlap_seconds_sum": 22.0,
+            "positive_predictions": 1,
+            "positive_predictions_with_overlap": 1,
+            "files": [
+              {
+                "arquivo": "chb23_06.edf",
+                "label": 1,
+                "pred": 0,
+                "n_sequences": 1868,
+                "score_max": 0.5639581084251404,
+                "score_mean": 0.5180048942565918,
+                "trecho_suspeito": {
+                  "start_seconds": 4000.0,
+                  "end_seconds": 4018.0,
+                  "duration_seconds": 18.0,
+                  "n_sequences": 1,
+                  "score_mean": 0.5639581084251404,
+                  "score_max": 0.5639581084251404,
+                  "threshold": 0.6,
+                  "overlap_crise_real_seconds": 18.0
+                },
+                "top_trechos_suspeitos": [],
+                "crise_real": {
+                  "start_seconds": 3948.0,
+                  "end_seconds": 4090.0,
+                  "n_sequences": 32,
+                  "score_mean": 0.5414407849311829,
+                  "score_max": 0.5639581084251404,
+                  "n_sequences_above_threshold": 0
+                }
+              },
+              {
+                "arquivo": "chb24_01.edf",
+                "label": 1,
+                "pred": 1,
+                "n_sequences": 896,
+                "score_max": 0.60297691822052,
+                "score_mean": 0.5176451802253723,
+                "trecho_suspeito": {
+                  "start_seconds": 480.0,
+                  "end_seconds": 502.0,
+                  "duration_seconds": 22.0,
+                  "n_sequences": 2,
+                  "score_mean": 0.6020543575286865,
+                  "score_max": 0.60297691822052,
+                  "threshold": 0.6,
+                  "overlap_crise_real_seconds": 22.0
+                },
+                "top_trechos_suspeitos": [
+                  {
+                    "start_seconds": 480.0,
+                    "end_seconds": 502.0,
+                    "duration_seconds": 22.0,
+                    "n_sequences": 2,
+                    "score_mean": 0.6020543575286865,
+                    "score_max": 0.60297691822052,
+                    "threshold": 0.6,
+                    "overlap_crise_real_seconds": 22.0
+                  }
+                ],
+                "crise_real": {
+                  "start_seconds": 464.0,
+                  "end_seconds": 2490.0,
+                  "n_sequences": 21,
+                  "score_mean": 0.5599844455718994,
+                  "score_max": 0.60297691822052,
+                  "n_sequences_above_threshold": 2
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "train": {
+        "n_sequences": 152,
+        "class_counts": {
+          "0": 21,
+          "1": 131
+        },
+        "class_counts_by_file": {
+          "chb01_01.edf": {
+            "0": 2,
+            "1": 0
+          },
+          "chb01_03.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb01_04.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb01_15.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb02_16.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb04_01.edf": {
+            "0": 2,
+            "1": 0
+          },
+          "chb04_05.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb05_01.edf": {
+            "0": 2,
+            "1": 0
+          },
+          "chb05_06.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb06_01.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb08_21.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb10_27.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb12_06.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb13_02.edf": {
+            "0": 2,
+            "1": 0
+          },
+          "chb13_19.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb13_21.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb13_22.edf": {
+            "0": 2,
+            "1": 0
+          },
+          "chb13_55.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb13_58.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb13_59.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb13_60.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb13_62.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb14_01.edf": {
+            "0": 2,
+            "1": 0
+          },
+          "chb14_03.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb14_04.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb14_06.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb14_11.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb14_17.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb14_18.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb16_10.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb16_17.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb19_28.edf": {
+            "0": 1,
+            "1": 4
+          },
+          "chb21_19.edf": {
+            "0": 0,
+            "1": 5
+          },
+          "chb22_20.edf": {
+            "0": 1,
+            "1": 4
+          }
+        }
+      },
+      "calibration_set": {
+        "n_sequences": 2764,
+        "class_counts": {
+          "0": 2711,
+          "1": 53
+        },
+        "class_counts_by_file": {
+          "chb23_06.edf": {
+            "0": 1836,
+            "1": 32
+          },
+          "chb24_01.edf": {
+            "0": 875,
+            "1": 21
+          }
+        }
+      },
+      "test": {
+        "n_sequences": 2719,
+        "class_counts": {
+          "0": 2682,
+          "1": 37
+        },
+        "class_counts_by_file": {
+          "chb03_01.edf": {
+            "0": 879,
+            "1": 17
+          },
+          "chb03_02.edf": {
+            "0": 907,
+            "1": 20
+          },
+          "chb03_05.edf": {
+            "0": 896,
+            "1": 0
+          }
+        },
+        "window_metrics": {
+          "accuracy": 0.01360794409709452,
+          "precision": 0.01360794409709452,
+          "recall": 1.0,
+          "f1": 0.026850507982583455
+        },
+        "edf_eval": {
+          "threshold": 0.5,
+          "min_duration_seconds": 10.0,
+          "metrics": {
+            "accuracy": 0.6666666666666666,
+            "precision": 0.6666666666666666,
+            "recall": 1.0,
+            "f1": 0.8
+          },
+          "false_positives": 1,
+          "false_negatives": 0,
+          "positive_overlap_seconds_sum": 176.0,
+          "positive_predictions": 2,
+          "positive_predictions_with_overlap": 2,
+          "files": [
+            {
+              "arquivo": "chb03_01.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.5639564394950867,
+              "score_mean": 0.5220548510551453,
+              "trecho_suspeito": {
+                "start_seconds": 0.0,
+                "end_seconds": 3598.0,
+                "duration_seconds": 3598.0,
+                "n_sequences": 896,
+                "score_mean": 0.5220548510551453,
+                "score_max": 0.5639564394950867,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 82.0
+              },
+              "top_trechos_suspeitos": [
+                {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5220548510551453,
+                  "score_max": 0.5639564394950867,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 82.0
+                }
+              ],
+              "crise_real": {
+                "start_seconds": 348.0,
+                "end_seconds": 430.0,
+                "n_sequences": 17,
+                "score_mean": 0.5336171388626099,
+                "score_max": 0.5560296773910522,
+                "n_sequences_above_threshold": 17
+              }
+            },
+            {
+              "arquivo": "chb03_02.edf",
+              "label": 1,
+              "pred": 1,
+              "n_sequences": 927,
+              "score_max": 0.5531530380249023,
+              "score_mean": 0.5227334499359131,
+              "trecho_suspeito": {
+                "start_seconds": 0.0,
+                "end_seconds": 3722.0,
+                "duration_seconds": 3722.0,
+                "n_sequences": 927,
+                "score_mean": 0.5227334499359131,
+                "score_max": 0.5531530380249023,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 94.0
+              },
+              "top_trechos_suspeitos": [
+                {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3722.0,
+                  "duration_seconds": 3722.0,
+                  "n_sequences": 927,
+                  "score_mean": 0.5227334499359131,
+                  "score_max": 0.5531530380249023,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 94.0
+                }
+              ],
+              "crise_real": {
+                "start_seconds": 716.0,
+                "end_seconds": 810.0,
+                "n_sequences": 20,
+                "score_mean": 0.5355161428451538,
+                "score_max": 0.5504553318023682,
+                "n_sequences_above_threshold": 20
+              }
+            },
+            {
+              "arquivo": "chb03_05.edf",
+              "label": 0,
+              "pred": 1,
+              "n_sequences": 896,
+              "score_max": 0.5424802303314209,
+              "score_mean": 0.5191391110420227,
+              "trecho_suspeito": {
+                "start_seconds": 0.0,
+                "end_seconds": 3598.0,
+                "duration_seconds": 3598.0,
+                "n_sequences": 896,
+                "score_mean": 0.5191391110420227,
+                "score_max": 0.5424802303314209,
+                "threshold": 0.5,
+                "overlap_crise_real_seconds": 0.0
+              },
+              "top_trechos_suspeitos": [
+                {
+                  "start_seconds": 0.0,
+                  "end_seconds": 3598.0,
+                  "duration_seconds": 3598.0,
+                  "n_sequences": 896,
+                  "score_mean": 0.5191391110420227,
+                  "score_max": 0.5424802303314209,
+                  "threshold": 0.5,
+                  "overlap_crise_real_seconds": 0.0
+                }
+              ],
+              "crise_real": null
+            }
+          ]
+        }
+      },
+      "training_history": {
+        "accuracy": [
+          0.8372092843055725
+        ],
+        "loss": [
+          0.725178599357605
+        ],
+        "val_accuracy": [
+          0.9130434989929199
+        ],
+        "val_loss": [
+          0.6465374827384949
+        ]
+      }
+    }
+  ]
+}

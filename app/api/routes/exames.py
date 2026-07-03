@@ -112,25 +112,40 @@ async def obter_diagnostico_exame(
 
     mapa_shap_url = (
         mapa_shap_path_para_url(predicao.mapa_shap_path, settings)
-        if usuario.exibir_shap
+        if usuario.exibir_shap and predicao.mapa_shap_path
         else None
+    )
+
+    # O fluxo sequencial define sua propria classificacao (baseada em trecho
+    # continuo + duracao); o legado deriva do score x threshold do usuario.
+    classificacao = detalhes.get("classificacao_clinica") or classificar_score_clinico(
+        predicao.resultado_score,
+        usuario.threshold_confianca,
     )
 
     return DiagnosticoConcluido(
         **metadados,
         resultado_score=predicao.resultado_score,
-        classificacao_clinica=classificar_score_clinico(
-            predicao.resultado_score,
-            usuario.threshold_confianca,
-        ),
+        classificacao_clinica=classificacao,
         threshold_confianca=usuario.threshold_confianca,
+        model_type=detalhes.get("model_type"),
         feature_mode=detalhes.get("feature_mode"),
         canais_processados=list(detalhes.get("canais_processados", [])),
         canais_omitidos=list(detalhes.get("canais_omitidos", [])),
+        montagem_incompleta=bool(detalhes.get("montagem_incompleta", False)),
+        cobertura_excessiva=bool(detalhes.get("cobertura_excessiva", False)),
+        resultado_conclusivo=bool(detalhes.get("resultado_conclusivo", True)),
+        resultado_positivo_conclusivo=bool(detalhes.get("resultado_positivo_conclusivo", False)),
         canais_destaque=list(detalhes.get("canais_destaque", [])),
         n_janelas_analisadas=detalhes.get("n_janelas_analisadas"),
+        n_sequences_analisadas=detalhes.get("n_sequences_analisadas"),
         janela_pico=detalhes.get("janela_pico"),
         janelas_top=list(detalhes.get("janelas_top", [])),
+        trecho_suspeito=detalhes.get("trecho_suspeito"),
+        top_trechos_suspeitos=list(detalhes.get("top_trechos_suspeitos", [])),
+        threshold=detalhes.get("threshold"),
+        min_duration_seconds=detalhes.get("min_duration_seconds"),
+        max_suspicious_coverage=detalhes.get("max_suspicious_coverage"),
         score_agregacao=detalhes.get("score_agregacao"),
         mapa_shap_url=mapa_shap_url,
         data_analise=predicao.data_analise,

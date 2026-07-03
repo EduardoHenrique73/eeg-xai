@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { salvarLaudo } from '../../api/exames'
+import type { TrechoSuspeito } from '../../types/api'
 import { useToast } from '../../contexts/ToastContext'
 import { AnaliseLoadingOverlay } from '../visualizador/AnaliseLoadingOverlay'
 import { CanalSelector } from '../visualizador/CanalSelector'
@@ -22,6 +23,10 @@ interface IaLaudoPanelProps {
   featureMode?: string | null
   canaisProcessados?: string[]
   canaisOmitidos?: string[]
+  montagemIncompleta?: boolean
+  coberturaExcessiva?: boolean
+  resultadoConclusivo?: boolean
+  resultadoPositivoConclusivo?: boolean
   canaisDestaque?: Array<{
     canal: string
     score: number
@@ -39,6 +44,12 @@ interface IaLaudoPanelProps {
     end_seconds: number
     score: number
   }>
+  trechoSuspeito?: TrechoSuspeito | null
+  topTrechosSuspeitos?: TrechoSuspeito[]
+  modelType?: string | null
+  nSequencesAnalisadas?: number | null
+  minDurationSeconds?: number | null
+  decisionThreshold?: number | null
   laudoTextoInicial?: string | null
   statusExameInicial?: string | null
   erro?: string | null
@@ -60,10 +71,20 @@ export function IaLaudoPanel({
   featureMode,
   canaisProcessados = [],
   canaisOmitidos = [],
+  montagemIncompleta = false,
+  coberturaExcessiva = false,
+  resultadoConclusivo = true,
+  resultadoPositivoConclusivo = false,
   canaisDestaque = [],
   nJanelasAnalisadas,
   janelaPico,
   janelasTop = [],
+  trechoSuspeito,
+  topTrechosSuspeitos = [],
+  modelType,
+  nSequencesAnalisadas,
+  minDurationSeconds,
+  decisionThreshold,
   laudoTextoInicial,
   statusExameInicial,
   erro,
@@ -208,6 +229,52 @@ export function IaLaudoPanel({
               {featureMode === 'per_channel' ? 'Analise por canal' : 'Analise agregada'}
             </p>
 
+            {modelType === 'sequence_cnn_lstm' && (
+              <div className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-accent-dark">
+                  Modelo sequencial global (inter-paciente)
+                </p>
+                <p className="mt-1 text-xs text-clinical-600">
+                  Resultado de apoio à decisão por detecção de trechos contínuos
+                  suspeitos. Não constitui diagnóstico final.
+                </p>
+                {!resultadoConclusivo && (
+                  <p className="mt-2 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
+                    Resultado indeterminado: a IA nao gerou um positivo conclusivo para este exame.
+                  </p>
+                )}
+                {resultadoPositivoConclusivo && (
+                  <p className="mt-2 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-alert-crisis">
+                    Positivo conclusivo pelo criterio automatico; exige revisao medica do trecho destacado.
+                  </p>
+                )}
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-clinical-600">
+                  {nSequencesAnalisadas != null && (
+                    <span>
+                      sequências analisadas:{' '}
+                      <span className="font-medium text-clinical-700">{nSequencesAnalisadas}</span>
+                    </span>
+                  )}
+                  {decisionThreshold != null && (
+                    <span>
+                      threshold de decisão:{' '}
+                      <span className="font-medium text-clinical-700">
+                        {formatarPercentual(decisionThreshold) ?? '-'}
+                      </span>
+                    </span>
+                  )}
+                  {minDurationSeconds != null && (
+                    <span>
+                      duração mínima:{' '}
+                      <span className="font-medium text-clinical-700">
+                        {minDurationSeconds.toFixed(0)}s
+                      </span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             {nJanelasAnalisadas != null && nJanelasAnalisadas > 0 && (
               <div className="rounded-md bg-clinical-50 px-3 py-2">
                 <p>
@@ -239,6 +306,115 @@ export function IaLaudoPanel({
                       <span className="text-clinical-600">
                         score {formatarPercentual(janela.score) ?? '-'}
                       </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {trechoSuspeito && (
+              <div className="rounded-md bg-clinical-50 px-3 py-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-clinical-800">Trecho continuo suspeito</p>
+                    <p className="mt-1 text-xs text-clinical-600">
+                      {formatarTempo(trechoSuspeito.start_seconds)} - {formatarTempo(trechoSuspeito.end_seconds)}
+                      {' '}({trechoSuspeito.duration_seconds.toFixed(1)}s, {trechoSuspeito.n_janelas} janelas)
+                    </p>
+                  </div>
+                  <span
+                    className={[
+                      'rounded-md px-2 py-1 text-xs font-semibold',
+                      trechoSuspeito.atingiu_duracao_minima
+                        ? 'bg-red-50 text-alert-crisis'
+                        : 'bg-amber-50 text-amber-700',
+                    ].join(' ')}
+                  >
+                    {trechoSuspeito.atingiu_duracao_minima ? 'duracao relevante' : 'trecho curto'}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-clinical-600">
+                  {trechoSuspeito.coverage_ratio != null && (
+                    <span>
+                      cobertura do exame:{' '}
+                      <span className="font-medium text-clinical-700">
+                        {formatarPercentual(trechoSuspeito.coverage_ratio) ?? '-'}
+                      </span>
+                    </span>
+                  )}
+                  <span>
+                    score medio:{' '}
+                    <span className="font-medium text-clinical-700">
+                      {formatarPercentual(trechoSuspeito.score_medio) ?? '-'}
+                    </span>
+                  </span>
+                  <span>
+                    maior score:{' '}
+                    <span className="font-medium text-clinical-700">
+                      {formatarPercentual(trechoSuspeito.score_max) ?? '-'}
+                    </span>
+                  </span>
+                  <span>
+                    corte por janela:{' '}
+                    <span className="font-medium text-clinical-700">
+                      {formatarPercentual(trechoSuspeito.threshold) ?? '-'}
+                    </span>
+                  </span>
+                </div>
+                {trechoSuspeito.cobertura_excessiva && (
+                  <p className="mt-2 text-xs font-medium text-amber-700">
+                    Cobertura suspeita extensa demais para conclusao automatica; revisar o exame antes de interpretar como crise.
+                  </p>
+                )}
+                {coberturaExcessiva && !trechoSuspeito.cobertura_excessiva && (
+                  <p className="mt-2 text-xs font-medium text-amber-700">
+                    A regra global marcou cobertura excessiva e bloqueou conclusao automatica.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {topTrechosSuspeitos.length > 1 && (
+              <div>
+                <p className="font-medium text-clinical-800">Top trechos suspeitos</p>
+                <p className="mt-1 text-xs text-clinical-500">
+                  Trechos contínuos ordenados por duração e score médio.
+                </p>
+                <div className="mt-2 space-y-2">
+                  {topTrechosSuspeitos.map((trecho, indice) => (
+                    <div
+                      key={`${trecho.start_seconds}-${trecho.end_seconds}-${indice}`}
+                      className="rounded-md bg-clinical-50 px-3 py-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-medium text-clinical-700">
+                          {indice + 1}. {formatarTempo(trecho.start_seconds)} - {formatarTempo(trecho.end_seconds)}
+                        </span>
+                        <span
+                          className={[
+                            'rounded px-2 py-0.5 font-semibold',
+                            trecho.atingiu_duracao_minima
+                              ? 'bg-red-50 text-alert-crisis'
+                              : 'bg-amber-50 text-amber-700',
+                          ].join(' ')}
+                        >
+                          {trecho.duration_seconds.toFixed(1)}s
+                        </span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-clinical-600">
+                        <span>
+                          score médio:{' '}
+                          <span className="font-medium text-clinical-700">
+                            {formatarPercentual(trecho.score_medio) ?? '-'}
+                          </span>
+                        </span>
+                        <span>
+                          maior score:{' '}
+                          <span className="font-medium text-clinical-700">
+                            {formatarPercentual(trecho.score_max) ?? '-'}
+                          </span>
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -305,6 +481,11 @@ export function IaLaudoPanel({
                 <p className="mt-1 text-xs text-clinical-500">
                   Estes canais nao entraram no calculo atual e nao influenciaram o score.
                 </p>
+                {montagemIncompleta && (
+                  <p className="mt-1 text-xs font-medium text-amber-700">
+                    O modelo por canal foi treinado com a montagem completa; uma analise parcial reduz a confiabilidade do resultado.
+                  </p>
+                )}
                 <div className="mt-2 flex flex-wrap gap-2">
                   {canaisOmitidos.map((canal) => (
                     <span

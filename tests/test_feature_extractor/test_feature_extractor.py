@@ -8,9 +8,14 @@ import pytest
 
 from app.ai_engine.feature_extractor import (
     FEATURE_NAMES,
+    FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    RAW_SIGNAL_FEATURE_NAMES,
+    TIME_FREQUENCY_FEATURE_NAMES,
     carregar_sinal_edf,
+    extrair_features_por_modo_de_valores,
     extrair_features_de_valores,
     extrair_features_edf,
+    nomes_features_por_modo,
     selecionar_canais_eeg_validos,
 )
 from app.ai_engine.symbolic_dynamics import (
@@ -94,6 +99,38 @@ class TestExtrairFeatures:
     def test_sinal_curto_demais_levanta_erro(self):
         with pytest.raises(ValueError, match="Frequencias de padroes vazias"):
             extrair_features_de_valores(np.array([1.0, 2.0]))
+
+    def test_features_tempo_frequencia_tem_dimensao_fixa(self):
+        sfreq = 128.0
+        t = np.arange(0, 4.0, 1.0 / sfreq)
+        sinal = np.sin(2 * np.pi * 10 * t)
+
+        features = extrair_features_por_modo_de_valores(
+            sinal,
+            feature_mode="time_frequency",
+            sfreq=sfreq,
+        )
+
+        assert features["feature_names"] == TIME_FREQUENCY_FEATURE_NAMES
+        assert len(features["feature_vector"]) == len(TIME_FREQUENCY_FEATURE_NAMES)
+        assert features["potencia_alpha"] > features["potencia_delta"]
+
+    def test_features_sinal_bruto_tem_dimensao_fixa_e_normalizada(self):
+        sinal = np.linspace(-1.0, 1.0, 512)
+
+        features = extrair_features_por_modo_de_valores(
+            sinal,
+            feature_mode="raw_signal",
+            sfreq=128.0,
+        )
+
+        vetor = np.asarray(features["feature_vector"])
+        assert features["feature_names"] == RAW_SIGNAL_FEATURE_NAMES
+        assert vetor.shape == (128,)
+        assert np.std(vetor) == pytest.approx(1.0)
+
+    def test_nomes_features_tempo_frequencia_por_canal_usa_base_espectral(self):
+        assert nomes_features_por_modo(FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL) == TIME_FREQUENCY_FEATURE_NAMES
 
 
 class TestExtrairFeaturesEdf:

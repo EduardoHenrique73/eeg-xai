@@ -27,6 +27,11 @@ from app.ai_engine.inference import (
     obter_vetor_escalonado,
     realizar_inferencia,
 )
+from app.ai_engine.sequence_inference import (
+    RecursosSequenciais,
+    analisar_exame_sequencial,
+    carregar_recursos_sequenciais,
+)
 from app.ai_engine.shap_explainer import gerar_mapa_shap
 from app.config import Settings, get_settings
 from app.database import AsyncSessionLocal
@@ -40,6 +45,8 @@ ShapFn = Callable[..., str]
 
 WINDOW_SECONDS = 4.0
 STEP_SECONDS = 2.0
+SUSPICIOUS_WINDOW_THRESHOLD = 0.9
+MIN_SUSPICIOUS_DURATION_SECONDS = 10.0
 
 
 def _resolver_modelo_path(settings: Settings) -> str:
@@ -91,7 +98,7 @@ def _predizer_janelas(
     modelo: Any,
     scaler: Any,
     janelas: list[dict[str, Any]],
-) -> tuple[float, dict[str, Any], list[dict[str, float]]]:
+) -> tuple[float, dict[str, Any], list[dict[str, float]], dict[str, float | int | bool]]:
     vetores = np.asarray([janela["feature_vector"] for janela in janelas], dtype=np.float32)
     if scaler is not None:
         vetores = scaler.transform(vetores)
@@ -109,9 +116,84 @@ def _predizer_janelas(
         for i in indices_top
     ]
     indice_pico = int(indices_top[0])
-    score_agregado = float(np.mean(scores[indices_top]))
+    trecho_suspeito = _encontrar_melhor_trecho_suspeito(janelas, scores)
+    duracao_trecho = float(trecho_suspeito["duration_seconds"])
+    fator_continuidade = min(1.0, duracao_trecho / MIN_SUSPICIOUS_DURATION_SECONDS)
+    score_agregado = float(float(trecho_suspeito["score_medio"]) * fator_continuidade)
 
-    return score_agregado, janelas[indice_pico], janelas_top
+    return score_agregado, janelas[indice_pico], janelas_top, trecho_suspeito
+
+
+def _encontrar_melhor_trecho_suspeito(
+    janelas: list[dict[str, Any]],
+    scores: np.ndarray,
+    *,
+    threshold: float = SUSPICIOUS_WINDOW_THRESHOLD,
+) -> dict[str, float | int | bool]:
+    melhor: dict[str, float | int | bool] | None = None
+    inicio_run: int | None = None
+
+    def fechar_run(fim_exclusivo: int) -> None:
+        nonlocal melhor, inicio_run
+        if inicio_run is None:
+            return
+
+        indices = np.arange(inicio_run, fim_exclusivo)
+        inicio = float(janelas[int(indices[0])].get("window_start_seconds", 0.0))
+        fim = float(janelas[int(indices[-1])].get("window_end_seconds", inicio))
+        score_medio = float(np.mean(scores[indices]))
+        score_max = float(np.max(scores[indices]))
+        candidato = {
+            "start_seconds": inicio,
+            "end_seconds": fim,
+            "duration_seconds": float(max(0.0, fim - inicio)),
+            "n_janelas": int(len(indices)),
+            "score_medio": score_medio,
+            "score_max": score_max,
+            "threshold": float(threshold),
+            "atingiu_duracao_minima": bool((fim - inicio) >= MIN_SUSPICIOUS_DURATION_SECONDS),
+        }
+        if melhor is None:
+            melhor = candidato
+        else:
+            chave_candidato = (
+                float(candidato["duration_seconds"]),
+                float(candidato["score_medio"]),
+                float(candidato["score_max"]),
+            )
+            chave_melhor = (
+                float(melhor["duration_seconds"]),
+                float(melhor["score_medio"]),
+                float(melhor["score_max"]),
+            )
+            if chave_candidato > chave_melhor:
+                melhor = candidato
+        inicio_run = None
+
+    for idx, score in enumerate(scores):
+        if float(score) >= threshold:
+            if inicio_run is None:
+                inicio_run = idx
+        else:
+            fechar_run(idx)
+    fechar_run(len(scores))
+
+    if melhor is not None:
+        return melhor
+
+    indice_pico = int(np.argmax(scores))
+    inicio = float(janelas[indice_pico].get("window_start_seconds", 0.0))
+    fim = float(janelas[indice_pico].get("window_end_seconds", inicio))
+    return {
+        "start_seconds": inicio,
+        "end_seconds": fim,
+        "duration_seconds": float(max(0.0, fim - inicio)),
+        "n_janelas": 1,
+        "score_medio": float(scores[indice_pico]),
+        "score_max": float(scores[indice_pico]),
+        "threshold": float(threshold),
+        "atingiu_duracao_minima": False,
+    }
 
 
 def _resumir_canais_por_ablacao(
@@ -188,6 +270,8 @@ def _montar_detalhes_predicao(
         }
     if "janelas_top" in features:
         detalhes["janelas_top"] = list(features.get("janelas_top", []))
+    if "trecho_suspeito" in features:
+        detalhes["trecho_suspeito"] = dict(features.get("trecho_suspeito", {}))
     if "n_janelas_analisadas" in features:
         detalhes["n_janelas_analisadas"] = int(features.get("n_janelas_analisadas", 0))
     if "score_agregacao" in features:
@@ -202,6 +286,67 @@ def _montar_detalhes_predicao(
     else:
         detalhes["canais_destaque"] = []
     return detalhes
+
+
+def _detalhes_sequenciais(resultado: dict[str, Any]) -> dict[str, Any]:
+    """Mapeia o resultado do pipeline sequencial para o JSON de detalhes."""
+    return {
+        "model_type": resultado.get("model_type", "sequence_cnn_lstm"),
+        "classificacao_clinica": resultado.get("classificacao_clinica"),
+        "feature_mode": resultado.get("feature_mode"),
+        "canais_processados": list(resultado.get("canais_processados", [])),
+        "canais_omitidos": list(resultado.get("canais_omitidos", [])),
+        "montagem_incompleta": bool(resultado.get("montagem_incompleta", False)),
+        "canais_destaque": [],
+        "threshold": resultado.get("threshold"),
+        "min_duration_seconds": resultado.get("min_duration_seconds"),
+        "max_suspicious_coverage": resultado.get("max_suspicious_coverage"),
+        "n_janelas_analisadas": resultado.get("n_janelas_analisadas"),
+        "n_sequences_analisadas": resultado.get("n_sequences_analisadas"),
+        "score_agregacao": resultado.get("score_agregacao"),
+        "janela_pico": resultado.get("janela_pico"),
+        "trecho_suspeito": resultado.get("trecho_suspeito"),
+        "top_trechos_suspeitos": list(resultado.get("top_trechos_suspeitos", [])),
+    }
+
+
+async def _processar_exame_sequencial(
+    session: Any,
+    exame: Exame,
+    exame_id: int,
+    *,
+    recursos: RecursosSequenciais,
+    settings: Settings,
+    canais_selecionados: list[str] | None,
+) -> None:
+    """Fluxo do modelo sequencial global (sem SHAP, com trechos suspeitos)."""
+    logger.info("Usando modelo sequencial (global) para exame %s", exame_id)
+    resultado = await asyncio.to_thread(
+        analisar_exame_sequencial,
+        exame.arquivo_path,
+        recursos=recursos,
+        settings=settings,
+        canais_selecionados=canais_selecionados,
+    )
+
+    score = float(resultado["score_geral"])
+    detalhes = _detalhes_sequenciais(resultado)
+    logger.info(
+        "Inferencia sequencial concluida para exame %s - score=%.4f, %d sequencias",
+        exame_id,
+        score,
+        int(resultado.get("n_sequences_analisadas", 0)),
+    )
+
+    predicao = PredicaoIA(
+        id_exame=exame_id,
+        resultado_score=score,
+        mapa_shap_path="",
+        detalhes_json=json.dumps(detalhes, ensure_ascii=False),
+    )
+    session.add(predicao)
+    await session.commit()
+    logger.info("PredicaoIA (sequencial) salva para exame %s", exame_id)
 
 
 async def processar_exame_ia(
@@ -233,6 +378,28 @@ async def processar_exame_ia(
                 logger.error("Arquivo EDF ausente para exame %s: %s", exame_id, exame.arquivo_path)
                 return
 
+            usar_sequencial = (
+                extrair_features is None
+                and inferir is None
+                and settings.usar_modelo_sequencial
+            )
+            if usar_sequencial:
+                recursos = await asyncio.to_thread(carregar_recursos_sequenciais, settings)
+                if recursos is not None:
+                    await _processar_exame_sequencial(
+                        session,
+                        exame,
+                        exame_id,
+                        recursos=recursos,
+                        settings=settings,
+                        canais_selecionados=canais_selecionados,
+                    )
+                    return
+                logger.warning(
+                    "Modelo sequencial indisponivel - fallback legado para exame %s",
+                    exame_id,
+                )
+
             modelo_path = _resolver_modelo_path(settings)
             model_metadata = obter_metadados_modelo(modelo_path)
             feature_mode = str(model_metadata.get("feature_mode") or FEATURE_MODE_MEAN)
@@ -255,7 +422,7 @@ async def processar_exame_ia(
                 if not janelas:
                     raise ValueError("Nenhuma janela temporal foi gerada para inferencia.")
 
-                score, features, janelas_top = await asyncio.to_thread(
+                score, features, janelas_top, trecho_suspeito = await asyncio.to_thread(
                     _predizer_janelas,
                     modelo=modelo,
                     scaler=scaler,
@@ -263,8 +430,9 @@ async def processar_exame_ia(
                 )
                 features["n_janelas_analisadas"] = len(janelas)
                 features["janelas_top"] = janelas_top
+                features["trecho_suspeito"] = trecho_suspeito
                 features["score_pico"] = float(janelas_top[0]["score"])
-                features["score_agregacao"] = "top5_mean"
+                features["score_agregacao"] = "continuous_suspicious_segment"
             else:
                 features = await asyncio.to_thread(
                     extrair,

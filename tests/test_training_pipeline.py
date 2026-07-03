@@ -5,6 +5,7 @@ import pytest
 
 from app.ai_engine.training import (
     FEATURE_MODE_PER_CHANNEL,
+    FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
     SeizureInterval,
     avaliar_kfold_cnn_lstm,
     avaliar_kfold_features,
@@ -16,6 +17,66 @@ from app.ai_engine.training import (
     parse_chbmit_summary,
     treinar_cnn_lstm_final,
 )
+from app.ai_engine.feature_extractor import FEATURE_NAMES, TIME_FREQUENCY_FEATURE_NAMES
+from scripts.calibrate_sequence_cnn_lstm import avaliar_combo, intervalos_crise_reais, listar_runs
+from scripts.train_sequence_cnn_lstm import construir_sequencias, resolver_class_weight
+
+
+def test_resolver_class_weight_permite_peso_manual_e_desativado():
+    y = np.asarray([0, 0, 0, 1], dtype=np.int64)
+
+    assert resolver_class_weight(y, mode="none", positive_weight=2.0) is None
+    assert resolver_class_weight(y, mode="manual", positive_weight=3.0) == {
+        0: 1.0,
+        1: 3.0,
+    }
+
+    balanced = resolver_class_weight(y, mode="balanced", positive_weight=2.0)
+    assert balanced is not None
+    assert balanced[1] > balanced[0]
+
+
+def test_construir_sequencias_nao_atravessa_buracos_temporais():
+    x = np.ones((4, 2), dtype=np.float32)
+    y = np.asarray([0, 0, 1, 1], dtype=np.int64)
+    meta = [
+        {"arquivo": "chb01_01.edf", "start_seconds": 0.0, "end_seconds": 10.0},
+        {"arquivo": "chb01_01.edf", "start_seconds": 10.0, "end_seconds": 20.0},
+        {"arquivo": "chb01_01.edf", "start_seconds": 100.0, "end_seconds": 110.0},
+        {"arquivo": "chb01_01.edf", "start_seconds": 110.0, "end_seconds": 120.0},
+    ]
+
+    x_seq, y_seq, meta_seq = construir_sequencias(
+        x,
+        y,
+        meta,
+        sequence_length=2,
+        sequence_stride=1,
+    )
+
+    assert x_seq.shape == (2, 2, 2)
+    assert y_seq.tolist() == [0, 1]
+    assert [(m["start_seconds"], m["end_seconds"]) for m in meta_seq] == [
+        (0.0, 20.0),
+        (100.0, 120.0),
+    ]
+
+
+def test_listar_runs_nao_junta_buracos_temporais():
+    scores = np.asarray([0.9, 0.92, 0.91], dtype=np.float32)
+    metas = [
+        {"start_seconds": 0.0, "end_seconds": 10.0},
+        {"start_seconds": 10.0, "end_seconds": 20.0},
+        {"start_seconds": 100.0, "end_seconds": 110.0},
+    ]
+
+    runs = listar_runs(scores, metas, np.asarray([0, 1, 2]), threshold=0.5)
+
+    assert len(runs) == 2
+    assert {(run["start_seconds"], run["end_seconds"]) for run in runs} == {
+        (0.0, 20.0),
+        (100.0, 110.0),
+    }
 
 
 def test_parse_chbmit_summary_extrai_intervalos(tmp_path):
@@ -117,6 +178,132 @@ def test_extrair_dataset_janelado_de_sinal_gera_features_e_labels():
     assert set(y.tolist()) == {0, 1}
 
 
+def test_extrair_dataset_janelado_de_sinal_limite_preserva_janelas_continuas():
+    sfreq = 10.0
+    signal = np.sin(np.linspace(0, 20 * np.pi, 300))
+
+    _x, y, meta = extrair_dataset_janelado_de_sinal(
+        signal,
+        sfreq,
+        [],
+        window_seconds=10.0,
+        step_seconds=10.0,
+        max_windows_per_class=None,
+        max_normal_windows=3,
+    )
+
+    assert y.tolist() == [0, 0, 0]
+    assert [(m["start_seconds"], m["end_seconds"]) for m in meta] == [
+        (0.0, 10.0),
+        (10.0, 20.0),
+        (20.0, 30.0),
+    ]
+
+
+def test_extrair_dataset_janelado_de_sinal_normais_perto_da_crise():
+    sfreq = 10.0
+    signal = np.sin(np.linspace(0, 80 * np.pi, 1200))
+
+    _x, y, meta = extrair_dataset_janelado_de_sinal(
+        signal,
+        sfreq,
+        [SeizureInterval(60.0, 70.0)],
+        window_seconds=10.0,
+        step_seconds=10.0,
+        max_windows_per_class=None,
+        max_normal_windows=2,
+        max_seizure_windows=1,
+    )
+
+    normais = [m for m in meta if m["label"] == 0]
+    assert y.tolist().count(1) == 1
+    assert [(m["start_seconds"], m["end_seconds"]) for m in normais] == [
+        (50.0, 60.0),
+        (70.0, 80.0),
+    ]
+
+
+def test_extrair_dataset_janelado_de_sinal_balanceia_contextos_da_crise():
+    sfreq = 10.0
+    signal = np.sin(np.linspace(0, 160 * np.pi, 2400))
+
+    _x, _y, meta = extrair_dataset_janelado_de_sinal(
+        signal,
+        sfreq,
+        [SeizureInterval(100.0, 120.0)],
+        window_seconds=10.0,
+        step_seconds=10.0,
+        max_windows_per_class=None,
+        max_normal_windows=6,
+        max_seizure_windows=2,
+    )
+
+    contextos_normais = {m["context"] for m in meta if m["label"] == 0}
+    assert {"pre_ictal", "post_ictal", "interictal"}.issubset(contextos_normais)
+    assert [m["context"] for m in meta if m["label"] == 1] == ["ictal", "ictal"]
+
+
+def test_extrair_dataset_janelado_de_sinal_normal_espalha_blocos():
+    sfreq = 10.0
+    signal = np.sin(np.linspace(0, 80 * np.pi, 1200))
+
+    _x, y, meta = extrair_dataset_janelado_de_sinal(
+        signal,
+        sfreq,
+        [],
+        window_seconds=10.0,
+        step_seconds=10.0,
+        max_windows_per_class=None,
+        max_normal_windows=4,
+    )
+
+    assert y.tolist() == [0, 0, 0, 0]
+    assert [m["start_seconds"] for m in meta] == [0.0, 30.0, 70.0, 110.0]
+
+
+def test_avaliar_combo_penaliza_overlap_baixo_por_proporcao():
+    y = np.asarray([0, 1, 1, 1], dtype=np.int64)
+    scores = np.asarray([0.9, 0.9, 0.1, 0.1], dtype=np.float32)
+    metas = [
+        {"arquivo": "chb01_03.edf", "start_seconds": 0.0, "end_seconds": 10.0},
+        {"arquivo": "chb01_03.edf", "start_seconds": 10.0, "end_seconds": 20.0},
+        {"arquivo": "chb01_03.edf", "start_seconds": 20.0, "end_seconds": 30.0},
+        {"arquivo": "chb01_03.edf", "start_seconds": 30.0, "end_seconds": 40.0},
+    ]
+
+    resultado = avaliar_combo(
+        y,
+        scores,
+        metas,
+        threshold=0.5,
+        min_duration_seconds=10.0,
+        min_overlap_seconds=1.0,
+        min_overlap_ratio=0.5,
+    )
+
+    assert resultado["metrics"]["recall"] == 1.0
+    assert resultado["localized_metrics"]["recall"] == 0.0
+    assert resultado["positive_predictions_without_overlap"] == 1
+    assert resultado["files"][0]["trecho_suspeito"]["overlap_crise_real_ratio"] == pytest.approx(1 / 3)
+
+
+def test_intervalos_crise_reais_separa_multiplas_crises():
+    y = np.asarray([1, 1, 0, 1], dtype=np.int64)
+    metas = [
+        {"start_seconds": 0.0, "end_seconds": 10.0},
+        {"start_seconds": 10.0, "end_seconds": 20.0},
+        {"start_seconds": 20.0, "end_seconds": 30.0},
+        {"start_seconds": 100.0, "end_seconds": 110.0},
+    ]
+
+    segmentos = intervalos_crise_reais(y, metas, np.asarray([0, 1, 2, 3]))
+
+    assert segmentos == [
+        {"start_seconds": 0.0, "end_seconds": 20.0, "n_sequences": 2},
+        {"start_seconds": 100.0, "end_seconds": 110.0, "n_sequences": 1},
+    ]
+
+
 def test_extrair_dataset_janelado_multicanal_preserva_features_por_canal():
     sfreq = 10.0
     base = np.sin(np.linspace(0, 20 * np.pi, 300))
@@ -135,11 +322,12 @@ def test_extrair_dataset_janelado_multicanal_preserva_features_por_canal():
     assert set(y.tolist()) == {0, 1}
 
 
-def test_extrair_dataset_janelado_edf_per_channel_requer_mesmos_canais(monkeypatch, tmp_path):
+def test_extrair_dataset_janelado_edf_per_channel_zera_canal_ausente(monkeypatch, tmp_path):
     class RawFake:
         def __init__(self) -> None:
             self.ch_names = ["A", "B"]
             self.info = {"sfreq": 10.0}
+            self.n_times = 100
 
         def pick(self, picks):
             if picks == "eeg":
@@ -147,21 +335,62 @@ def test_extrair_dataset_janelado_edf_per_channel_requer_mesmos_canais(monkeypat
             self.ch_names = list(picks)
             return self
 
-        def get_data(self):
-            return np.vstack([np.arange(100, dtype=float), np.arange(100, dtype=float)])
+        def get_data(self, picks=None, start=0, stop=None):
+            fim = self.n_times if stop is None else stop
+            return np.vstack([np.arange(start, fim, dtype=float), np.arange(start, fim, dtype=float)])
 
     monkeypatch.setattr("mne.io.read_raw_edf", lambda *args, **kwargs: RawFake())
 
     caminho = tmp_path / "falso.edf"
     caminho.write_text("stub", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="Canais EEG invalidos"):
-        extrair_dataset_janelado_edf(
-            caminho,
-            [],
-            canais_selecionados=["CANAL-INEXISTENTE"],
-            feature_mode=FEATURE_MODE_PER_CHANNEL,
-        )
+    x, y, meta = extrair_dataset_janelado_edf(
+        caminho,
+        [],
+        canais_selecionados=["CANAL-INEXISTENTE"],
+        feature_mode=FEATURE_MODE_PER_CHANNEL,
+    )
+
+    assert x.shape == (1, len(FEATURE_NAMES))
+    assert np.allclose(x[0], 0.0)
+    assert y.tolist() == [0]
+    assert meta[0]["canais_omitidos"] == ["CANAL-INEXISTENTE"]
+
+
+def test_extrair_dataset_janelado_edf_time_frequency_per_channel_zera_canal_ausente(monkeypatch, tmp_path):
+    class RawFake:
+        def __init__(self) -> None:
+            self.ch_names = ["A", "B"]
+            self.info = {"sfreq": 64.0}
+            self.n_times = 640
+
+        def pick(self, picks):
+            if picks == "eeg":
+                return self
+            self.ch_names = list(picks)
+            return self
+
+        def get_data(self, picks=None, start=0, stop=None):
+            fim = self.n_times if stop is None else stop
+            t = np.arange(start, fim, dtype=float) / self.info["sfreq"]
+            return np.vstack([np.sin(2 * np.pi * 10 * t), np.sin(2 * np.pi * 10 * t)])
+
+    monkeypatch.setattr("mne.io.read_raw_edf", lambda *args, **kwargs: RawFake())
+
+    caminho = tmp_path / "falso.edf"
+    caminho.write_text("stub", encoding="utf-8")
+
+    x, y, meta = extrair_dataset_janelado_edf(
+        caminho,
+        [],
+        canais_selecionados=["CANAL-INEXISTENTE"],
+        feature_mode=FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    )
+
+    assert x.shape == (1, len(TIME_FREQUENCY_FEATURE_NAMES))
+    assert np.allclose(x[0], 0.0)
+    assert y.tolist() == [0]
+    assert meta[0]["canais_omitidos"] == ["CANAL-INEXISTENTE"]
 
 
 def test_avaliar_kfold_features_retorna_metricas():

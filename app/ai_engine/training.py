@@ -23,6 +23,11 @@ from sklearn.preprocessing import StandardScaler
 
 from app.ai_engine.feature_extractor import (
     FEATURE_NAMES,
+    FEATURE_MODE_RAW_SIGNAL,
+    FEATURE_MODE_TIME_FREQUENCY,
+    FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    nomes_features_por_modo,
+    extrair_features_por_modo_de_valores,
     extrair_features_de_valores,
     selecionar_canais_eeg_validos,
 )
@@ -40,6 +45,7 @@ class WindowSpec:
     start_seconds: float
     end_seconds: float
     label: int
+    context: str = "unknown"
 
 
 FEATURE_MODE_MEAN = "mean"
@@ -117,6 +123,26 @@ def window_overlaps_seizure(
     )
 
 
+def classificar_contexto_janela(
+    start_seconds: float,
+    end_seconds: float,
+    intervals: list[SeizureInterval],
+    *,
+    context_margin_seconds: float = 60.0,
+) -> str:
+    if not intervals:
+        return "normal_file"
+    if window_overlaps_seizure(start_seconds, end_seconds, intervals):
+        return "ictal"
+
+    for interval in intervals:
+        if interval.start_seconds - context_margin_seconds <= end_seconds <= interval.start_seconds:
+            return "pre_ictal"
+        if interval.end_seconds <= start_seconds <= interval.end_seconds + context_margin_seconds:
+            return "post_ictal"
+    return "interictal"
+
+
 def gerar_janelas_temporais(
     duration_seconds: float,
     intervals: list[SeizureInterval],
@@ -143,6 +169,7 @@ def gerar_janelas_temporais(
                 start_seconds=start,
                 end_seconds=end,
                 label=1 if window_overlaps_seizure(start, end, intervals) else 0,
+                context=classificar_contexto_janela(start, end, intervals),
             )
         )
         start += step_seconds
@@ -159,6 +186,87 @@ def _limitar_janelas_por_classe(
     if max_windows_per_class is None and max_normal_windows is None and max_seizure_windows is None:
         return specs
 
+    def selecionar_blocos_uniformes(classe: list[WindowSpec], limite: int) -> list[WindowSpec]:
+        if len(classe) <= limite:
+            return classe
+        if limite <= 0:
+            return []
+        if limite == 1:
+            return [classe[len(classe) // 2]]
+
+        n_blocos = min(4, limite, len(classe))
+        tamanho_bloco = max(1, limite // n_blocos)
+        sobras = limite - (tamanho_bloco * n_blocos)
+        inicios = np.linspace(0, len(classe) - 1, n_blocos, dtype=int)
+        selecionadas: list[WindowSpec] = []
+        usados: set[tuple[float, float]] = set()
+        for bloco_idx, centro in enumerate(inicios):
+            atual_tamanho = tamanho_bloco + (1 if bloco_idx < sobras else 0)
+            inicio = int(max(0, min(len(classe) - atual_tamanho, centro - atual_tamanho // 2)))
+            for spec in classe[inicio : inicio + atual_tamanho]:
+                chave = (spec.start_seconds, spec.end_seconds)
+                if chave not in usados:
+                    selecionadas.append(spec)
+                    usados.add(chave)
+
+        if len(selecionadas) < limite:
+            for spec in classe:
+                chave = (spec.start_seconds, spec.end_seconds)
+                if chave in usados:
+                    continue
+                selecionadas.append(spec)
+                usados.add(chave)
+                if len(selecionadas) >= limite:
+                    break
+        return selecionadas[:limite]
+
+    def selecionar_normais_contextuais(classe: list[WindowSpec], positivos: list[WindowSpec], limite: int) -> list[WindowSpec]:
+        if len(classe) <= limite:
+            return classe
+        if not positivos:
+            return selecionar_blocos_uniformes(classe, limite)
+
+        grupos = {
+            "pre_ictal": sorted(
+                [spec for spec in classe if spec.context == "pre_ictal"],
+                key=lambda spec: spec.start_seconds,
+                reverse=True,
+            ),
+            "post_ictal": sorted(
+                [spec for spec in classe if spec.context == "post_ictal"],
+                key=lambda spec: spec.start_seconds,
+            ),
+            "interictal": [spec for spec in classe if spec.context == "interictal"],
+        }
+        pesos = {"pre_ictal": 0.35, "post_ictal": 0.35, "interictal": 0.30}
+        selecionadas: list[WindowSpec] = []
+        usados: set[tuple[float, float]] = set()
+
+        for contexto, peso in pesos.items():
+            alvo = max(1, int(round(limite * peso))) if grupos[contexto] else 0
+            if contexto == "interictal":
+                candidatos = selecionar_blocos_uniformes(grupos[contexto], alvo)
+            else:
+                candidatos = grupos[contexto][:alvo]
+            for spec in candidatos:
+                chave = (spec.start_seconds, spec.end_seconds)
+                if chave not in usados:
+                    selecionadas.append(spec)
+                    usados.add(chave)
+
+        if len(selecionadas) < limite:
+            for contexto in ("pre_ictal", "post_ictal", "interictal"):
+                for spec in grupos[contexto]:
+                    chave = (spec.start_seconds, spec.end_seconds)
+                    if chave in usados:
+                        continue
+                    selecionadas.append(spec)
+                    usados.add(chave)
+                    if len(selecionadas) >= limite:
+                        return selecionadas
+        return selecionadas[:limite]
+
+    positivos = [spec for spec in specs if spec.label == 1]
     selecionadas: list[WindowSpec] = []
     for label in (0, 1):
         limite = max_normal_windows if label == 0 else max_seizure_windows
@@ -172,8 +280,10 @@ def _limitar_janelas_por_classe(
         if len(classe) <= limite:
             selecionadas.extend(classe)
             continue
-        indices = np.linspace(0, len(classe) - 1, limite, dtype=int)
-        selecionadas.extend(classe[int(i)] for i in indices)
+        if label == 0:
+            selecionadas.extend(selecionar_normais_contextuais(classe, positivos, limite))
+        else:
+            selecionadas.extend(selecionar_blocos_uniformes(classe, limite))
 
     return sorted(selecionadas, key=lambda spec: spec.start_seconds)
 
@@ -188,6 +298,7 @@ def extrair_dataset_janelado_de_sinal(
     max_windows_per_class: int | None = None,
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
+    feature_mode: str = FEATURE_MODE_MEAN,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     """Extrai matriz X/y de features a partir de um sinal 1D ja carregado."""
     sinal = np.asarray(signal, dtype=float).ravel()
@@ -216,14 +327,19 @@ def extrair_dataset_janelado_de_sinal(
         if janela.size < 4:
             continue
 
-        features = extrair_features_de_valores(janela)
-        x_rows.append([float(features[nome]) for nome in FEATURE_NAMES])
+        features = extrair_features_por_modo_de_valores(
+            janela,
+            feature_mode=feature_mode,
+            sfreq=sfreq,
+        )
+        x_rows.append([float(v) for v in features["feature_vector"]])
         y_rows.append(spec.label)
         metadados.append(
             {
                 "start_seconds": spec.start_seconds,
                 "end_seconds": spec.end_seconds,
                 "label": spec.label,
+                "context": spec.context,
             }
         )
 
@@ -238,6 +354,23 @@ def _extrair_vetor_por_canal(janela_canais: np.ndarray) -> list[float]:
     return vetor
 
 
+def _extrair_vetor_por_canal_modo(
+    janela_canais: np.ndarray,
+    *,
+    sfreq: float,
+    feature_mode: str,
+) -> list[float]:
+    vetor: list[float] = []
+    for sinal_canal in np.asarray(janela_canais, dtype=float):
+        features = extrair_features_por_modo_de_valores(
+            sinal_canal,
+            feature_mode=feature_mode,
+            sfreq=sfreq,
+        )
+        vetor.extend(float(v) for v in features["feature_vector"])
+    return vetor
+
+
 def extrair_dataset_janelado_multicanal(
     sinais: np.ndarray,
     sfreq: float,
@@ -248,12 +381,13 @@ def extrair_dataset_janelado_multicanal(
     max_windows_per_class: int | None = None,
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
+    feature_mode: str = FEATURE_MODE_PER_CHANNEL,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     """
     Extrai features por canal para cada janela sem colapsar o EEG em media global.
 
     Shape de entrada esperado: (n_canais, n_amostras).
-    Shape de saida: (n_janelas, n_canais * len(FEATURE_NAMES)).
+    Shape de saida: (n_janelas, n_canais * n_features_por_canal).
     """
     matriz = np.asarray(sinais, dtype=float)
     if matriz.ndim != 2:
@@ -288,14 +422,103 @@ def extrair_dataset_janelado_multicanal(
         if janela.shape[1] < 4:
             continue
 
-        x_rows.append(_extrair_vetor_por_canal(janela))
+        if feature_mode == FEATURE_MODE_PER_CHANNEL:
+            x_rows.append(_extrair_vetor_por_canal(janela))
+        else:
+            x_rows.append(
+                _extrair_vetor_por_canal_modo(
+                    janela,
+                    sfreq=sfreq,
+                    feature_mode=feature_mode,
+                )
+            )
         y_rows.append(spec.label)
         metadados.append(
             {
                 "start_seconds": spec.start_seconds,
                 "end_seconds": spec.end_seconds,
                 "label": spec.label,
+                "context": spec.context,
                 "n_canais": int(n_canais),
+            }
+        )
+
+    return np.asarray(x_rows, dtype=np.float32), np.asarray(y_rows, dtype=np.int64), metadados
+
+
+def extrair_dataset_janelado_multicanal_referencia(
+    raw: mne.io.BaseRaw,
+    intervals: list[SeizureInterval],
+    canais_referencia: list[str],
+    *,
+    window_seconds: float = 10.0,
+    step_seconds: float = 5.0,
+    max_windows_per_class: int | None = None,
+    max_normal_windows: int | None = None,
+    max_seizure_windows: int | None = None,
+    feature_mode: str = FEATURE_MODE_PER_CHANNEL,
+) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
+    """Extrai features por canal em uma montagem fixa, zerando canais ausentes."""
+    if not canais_referencia:
+        raise ValueError("canais_referencia nao pode ser vazio em modo por canal.")
+
+    canais_disponiveis = list(raw.ch_names)
+    canais_validos = set(selecionar_canais_eeg_validos(raw))
+    sfreq = float(raw.info["sfreq"])
+    duration_seconds = raw.n_times / sfreq
+    specs = gerar_janelas_temporais(
+        duration_seconds,
+        intervals,
+        window_seconds=window_seconds,
+        step_seconds=step_seconds,
+    )
+    specs = _limitar_janelas_por_classe(
+        specs,
+        max_windows_per_class,
+        max_normal_windows=max_normal_windows,
+        max_seizure_windows=max_seizure_windows,
+    )
+
+    x_rows: list[list[float]] = []
+    y_rows: list[int] = []
+    metadados: list[dict[str, Any]] = []
+    nomes_features = nomes_features_por_modo(feature_mode)
+
+    for spec in specs:
+        inicio = int(round(spec.start_seconds * sfreq))
+        fim = int(round(spec.end_seconds * sfreq))
+        if fim - inicio < 4:
+            continue
+
+        vetor: list[float] = []
+        canais_processados: list[str] = []
+        canais_omitidos: list[str] = []
+        for canal in canais_referencia:
+            if canal not in canais_validos:
+                vetor.extend([0.0] * len(nomes_features))
+                canais_omitidos.append(canal)
+                continue
+
+            idx = canais_disponiveis.index(canal)
+            sinal_canal = np.asarray(raw.get_data(picks=[idx], start=inicio, stop=fim)[0], dtype=float)
+            feat = extrair_features_por_modo_de_valores(
+                sinal_canal,
+                feature_mode=feature_mode,
+                sfreq=sfreq,
+            )
+            vetor.extend(float(v) for v in feat["feature_vector"])
+            canais_processados.append(canal)
+
+        x_rows.append(vetor)
+        y_rows.append(spec.label)
+        metadados.append(
+            {
+                "start_seconds": spec.start_seconds,
+                "end_seconds": spec.end_seconds,
+                "label": spec.label,
+                "context": spec.context,
+                "n_canais": int(len(canais_processados)),
+                "canais_omitidos": canais_omitidos,
             }
         )
 
@@ -317,11 +540,10 @@ def extrair_dataset_janelado_edf(
     """Carrega um EDF, calcula sinal medio dos canais e extrai features por janela."""
     path = Path(edf_path)
     raw = mne.io.read_raw_edf(path, preload=True, verbose=False)
-    raw.pick(selecionar_canais_eeg_validos(raw, canais_selecionados))
-
-    sinais = raw.get_data()
     sfreq = float(raw.info["sfreq"])
-    if feature_mode == FEATURE_MODE_MEAN:
+    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_RAW_SIGNAL}:
+        raw.pick(selecionar_canais_eeg_validos(raw, canais_selecionados))
+        sinais = raw.get_data()
         signal = np.mean(sinais, axis=0)
         x, y, metadados = extrair_dataset_janelado_de_sinal(
             signal,
@@ -332,18 +554,35 @@ def extrair_dataset_janelado_edf(
             max_windows_per_class=max_windows_per_class,
             max_normal_windows=max_normal_windows,
             max_seizure_windows=max_seizure_windows,
+            feature_mode=feature_mode,
         )
-    elif feature_mode == FEATURE_MODE_PER_CHANNEL:
-        x, y, metadados = extrair_dataset_janelado_multicanal(
-            sinais,
-            sfreq,
-            intervals,
-            window_seconds=window_seconds,
-            step_seconds=step_seconds,
-            max_windows_per_class=max_windows_per_class,
-            max_normal_windows=max_normal_windows,
-            max_seizure_windows=max_seizure_windows,
-        )
+    elif feature_mode in {FEATURE_MODE_PER_CHANNEL, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
+        if canais_selecionados:
+            x, y, metadados = extrair_dataset_janelado_multicanal_referencia(
+                raw,
+                intervals,
+                list(canais_selecionados),
+                window_seconds=window_seconds,
+                step_seconds=step_seconds,
+                max_windows_per_class=max_windows_per_class,
+                max_normal_windows=max_normal_windows,
+                max_seizure_windows=max_seizure_windows,
+                feature_mode=feature_mode,
+            )
+        else:
+            raw.pick(selecionar_canais_eeg_validos(raw))
+            sinais = raw.get_data()
+            x, y, metadados = extrair_dataset_janelado_multicanal(
+                sinais,
+                sfreq,
+                intervals,
+                window_seconds=window_seconds,
+                step_seconds=step_seconds,
+                max_windows_per_class=max_windows_per_class,
+                max_normal_windows=max_normal_windows,
+                max_seizure_windows=max_seizure_windows,
+                feature_mode=feature_mode,
+            )
     else:
         raise ValueError(f"feature_mode invalido: {feature_mode}")
 

@@ -20,6 +20,9 @@ from app.ai_engine.symbolic_dynamics import (
 
 FEATURE_MODE_MEAN = "mean"
 FEATURE_MODE_PER_CHANNEL = "per_channel"
+FEATURE_MODE_TIME_FREQUENCY = "time_frequency"
+FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL = "time_frequency_per_channel"
+FEATURE_MODE_RAW_SIGNAL = "raw_signal"
 
 FEATURE_NAMES: list[str] = [
     "entropia_shannon",
@@ -42,6 +45,34 @@ FEATURE_NAMES: list[str] = [
     "std_frequencias",
     "entropia_frequencias",
 ]
+TIME_FREQUENCY_BANDS: list[tuple[str, float, float]] = [
+    ("delta", 0.5, 4.0),
+    ("theta", 4.0, 8.0),
+    ("alpha", 8.0, 13.0),
+    ("beta", 13.0, 30.0),
+    ("gamma", 30.0, 45.0),
+]
+TIME_FREQUENCY_FEATURE_NAMES: list[str] = [
+    *(f"potencia_{nome}" for nome, _low, _high in TIME_FREQUENCY_BANDS),
+    *(f"potencia_relativa_{nome}" for nome, _low, _high in TIME_FREQUENCY_BANDS),
+    "frequencia_dominante",
+    "centroide_espectral",
+    "entropia_espectral",
+    "razao_theta_alpha",
+    "razao_beta_alpha",
+]
+RAW_SIGNAL_POINTS = 128
+RAW_SIGNAL_FEATURE_NAMES: list[str] = [f"raw_{idx:03d}" for idx in range(RAW_SIGNAL_POINTS)]
+
+
+def nomes_features_por_modo(feature_mode: str) -> list[str]:
+    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_PER_CHANNEL}:
+        return FEATURE_NAMES
+    if feature_mode in {FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
+        return TIME_FREQUENCY_FEATURE_NAMES
+    if feature_mode == FEATURE_MODE_RAW_SIGNAL:
+        return RAW_SIGNAL_FEATURE_NAMES
+    raise ValueError(f"feature_mode invalido: {feature_mode}")
 
 MAX_DURATION_SECONDS: float | None = None
 
@@ -213,6 +244,85 @@ def extrair_features_de_valores(
     return features
 
 
+def extrair_features_tempo_frequencia_de_valores(
+    valores: np.ndarray,
+    sfreq: float,
+) -> dict[str, Any]:
+    sinal = np.asarray(valores, dtype=float).ravel()
+    if sinal.size < 4:
+        raise ValueError("Sinal curto demais para features tempo-frequencia.")
+
+    sinal = sinal - float(np.mean(sinal))
+    janela = np.hanning(sinal.size)
+    espectro = np.fft.rfft(sinal * janela)
+    frequencias = np.fft.rfftfreq(sinal.size, d=1.0 / sfreq)
+    psd = np.abs(espectro) ** 2
+    mascara_util = frequencias > 0
+    total_power = float(np.sum(psd[mascara_util]))
+    if total_power <= 0:
+        total_power = 1e-12
+
+    features: dict[str, Any] = {}
+    band_powers: dict[str, float] = {}
+    for nome, low, high in TIME_FREQUENCY_BANDS:
+        mascara = (frequencias >= low) & (frequencias < high)
+        power = float(np.sum(psd[mascara]))
+        band_powers[nome] = power
+        features[f"potencia_{nome}"] = float(np.log1p(power))
+    for nome, _low, _high in TIME_FREQUENCY_BANDS:
+        features[f"potencia_relativa_{nome}"] = float(band_powers[nome] / total_power)
+
+    idx_dom = int(np.argmax(psd[mascara_util])) if np.any(mascara_util) else 0
+    freqs_util = frequencias[mascara_util]
+    psd_util = psd[mascara_util]
+    probs = psd_util / total_power
+    probs = probs[probs > 0]
+    features["frequencia_dominante"] = float(freqs_util[idx_dom]) if freqs_util.size else 0.0
+    features["centroide_espectral"] = float(np.sum(freqs_util * psd_util) / total_power) if freqs_util.size else 0.0
+    features["entropia_espectral"] = float(-np.sum(probs * np.log2(probs))) if probs.size else 0.0
+    features["razao_theta_alpha"] = float(band_powers["theta"] / max(band_powers["alpha"], 1e-12))
+    features["razao_beta_alpha"] = float(band_powers["beta"] / max(band_powers["alpha"], 1e-12))
+    features["feature_names"] = TIME_FREQUENCY_FEATURE_NAMES
+    features["feature_vector"] = [float(features[name]) for name in TIME_FREQUENCY_FEATURE_NAMES]
+    return features
+
+
+def extrair_features_sinal_bruto_de_valores(valores: np.ndarray) -> dict[str, Any]:
+    sinal = np.asarray(valores, dtype=float).ravel()
+    if sinal.size < 2:
+        raise ValueError("Sinal curto demais para vetor bruto.")
+
+    origem = np.linspace(0.0, 1.0, sinal.size)
+    destino = np.linspace(0.0, 1.0, RAW_SIGNAL_POINTS)
+    bruto = np.interp(destino, origem, sinal)
+    desvio = float(np.std(bruto))
+    if desvio > 0:
+        bruto = (bruto - float(np.mean(bruto))) / desvio
+    else:
+        bruto = bruto * 0.0
+    features = {
+        "feature_names": RAW_SIGNAL_FEATURE_NAMES,
+        "feature_vector": [float(v) for v in bruto],
+    }
+    return features
+
+
+def extrair_features_por_modo_de_valores(
+    valores: np.ndarray,
+    *,
+    feature_mode: str,
+    sfreq: float,
+    m: int = SYMBOLIC_M_DEFAULT,
+) -> dict[str, Any]:
+    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_PER_CHANNEL}:
+        return extrair_features_de_valores(valores, m=m)
+    if feature_mode in {FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
+        return extrair_features_tempo_frequencia_de_valores(valores, sfreq=sfreq)
+    if feature_mode == FEATURE_MODE_RAW_SIGNAL:
+        return extrair_features_sinal_bruto_de_valores(valores)
+    raise ValueError(f"feature_mode invalido: {feature_mode}")
+
+
 def extrair_features_edf(
     arquivo_path: str,
     m: int = SYMBOLIC_M_DEFAULT,
@@ -233,45 +343,55 @@ def extrair_features_edf(
     else:
         canais_usuario = list(canais_validos)
 
-    if feature_mode == FEATURE_MODE_MEAN:
+    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_RAW_SIGNAL}:
         alvos = canais_usuario
         vetores: list[list[float]] = []
         for canal in alvos:
             idx = canais_disponiveis.index(canal)
             sinal_canal = np.asarray(raw.get_data(picks=[idx])[0], dtype=float)
-            feat = extrair_features_de_valores(sinal_canal, m=m)
+            feat = extrair_features_por_modo_de_valores(
+                sinal_canal,
+                feature_mode=feature_mode,
+                sfreq=float(raw.info["sfreq"]),
+                m=m,
+            )
             vetores.append(feat["feature_vector"])
 
         vetor_medio = np.mean(np.array(vetores), axis=0)
-        features = extrair_features_de_valores(
-            np.asarray(raw.get_data(picks=[canais_disponiveis.index(alvos[0])])[0], dtype=float),
-            m=m,
-        )
-        for i, name in enumerate(FEATURE_NAMES):
+        nomes_features = nomes_features_por_modo(feature_mode)
+        features = {
+            "feature_names": nomes_features,
+            "feature_vector": [float(v) for v in vetor_medio],
+        }
+        for i, name in enumerate(nomes_features):
             features[name] = float(vetor_medio[i])
-        features["feature_vector"] = [float(v) for v in vetor_medio]
-        features["feature_names"] = FEATURE_NAMES
         canais_omitidos: list[str] = []
-    elif feature_mode == FEATURE_MODE_PER_CHANNEL:
+    elif feature_mode in {FEATURE_MODE_PER_CHANNEL, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
         referencia = list(canais_referencia or canais_usuario)
         if not referencia:
-            raise ValueError("Nenhum canal de referencia disponivel para inferencia per_channel.")
+            raise ValueError("Nenhum canal de referencia disponivel para inferencia por canal.")
 
         vetores_expandidos: list[float] = []
         nomes_expandidos: list[str] = []
         canais_processados: list[str] = []
         canais_omitidos = []
+        nomes_base = nomes_features_por_modo(feature_mode)
 
         for canal in referencia:
-            nomes_expandidos.extend([f"{canal}::{nome}" for nome in FEATURE_NAMES])
+            nomes_expandidos.extend([f"{canal}::{nome}" for nome in nomes_base])
             if canal not in canais_usuario or canal not in canais_validos:
-                vetores_expandidos.extend([0.0] * len(FEATURE_NAMES))
+                vetores_expandidos.extend([0.0] * len(nomes_base))
                 canais_omitidos.append(canal)
                 continue
 
             idx = canais_disponiveis.index(canal)
             sinal_canal = np.asarray(raw.get_data(picks=[idx])[0], dtype=float)
-            feat = extrair_features_de_valores(sinal_canal, m=m)
+            feat = extrair_features_por_modo_de_valores(
+                sinal_canal,
+                feature_mode=feature_mode,
+                sfreq=float(raw.info["sfreq"]),
+                m=m,
+            )
             vetores_expandidos.extend(float(v) for v in feat["feature_vector"])
             canais_processados.append(canal)
 
@@ -307,44 +427,56 @@ def _montar_features_de_janela(
 ) -> dict[str, Any]:
     canais_disponiveis = list(raw.ch_names)
 
-    if feature_mode == FEATURE_MODE_MEAN:
+    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_RAW_SIGNAL}:
         alvos = canais_usuario
         vetores: list[list[float]] = []
         for canal in alvos:
             idx = canais_disponiveis.index(canal)
             sinal_canal = np.asarray(raw.get_data(picks=[idx], start=inicio, stop=fim)[0], dtype=float)
-            feat = extrair_features_de_valores(sinal_canal, m=m)
+            feat = extrair_features_por_modo_de_valores(
+                sinal_canal,
+                feature_mode=feature_mode,
+                sfreq=float(raw.info["sfreq"]),
+                m=m,
+            )
             vetores.append(feat["feature_vector"])
 
         vetor_medio = np.mean(np.array(vetores), axis=0)
+        nomes_features = nomes_features_por_modo(feature_mode)
         features: dict[str, Any] = {
             name: float(vetor_medio[i])
-            for i, name in enumerate(FEATURE_NAMES)
+            for i, name in enumerate(nomes_features)
         }
-        features["feature_names"] = FEATURE_NAMES
+        features["feature_names"] = nomes_features
         features["feature_vector"] = [float(v) for v in vetor_medio]
         canais_processados = list(alvos)
         canais_omitidos: list[str] = []
-    elif feature_mode == FEATURE_MODE_PER_CHANNEL:
+    elif feature_mode in {FEATURE_MODE_PER_CHANNEL, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
         referencia = list(canais_referencia or canais_usuario)
         if not referencia:
-            raise ValueError("Nenhum canal de referencia disponivel para inferencia per_channel.")
+            raise ValueError("Nenhum canal de referencia disponivel para inferencia por canal.")
 
         vetores_expandidos: list[float] = []
         nomes_expandidos: list[str] = []
         canais_processados = []
         canais_omitidos = []
+        nomes_base = nomes_features_por_modo(feature_mode)
 
         for canal in referencia:
-            nomes_expandidos.extend([f"{canal}::{nome}" for nome in FEATURE_NAMES])
+            nomes_expandidos.extend([f"{canal}::{nome}" for nome in nomes_base])
             if canal not in canais_usuario or canal not in canais_validos:
-                vetores_expandidos.extend([0.0] * len(FEATURE_NAMES))
+                vetores_expandidos.extend([0.0] * len(nomes_base))
                 canais_omitidos.append(canal)
                 continue
 
             idx = canais_disponiveis.index(canal)
             sinal_canal = np.asarray(raw.get_data(picks=[idx], start=inicio, stop=fim)[0], dtype=float)
-            feat = extrair_features_de_valores(sinal_canal, m=m)
+            feat = extrair_features_por_modo_de_valores(
+                sinal_canal,
+                feature_mode=feature_mode,
+                sfreq=float(raw.info["sfreq"]),
+                m=m,
+            )
             vetores_expandidos.extend(float(v) for v in feat["feature_vector"])
             canais_processados.append(canal)
 

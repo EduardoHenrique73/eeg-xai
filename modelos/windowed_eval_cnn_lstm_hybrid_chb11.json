@@ -8,7 +8,7 @@
       "arquivo": "chb11_01.edf",
       "n_janelas": 1798,
       "n_janelas_crise": 0,
-      "score_agregado_top5_mean": 0.9972322583198547,
+      "score_agregado": 0.984929084777832,
       "score_pico": 0.9975086450576782,
       "janela_pico": {
         "start_seconds": 2016.0,
@@ -57,13 +57,23 @@
           "end_seconds": 2602.0,
           "score": 0.9970588088035583
         }
-      ]
+      ],
+      "trecho_suspeito": {
+        "start_seconds": 1058.0,
+        "end_seconds": 1894.0,
+        "duration_seconds": 836.0,
+        "n_janelas": 417,
+        "score_medio": 0.984929084777832,
+        "score_max": 0.997330367565155,
+        "threshold": 0.9,
+        "atingiu_duracao_minima": true
+      }
     },
     {
       "arquivo": "chb11_82.edf",
       "n_janelas": 1799,
       "n_janelas_crise": 12,
-      "score_agregado_top5_mean": 0.9978846311569214,
+      "score_agregado": 0.981613278388977,
       "score_pico": 0.9980482459068298,
       "janela_pico": {
         "start_seconds": 326.0,
@@ -113,6 +123,16 @@
           "score": 0.9977103471755981
         }
       ],
+      "trecho_suspeito": {
+        "start_seconds": 264.0,
+        "end_seconds": 338.0,
+        "duration_seconds": 74.0,
+        "n_janelas": 36,
+        "score_medio": 0.981613278388977,
+        "score_max": 0.9980482459068298,
+        "threshold": 0.9,
+        "atingiu_duracao_minima": true
+      },
       "crise": {
         "score_medio": 0.9927940368652344,
         "score_max": 0.9954743981361389,

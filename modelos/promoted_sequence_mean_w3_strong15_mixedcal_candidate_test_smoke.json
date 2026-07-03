@@ -1,0 +1,1166 @@
+{
+  "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_mean_w3_strong15_mixedcal_candidate.keras",
+  "metadata": {
+    "model_type": "sequence_cnn_lstm",
+    "feature_mode": "mean",
+    "sequence_length": 8,
+    "sequence_stride": 2,
+    "window_seconds": 4.0,
+    "step_seconds": 2.0,
+    "n_features": 19,
+    "canais_referencia": [],
+    "aggregation": "continuous_suspicious_sequence"
+  },
+  "calibration": {
+    "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\calibration_sequence_cnn_lstm_mean_w3_strong15_mixedcal_candidate.json",
+    "best": {
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "metrics": {
+        "accuracy": 0.625,
+        "precision": 1.0,
+        "recall": 0.5714285714285714,
+        "f1": 0.7272727272727273
+      },
+      "localized_metrics": {
+        "accuracy": 0.375,
+        "precision": 1.0,
+        "recall": 0.2857142857142857,
+        "f1": 0.4444444444444444
+      },
+      "false_positives": 0,
+      "false_negatives": 3,
+      "localized_false_negatives": 5,
+      "positive_overlap_seconds_sum": 152.0,
+      "positive_predictions": 4,
+      "positive_predictions_with_overlap": 2,
+      "files": [
+        {
+          "arquivo": "chb15_01.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 897,
+          "score_max": 0.9991312623023987,
+          "score_mean": 0.28490862250328064,
+          "trecho_suspeito": {
+            "start_seconds": 232.0,
+            "end_seconds": 282.0,
+            "duration_seconds": 50.0,
+            "n_sequences": 9,
+            "score_mean": 0.9938046336174011,
+            "score_max": 0.9991312623023987,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 0.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 232.0,
+              "end_seconds": 282.0,
+              "duration_seconds": 50.0,
+              "n_sequences": 9,
+              "score_mean": 0.9938046336174011,
+              "score_max": 0.9991312623023987,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 16.0,
+              "end_seconds": 46.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.9090748429298401,
+              "score_max": 0.9812344908714294,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1580.0,
+              "end_seconds": 1606.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.8369810581207275,
+              "score_max": 0.8908035159111023,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 2880.0,
+              "end_seconds": 2938.0,
+              "duration_seconds": 58.0,
+              "n_sequences": 11,
+              "score_mean": 0.7503656148910522,
+              "score_max": 0.9103363752365112,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 2556.0,
+              "end_seconds": 2594.0,
+              "duration_seconds": 38.0,
+              "n_sequences": 6,
+              "score_mean": 0.740731418132782,
+              "score_max": 0.83794105052948,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": null
+        },
+        {
+          "arquivo": "chb15_06.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.9537028670310974,
+          "score_mean": 0.47361570596694946,
+          "trecho_suspeito": {
+            "start_seconds": 332.0,
+            "end_seconds": 414.0,
+            "duration_seconds": 82.0,
+            "n_sequences": 17,
+            "score_mean": 0.7775594592094421,
+            "score_max": 0.9413702487945557,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 82.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 332.0,
+              "end_seconds": 414.0,
+              "duration_seconds": 82.0,
+              "n_sequences": 17,
+              "score_mean": 0.7775594592094421,
+              "score_max": 0.9413702487945557,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 82.0
+            },
+            {
+              "start_seconds": 244.0,
+              "end_seconds": 318.0,
+              "duration_seconds": 74.0,
+              "n_sequences": 15,
+              "score_mean": 0.7668486833572388,
+              "score_max": 0.9308010339736938,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 62.0
+            },
+            {
+              "start_seconds": 676.0,
+              "end_seconds": 742.0,
+              "duration_seconds": 66.0,
+              "n_sequences": 13,
+              "score_mean": 0.747756838798523,
+              "score_max": 0.9405329823493958,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1192.0,
+              "end_seconds": 1318.0,
+              "duration_seconds": 126.0,
+              "n_sequences": 28,
+              "score_mean": 0.7268096804618835,
+              "score_max": 0.9302555322647095,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 184.0,
+              "end_seconds": 246.0,
+              "duration_seconds": 62.0,
+              "n_sequences": 12,
+              "score_mean": 0.6198779940605164,
+              "score_max": 0.8898608088493347,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 256.0,
+            "end_seconds": 414.0,
+            "n_sequences": 36,
+            "score_mean": 0.6718963980674744,
+            "score_max": 0.9413702487945557,
+            "n_sequences_above_threshold": 29
+          }
+        },
+        {
+          "arquivo": "chb15_10.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.9387184977531433,
+          "score_mean": 0.4913935363292694,
+          "trecho_suspeito": {
+            "start_seconds": 2160.0,
+            "end_seconds": 2242.0,
+            "duration_seconds": 82.0,
+            "n_sequences": 17,
+            "score_mean": 0.7795145511627197,
+            "score_max": 0.9253953099250793,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 0.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 2160.0,
+              "end_seconds": 2242.0,
+              "duration_seconds": 82.0,
+              "n_sequences": 17,
+              "score_mean": 0.7795145511627197,
+              "score_max": 0.9253953099250793,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 3116.0,
+              "end_seconds": 3190.0,
+              "duration_seconds": 74.0,
+              "n_sequences": 15,
+              "score_mean": 0.7062163949012756,
+              "score_max": 0.8571071624755859,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 2552.0,
+              "end_seconds": 2618.0,
+              "duration_seconds": 66.0,
+              "n_sequences": 13,
+              "score_mean": 0.700779378414154,
+              "score_max": 0.9085327982902527,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1900.0,
+              "end_seconds": 1978.0,
+              "duration_seconds": 78.0,
+              "n_sequences": 16,
+              "score_mean": 0.695051372051239,
+              "score_max": 0.8909394145011902,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 2892.0,
+              "end_seconds": 2974.0,
+              "duration_seconds": 82.0,
+              "n_sequences": 17,
+              "score_mean": 0.6275746822357178,
+              "score_max": 0.8571844696998596,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 1068.0,
+            "end_seconds": 1130.0,
+            "n_sequences": 12,
+            "score_mean": 0.60014408826828,
+            "score_max": 0.7858219742774963,
+            "n_sequences_above_threshold": 10
+          }
+        },
+        {
+          "arquivo": "chb15_17.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 896,
+          "score_max": 0.7847652435302734,
+          "score_mean": 0.25694361329078674,
+          "trecho_suspeito": {
+            "start_seconds": 1124.0,
+            "end_seconds": 1150.0,
+            "duration_seconds": 26.0,
+            "n_sequences": 3,
+            "score_mean": 0.667874276638031,
+            "score_max": 0.7056118845939636,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 0.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 1124.0,
+              "end_seconds": 1150.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.667874276638031,
+              "score_max": 0.7056118845939636,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 604.0,
+              "end_seconds": 634.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.664880633354187,
+              "score_max": 0.7847652435302734,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 428.0,
+              "end_seconds": 458.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.634986937046051,
+              "score_max": 0.7086266279220581,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1560.0,
+              "end_seconds": 1590.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.614742636680603,
+              "score_max": 0.7218684554100037,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1188.0,
+              "end_seconds": 1218.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.5787315964698792,
+              "score_max": 0.68318772315979,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 1908.0,
+            "end_seconds": 1974.0,
+            "n_sequences": 13,
+            "score_mean": 0.3284611403942108,
+            "score_max": 0.456043541431427,
+            "n_sequences_above_threshold": 1
+          }
+        },
+        {
+          "arquivo": "chb15_20.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 896,
+          "score_max": 0.9729369878768921,
+          "score_mean": 0.23581694066524506,
+          "trecho_suspeito": {
+            "start_seconds": 1292.0,
+            "end_seconds": 1318.0,
+            "duration_seconds": 26.0,
+            "n_sequences": 3,
+            "score_mean": 0.9051856398582458,
+            "score_max": 0.9729369878768921,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 0.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 1292.0,
+              "end_seconds": 1318.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.9051856398582458,
+              "score_max": 0.9729369878768921,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 320.0,
+              "end_seconds": 346.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.8646920323371887,
+              "score_max": 0.9375563263893127,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 436.0,
+              "end_seconds": 466.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.7912435531616211,
+              "score_max": 0.9030049443244934,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1756.0,
+              "end_seconds": 1782.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.7695638537406921,
+              "score_max": 0.8397244215011597,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 368.0,
+              "end_seconds": 390.0,
+              "duration_seconds": 22.0,
+              "n_sequences": 2,
+              "score_mean": 0.7397260665893555,
+              "score_max": 0.8003276586532593,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 592.0,
+            "end_seconds": 678.0,
+            "n_sequences": 18,
+            "score_mean": 0.25009238719940186,
+            "score_max": 0.4257201850414276,
+            "n_sequences_above_threshold": 0
+          }
+        },
+        {
+          "arquivo": "chb15_31.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 896,
+          "score_max": 0.8224839568138123,
+          "score_mean": 0.31771451234817505,
+          "trecho_suspeito": {
+            "start_seconds": 1828.0,
+            "end_seconds": 1858.0,
+            "duration_seconds": 30.0,
+            "n_sequences": 4,
+            "score_mean": 0.733108401298523,
+            "score_max": 0.8224839568138123,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 30.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 1828.0,
+              "end_seconds": 1858.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.733108401298523,
+              "score_max": 0.8224839568138123,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 30.0
+            },
+            {
+              "start_seconds": 3032.0,
+              "end_seconds": 3062.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.6729851365089417,
+              "score_max": 0.7527395486831665,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1752.0,
+              "end_seconds": 1806.0,
+              "duration_seconds": 54.0,
+              "n_sequences": 10,
+              "score_mean": 0.6472915410995483,
+              "score_max": 0.8224741220474243,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 54.0
+            },
+            {
+              "start_seconds": 2812.0,
+              "end_seconds": 2838.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.6436017751693726,
+              "score_max": 0.7276514768600464,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 3484.0,
+              "end_seconds": 3510.0,
+              "duration_seconds": 26.0,
+              "n_sequences": 3,
+              "score_mean": 0.6383763551712036,
+              "score_max": 0.6857074499130249,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 1736.0,
+            "end_seconds": 1886.0,
+            "n_sequences": 34,
+            "score_mean": 0.4663875102996826,
+            "score_max": 0.8224839568138123,
+            "n_sequences_above_threshold": 17
+          }
+        },
+        {
+          "arquivo": "chb20_12.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.8586640357971191,
+          "score_mean": 0.4229147732257843,
+          "trecho_suspeito": {
+            "start_seconds": 1372.0,
+            "end_seconds": 1438.0,
+            "duration_seconds": 66.0,
+            "n_sequences": 13,
+            "score_mean": 0.6482459306716919,
+            "score_max": 0.8586640357971191,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 0.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 1372.0,
+              "end_seconds": 1438.0,
+              "duration_seconds": 66.0,
+              "n_sequences": 13,
+              "score_mean": 0.6482459306716919,
+              "score_max": 0.8586640357971191,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 936.0,
+              "end_seconds": 1022.0,
+              "duration_seconds": 86.0,
+              "n_sequences": 18,
+              "score_mean": 0.6303727030754089,
+              "score_max": 0.8199810981750488,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 708.0,
+              "end_seconds": 782.0,
+              "duration_seconds": 74.0,
+              "n_sequences": 15,
+              "score_mean": 0.605245053768158,
+              "score_max": 0.7524807453155518,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1676.0,
+              "end_seconds": 1770.0,
+              "duration_seconds": 94.0,
+              "n_sequences": 20,
+              "score_mean": 0.5995148420333862,
+              "score_max": 0.7205445766448975,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 2924.0,
+              "end_seconds": 2990.0,
+              "duration_seconds": 66.0,
+              "n_sequences": 13,
+              "score_mean": 0.5986927151679993,
+              "score_max": 0.725793719291687,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 80.0,
+            "end_seconds": 138.0,
+            "n_sequences": 11,
+            "score_mean": 0.3196978271007538,
+            "score_max": 0.664096474647522,
+            "n_sequences_above_threshold": 3
+          }
+        },
+        {
+          "arquivo": "chb20_13.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 896,
+          "score_max": 0.8238516449928284,
+          "score_mean": 0.36867374181747437,
+          "trecho_suspeito": {
+            "start_seconds": 1720.0,
+            "end_seconds": 1790.0,
+            "duration_seconds": 70.0,
+            "n_sequences": 14,
+            "score_mean": 0.6293204426765442,
+            "score_max": 0.8238516449928284,
+            "threshold": 0.45,
+            "overlap_crise_real_seconds": 70.0
+          },
+          "top_trechos_suspeitos": [
+            {
+              "start_seconds": 1720.0,
+              "end_seconds": 1790.0,
+              "duration_seconds": 70.0,
+              "n_sequences": 14,
+              "score_mean": 0.6293204426765442,
+              "score_max": 0.8238516449928284,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 70.0
+            },
+            {
+              "start_seconds": 1180.0,
+              "end_seconds": 1270.0,
+              "duration_seconds": 90.0,
+              "n_sequences": 19,
+              "score_mean": 0.596008837223053,
+              "score_max": 0.7162858247756958,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 1500.0,
+              "end_seconds": 1626.0,
+              "duration_seconds": 126.0,
+              "n_sequences": 28,
+              "score_mean": 0.5751780867576599,
+              "score_max": 0.7541483640670776,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 126.0
+            },
+            {
+              "start_seconds": 1260.0,
+              "end_seconds": 1322.0,
+              "duration_seconds": 62.0,
+              "n_sequences": 12,
+              "score_mean": 0.5448825359344482,
+              "score_max": 0.7689296007156372,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            },
+            {
+              "start_seconds": 3444.0,
+              "end_seconds": 3474.0,
+              "duration_seconds": 30.0,
+              "n_sequences": 4,
+              "score_mean": 0.7358299493789673,
+              "score_max": 0.793582022190094,
+              "threshold": 0.45,
+              "overlap_crise_real_seconds": 0.0
+            }
+          ],
+          "crise_real": {
+            "start_seconds": 1424.0,
+            "end_seconds": 2554.0,
+            "n_sequences": 26,
+            "score_mean": 0.39826348423957825,
+            "score_max": 0.7664439678192139,
+            "n_sequences_above_threshold": 13
+          }
+        }
+      ]
+    },
+    "best_aligned": null
+  },
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\train_mean_candidate_exclude_test_cal_mixed.txt",
+  "files": [
+    {
+      "arquivo": "chb03_01.edf",
+      "usado_no_treino": false,
+      "label": 1,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8-0",
+        "P8-O2",
+        "FZ-CZ",
+        "CZ-PZ",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [
+        {
+          "start_seconds": 362.0,
+          "end_seconds": 414.0
+        }
+      ],
+      "overlap_crise_real_seconds": 52.0,
+      "localizou_crise": true,
+      "classificacao_clinica": "Padrao sugestivo de atividade epileptiforme (revisao medica necessaria)",
+      "score_geral": 0.9991644620895386,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 348.0,
+        "end_seconds": 594.0,
+        "duration_seconds": 246.0,
+        "n_sequences": 58,
+        "n_janelas": 58,
+        "score_medio": 0.9949986934661865,
+        "score_max": 0.9991644620895386,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 0.06837131739855476,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb03_05.edf",
+      "usado_no_treino": false,
+      "label": 0,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8-0",
+        "P8-O2",
+        "FZ-CZ",
+        "CZ-PZ",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Padrao sugestivo de atividade epileptiforme (revisao medica necessaria)",
+      "score_geral": 0.9956980347633362,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 1480.0,
+        "end_seconds": 1542.0,
+        "duration_seconds": 62.0,
+        "n_sequences": 12,
+        "n_janelas": 12,
+        "score_medio": 0.8986594676971436,
+        "score_max": 0.9874885082244873,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 0.017231795441912175,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb11_01.edf",
+      "usado_no_treino": false,
+      "label": 0,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8-0",
+        "P8-O2",
+        "FZ-CZ",
+        "CZ-PZ",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Padrao sugestivo de atividade epileptiforme (revisao medica necessaria)",
+      "score_geral": 0.9991217851638794,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 0.0,
+        "end_seconds": 2226.0,
+        "duration_seconds": 2226.0,
+        "n_sequences": 553,
+        "n_janelas": 553,
+        "score_medio": 0.9358202815055847,
+        "score_max": 0.9991217851638794,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 0.6186770428015564,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb11_82.edf",
+      "usado_no_treino": false,
+      "label": 1,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FZ-CZ",
+        "CZ-PZ",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8-0",
+        "P8-O2",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [
+        {
+          "start_seconds": 298.0,
+          "end_seconds": 320.0
+        }
+      ],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Padrao sugestivo de atividade epileptiforme (revisao medica necessaria)",
+      "score_geral": 0.9990900754928589,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 0.0,
+        "end_seconds": 222.0,
+        "duration_seconds": 222.0,
+        "n_sequences": 52,
+        "n_janelas": 52,
+        "score_medio": 0.9601733684539795,
+        "score_max": 0.9989997744560242,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 0.06170094496942746,
+        "cobertura_excessiva": false,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb13_47.edf",
+      "usado_no_treino": false,
+      "label": 0,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FZ-CZ",
+        "CZ-PZ",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8",
+        "P8-O2"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Resultado indeterminado: o modelo marcou uma area extensa demais do exame como suspeita (revisao medica necessaria)",
+      "score_geral": 0.9992136359214783,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 0.0,
+        "end_seconds": 3598.0,
+        "duration_seconds": 3598.0,
+        "n_sequences": 896,
+        "n_janelas": 896,
+        "score_medio": 0.9984419941902161,
+        "score_max": 0.9992136359214783,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 1.0,
+        "cobertura_excessiva": true,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb13_40.edf",
+      "usado_no_treino": false,
+      "label": 1,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FZ-CZ",
+        "CZ-PZ",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8",
+        "P8-O2"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [
+        {
+          "start_seconds": 142.0,
+          "end_seconds": 173.0
+        },
+        {
+          "start_seconds": 530.0,
+          "end_seconds": 594.0
+        }
+      ],
+      "overlap_crise_real_seconds": 95.0,
+      "localizou_crise": true,
+      "classificacao_clinica": "Resultado indeterminado: o modelo marcou uma area extensa demais do exame como suspeita (revisao medica necessaria)",
+      "score_geral": 0.999213695526123,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 0.0,
+        "end_seconds": 3598.0,
+        "duration_seconds": 3598.0,
+        "n_sequences": 896,
+        "n_janelas": 896,
+        "score_medio": 0.9654983282089233,
+        "score_max": 0.999213695526123,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 1.0,
+        "cobertura_excessiva": true,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb14_01.edf",
+      "usado_no_treino": false,
+      "label": 0,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FZ-CZ",
+        "CZ-PZ",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8-0",
+        "P8-O2",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [],
+      "overlap_crise_real_seconds": 0.0,
+      "localizou_crise": false,
+      "classificacao_clinica": "Resultado indeterminado: o modelo marcou uma area extensa demais do exame como suspeita (revisao medica necessaria)",
+      "score_geral": 0.9991503953933716,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 0.0,
+        "end_seconds": 3598.0,
+        "duration_seconds": 3598.0,
+        "n_sequences": 896,
+        "n_janelas": 896,
+        "score_medio": 0.9987776875495911,
+        "score_max": 0.9991503953933716,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 1.0,
+        "cobertura_excessiva": true,
+        "max_suspicious_coverage": 0.7
+      }
+    },
+    {
+      "arquivo": "chb14_04.edf",
+      "usado_no_treino": false,
+      "label": 1,
+      "pred": 1,
+      "montagem_incompleta": false,
+      "resultado_conclusivo": true,
+      "canais_processados": [
+        "FP1-F7",
+        "F7-T7",
+        "T7-P7",
+        "P7-O1",
+        "FP1-F3",
+        "F3-C3",
+        "C3-P3",
+        "P3-O1",
+        "FZ-CZ",
+        "CZ-PZ",
+        "FP2-F4",
+        "F4-C4",
+        "C4-P4",
+        "P4-O2",
+        "FP2-F8",
+        "F8-T8",
+        "T8-P8-0",
+        "P8-O2",
+        "P7-T7",
+        "T7-FT9",
+        "FT9-FT10",
+        "FT10-T8",
+        "T8-P8-1"
+      ],
+      "canais_omitidos": [],
+      "crises_reais": [
+        {
+          "start_seconds": 1372.0,
+          "end_seconds": 1392.0
+        },
+        {
+          "start_seconds": 2817.0,
+          "end_seconds": 2839.0
+        }
+      ],
+      "overlap_crise_real_seconds": 42.0,
+      "localizou_crise": true,
+      "classificacao_clinica": "Resultado indeterminado: o modelo marcou uma area extensa demais do exame como suspeita (revisao medica necessaria)",
+      "score_geral": 0.9991459846496582,
+      "threshold": 0.45,
+      "min_duration_seconds": 60.0,
+      "feature_mode": "mean",
+      "n_sequences_analisadas": 896,
+      "trecho_suspeito": {
+        "start_seconds": 0.0,
+        "end_seconds": 3598.0,
+        "duration_seconds": 3598.0,
+        "n_sequences": 896,
+        "n_janelas": 896,
+        "score_medio": 0.9987496137619019,
+        "score_max": 0.9991459846496582,
+        "threshold": 0.45,
+        "atingiu_duracao_minima": true,
+        "coverage_ratio": 1.0,
+        "cobertura_excessiva": true,
+        "max_suspicious_coverage": 0.7
+      }
+    }
+  ],
+  "metrics": {
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1": 0.6666666666666666,
+    "tp": 4,
+    "tn": 0,
+    "fp": 4,
+    "fn": 0
+  },
+  "metrics_conclusivos": {
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1": 0.6666666666666666,
+    "tp": 4,
+    "tn": 0,
+    "fp": 4,
+    "fn": 0
+  },
+  "total": {
+    "arquivos": 8,
+    "arquivos_conclusivos": 8,
+    "arquivos_limitados": 0,
+    "arquivos_crise": 4,
+    "arquivos_normais": 4,
+    "crises_localizadas": 3,
+    "crises_localizadas_conclusivas": 3
+  }
+}

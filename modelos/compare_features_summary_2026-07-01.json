@@ -1,0 +1,68 @@
+{
+  "symbolic_mean": {
+    "path": "modelos\\compare_features_symbolic_mean_eval.json",
+    "mean": {
+      "edf_accuracy": 0.66504329004329,
+      "edf_precision": 0.6809523809523809,
+      "edf_recall": 0.96875,
+      "edf_f1": 0.791880341880342,
+      "edf_localized_accuracy": 0.06818181818181818,
+      "edf_localized_precision": 0.125,
+      "edf_localized_recall": 0.09375,
+      "edf_localized_f1": 0.10714285714285714,
+      "window_f1": 0.03287563355170384
+    },
+    "total": {
+      "arquivos_crise": 17,
+      "arquivos_normais": 6,
+      "crises_localizadas": 3,
+      "falsos_positivos": 6,
+      "falsos_negativos": 1,
+      "falsos_negativos_localizacao": 14
+    }
+  },
+  "time_frequency": {
+    "path": "modelos\\compare_features_time_frequency_eval.json",
+    "mean": {
+      "edf_accuracy": 0.7256493506493507,
+      "edf_precision": 0.7892857142857143,
+      "edf_recall": 0.875,
+      "edf_f1": 0.8012820512820513,
+      "edf_localized_accuracy": 0.46590909090909094,
+      "edf_localized_precision": 0.5416666666666666,
+      "edf_localized_recall": 0.5625,
+      "edf_localized_f1": 0.5075757575757576,
+      "window_f1": 0.1153540811078153
+    },
+    "total": {
+      "arquivos_crise": 17,
+      "arquivos_normais": 6,
+      "crises_localizadas": 5,
+      "falsos_positivos": 3,
+      "falsos_negativos": 4,
+      "falsos_negativos_localizacao": 12
+    }
+  },
+  "raw_signal": {
+    "path": "modelos\\compare_features_raw_signal_eval.json",
+    "mean": {
+      "edf_accuracy": 0.5589826839826839,
+      "edf_precision": 0.7142857142857143,
+      "edf_recall": 0.71875,
+      "edf_f1": 0.6587995337995338,
+      "edf_localized_accuracy": 0.10389610389610389,
+      "edf_localized_precision": 0.125,
+      "edf_localized_recall": 0.041666666666666664,
+      "edf_localized_f1": 0.0625,
+      "window_f1": 0.02750929593861544
+    },
+    "total": {
+      "arquivos_crise": 17,
+      "arquivos_normais": 6,
+      "crises_localizadas": 1,
+      "falsos_positivos": 3,
+      "falsos_negativos": 6,
+      "falsos_negativos_localizacao": 16
+    }
+  }
+}

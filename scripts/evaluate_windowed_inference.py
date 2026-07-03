@@ -53,7 +53,7 @@ def avaliar_arquivo(
     if scaler is not None:
         x = scaler.transform(x)
     scores = np.asarray(modelo.predict(x.reshape(x.shape[0], x.shape[1], 1), verbose=0)).reshape(-1)
-    score_agregado, janela_pico, top_janelas = _predizer_janelas(
+    score_agregado, janela_pico, top_janelas, trecho_suspeito = _predizer_janelas(
         modelo=modelo,
         scaler=scaler,
         janelas=janelas,
@@ -77,7 +77,7 @@ def avaliar_arquivo(
         "arquivo": arquivo,
         "n_janelas": int(len(janelas)),
         "n_janelas_crise": int(np.sum(labels == 1)),
-        "score_agregado_top5_mean": float(score_agregado),
+        "score_agregado": float(score_agregado),
         "score_pico": float(top_janelas[0]["score"]),
         "janela_pico": {
             "start_seconds": float(janela_pico["window_start_seconds"]),
@@ -99,6 +99,7 @@ def avaliar_arquivo(
             for c in [0.5, 0.7, 0.9, 0.95, 0.99]
         },
         "top_janelas": top_janelas,
+        "trecho_suspeito": trecho_suspeito,
     }
     if np.any(labels == 1):
         resultado["crise"] = {

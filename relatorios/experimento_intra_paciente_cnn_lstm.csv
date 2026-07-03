@@ -1,0 +1,6 @@
+paciente,threshold,duracao_minima_s,arquivo_teste_crise,trecho_crise_real_s,trecho_detectado_s,sobreposicao_crise_real_s,score_medio_trecho,score_max_trecho,arquivo_teste_normal,falso_positivo,falso_negativo,localizou_crise_real
+chb01,0.5,45.0,chb01_15.edf,1716-1786,1724-1786,62.0,0.9937,0.9953,chb01_01.edf,0,0,sim
+chb03,0.5,10.0,chb03_02.edf,716-810,736-806,70.0,0.9687,0.9820,chb03_05.edf,0,0,sim
+chb13,0.5,60.0,chb13_62.edf,836-2738,2660-2826,78.0,0.9510,0.9936,chb13_02.edf,0,0,sim
+chb14,0.85,45.0,chb14_18.edf,1024-1078,948-1078,54.0,0.9548,0.9782,chb14_01.edf,0,0,sim
+chb15,0.5,90.0,chb15_31.edf,1736-1886,1712-1926,150.0,0.6791,0.8376,chb15_01.edf,0,0,sim

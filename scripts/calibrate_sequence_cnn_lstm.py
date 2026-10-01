@@ -52,13 +52,15 @@ def melhor_run(
 
     pico_local = int(np.argmax(scores[indices]))
     run_indices = indices[pico_local : pico_local + 1]
-    return montar_run(scores, metas, run_indices)
+    return montar_run(scores, metas, run_indices, threshold=threshold)
 
 
 def montar_run(
     scores: np.ndarray,
     metas: list[dict[str, Any]],
     run_indices: np.ndarray,
+    *,
+    threshold: float,
 ) -> dict[str, Any]:
     duration = float(
         max(
@@ -75,6 +77,9 @@ def montar_run(
         "n_sequences": int(run_indices.size),
         "score_mean": float(np.mean(scores[run_indices])),
         "score_max": float(np.max(scores[run_indices])),
+        "evidence_score": float(
+            np.sum(np.maximum(scores[run_indices] - threshold, 0.0))
+        ),
     }
 
 
@@ -84,8 +89,26 @@ def listar_runs(
     indices: np.ndarray,
     threshold: float,
     min_duration_seconds: float = 0.0,
+    max_gap_seconds: float = 0.0,
+    hysteresis_ratio: float = 1.0,
 ) -> list[dict[str, Any]]:
-    acima = scores[indices] >= threshold
+    if not 0.0 < hysteresis_ratio <= 1.0:
+        raise ValueError("hysteresis_ratio deve estar no intervalo (0, 1].")
+    scores_arquivo = scores[indices]
+    sementes = scores_arquivo >= threshold
+    acima = aplicar_histerese(
+        sementes,
+        scores_arquivo >= threshold * hysteresis_ratio,
+        metas,
+        indices,
+    )
+    if max_gap_seconds > 0 and len(acima) >= 3:
+        acima = preencher_lacunas_curtas(
+            acima,
+            metas,
+            indices,
+            max_gap_seconds=max_gap_seconds,
+        )
     runs: list[dict[str, Any]] = []
     inicio_run: int | None = None
 
@@ -96,25 +119,111 @@ def listar_runs(
             and float(metas[int(indices[local_idx])]["start_seconds"])
             > float(metas[int(indices[local_idx - 1])]["end_seconds"]) + 1e-6
         ):
-            runs.append(montar_run(scores, metas, indices[inicio_run:local_idx]))
+            runs.append(
+                montar_run(
+                    scores,
+                    metas,
+                    indices[inicio_run:local_idx],
+                    threshold=threshold,
+                )
+            )
             inicio_run = None
         if suspeita and inicio_run is None:
             inicio_run = local_idx
         if (not suspeita or local_idx == len(acima) - 1) and inicio_run is not None:
             fim_run = local_idx + 1 if suspeita and local_idx == len(acima) - 1 else local_idx
-            runs.append(montar_run(scores, metas, indices[inicio_run:fim_run]))
+            runs.append(
+                montar_run(
+                    scores,
+                    metas,
+                    indices[inicio_run:fim_run],
+                    threshold=threshold,
+                )
+            )
             inicio_run = None
 
     return sorted(
         runs,
         key=lambda run: (
             bool(float(run["duration_seconds"]) >= min_duration_seconds),
+            float(run["evidence_score"]),
             float(run["score_mean"]),
             float(run["score_max"]),
             float(run["duration_seconds"]),
         ),
         reverse=True,
     )
+
+
+def aplicar_histerese(
+    sementes: np.ndarray,
+    sustentacao: np.ndarray,
+    metas: list[dict[str, Any]],
+    indices: np.ndarray,
+) -> np.ndarray:
+    """Mantem blocos no limiar baixo somente quando contem um pico no limiar alto."""
+    resultado = np.zeros(len(sustentacao), dtype=bool)
+    inicio = 0
+    while inicio < len(sustentacao):
+        fim = inicio + 1
+        while (
+            fim < len(sustentacao)
+            and float(metas[int(indices[fim])]["start_seconds"])
+            <= float(metas[int(indices[fim - 1])]["end_seconds"]) + 1e-6
+        ):
+            fim += 1
+
+        cursor = inicio
+        while cursor < fim:
+            if not sustentacao[cursor]:
+                cursor += 1
+                continue
+            fim_bloco = cursor + 1
+            while fim_bloco < fim and sustentacao[fim_bloco]:
+                fim_bloco += 1
+            if np.any(sementes[cursor:fim_bloco]):
+                resultado[cursor:fim_bloco] = True
+            cursor = fim_bloco
+        inicio = fim
+    return resultado
+
+
+def preencher_lacunas_curtas(
+    acima: np.ndarray,
+    metas: list[dict[str, Any]],
+    indices: np.ndarray,
+    *,
+    max_gap_seconds: float,
+) -> np.ndarray:
+    """Une runs positivos separados por uma lacuna temporal curta."""
+    resultado = np.asarray(acima, dtype=bool).copy()
+    inicio_bloco = 0
+    while inicio_bloco < len(resultado):
+        fim_bloco = inicio_bloco + 1
+        while (
+            fim_bloco < len(resultado)
+            and float(metas[int(indices[fim_bloco])]["start_seconds"])
+            <= float(metas[int(indices[fim_bloco - 1])]["end_seconds"]) + 1e-6
+        ):
+            fim_bloco += 1
+
+        cursor = inicio_bloco + 1
+        while cursor < fim_bloco - 1:
+            if resultado[cursor] or not resultado[cursor - 1]:
+                cursor += 1
+                continue
+            fim_lacuna = cursor
+            while fim_lacuna < fim_bloco and not resultado[fim_lacuna]:
+                fim_lacuna += 1
+            if fim_lacuna < fim_bloco:
+                duracao = float(metas[int(indices[fim_lacuna - 1])]["end_seconds"]) - float(
+                    metas[int(indices[cursor])]["start_seconds"]
+                )
+                if duracao <= max_gap_seconds:
+                    resultado[cursor:fim_lacuna] = True
+            cursor = max(fim_lacuna, cursor + 1)
+        inicio_bloco = fim_bloco
+    return resultado
 
 
 def intervalo_crise_real(y_true: np.ndarray, metas: list[dict[str, Any]], indices: np.ndarray) -> dict[str, Any] | None:
@@ -234,6 +343,8 @@ def avaliar_combo(
     max_suspicious_coverage: float = 0.7,
     min_overlap_seconds: float = 1.0,
     min_overlap_ratio: float = 0.0,
+    max_gap_seconds: float = 0.0,
+    hysteresis_ratio: float = 1.0,
 ) -> dict[str, Any]:
     arquivos = sorted({str(meta["arquivo"]) for meta in metas})
     y_file_true: list[int] = []
@@ -248,7 +359,15 @@ def avaliar_combo(
             indices,
             threshold,
             min_duration_seconds=min_duration_seconds,
+            max_gap_seconds=max_gap_seconds,
+            hysteresis_ratio=hysteresis_ratio,
         )
+        runs_validos = [
+            item
+            for item in runs
+            if float(item["duration_seconds"]) >= min_duration_seconds
+            and float(item["score_mean"]) >= threshold
+        ]
         run = runs[0] if runs else melhor_run(scores, metas, indices, threshold)
         crise_real = intervalo_crise_real(y_true, metas, indices)
         segmentos_crise = list((crise_real or {}).get("segments") or [])
@@ -270,6 +389,30 @@ def avaliar_combo(
         cobertura_excessiva = bool(pred_raw and coverage_ratio >= max_suspicious_coverage)
         pred = int(pred_raw and not cobertura_excessiva)
         overlap, overlap_proporcao = melhor_overlap_com_crise(run, segmentos_crise)
+        eventos_detectados = sum(
+            1
+            for segmento in segmentos_crise
+            if any(
+                melhor_overlap_com_crise(item, [segmento])[0] >= min_overlap_seconds
+                and melhor_overlap_com_crise(item, [segmento])[1] >= min_overlap_ratio
+                for item in runs_validos
+            )
+        )
+        falsos_alarmes_arquivo = sum(
+            1
+            for item in runs_validos
+            if not any(
+                melhor_overlap_com_crise(item, [segmento])[0] >= min_overlap_seconds
+                and melhor_overlap_com_crise(item, [segmento])[1] >= min_overlap_ratio
+                for segmento in segmentos_crise
+            )
+        )
+        duracao_crises_reais = float(
+            sum(
+                max(0.0, float(segmento["end_seconds"]) - float(segmento["start_seconds"]))
+                for segmento in segmentos_crise
+            )
+        )
         y_file_true.append(label)
         y_file_pred.append(pred)
         files.append(
@@ -283,6 +426,11 @@ def avaliar_combo(
                 "n_sequences": int(indices.size),
                 "score_max": float(np.max(scores[indices])),
                 "score_mean": float(np.mean(scores[indices])),
+                "duracao_analisada_seconds": duracao_analisada,
+                "duracao_nao_ictal_seconds": max(0.0, duracao_analisada - duracao_crises_reais),
+                "n_eventos_crise_real": len(segmentos_crise),
+                "n_eventos_crise_detectados": eventos_detectados,
+                "n_falsos_alarmes": falsos_alarmes_arquivo,
                 "trecho_suspeito": {
                     "start_seconds": run["start_seconds"],
                     "end_seconds": run["end_seconds"],
@@ -351,10 +499,27 @@ def avaliar_combo(
         if not localizou(file)
     )
     indeterminate = sum(1 for file in files if not file["resultado_conclusivo"])
+    total_eventos = sum(int(file["n_eventos_crise_real"]) for file in files)
+    eventos_detectados = sum(int(file["n_eventos_crise_detectados"]) for file in files)
+    horas_normais = sum(float(file["duracao_nao_ictal_seconds"]) / 3600.0 for file in files)
+    falsos_alarmes = sum(int(file["n_falsos_alarmes"]) for file in files)
+    event_precision = (
+        float(eventos_detectados / (eventos_detectados + falsos_alarmes))
+        if eventos_detectados + falsos_alarmes > 0
+        else 0.0
+    )
+    event_sensitivity = float(eventos_detectados / total_eventos) if total_eventos else 0.0
+    event_f1 = (
+        float(2.0 * event_precision * event_sensitivity / (event_precision + event_sensitivity))
+        if event_precision + event_sensitivity > 0
+        else 0.0
+    )
 
     return {
         "threshold": float(threshold),
         "min_duration_seconds": float(min_duration_seconds),
+        "max_gap_seconds": float(max_gap_seconds),
+        "hysteresis_ratio": float(hysteresis_ratio),
         "metrics": metricas(y_file_true, y_file_pred),
         "localized_metrics": metricas(y_file_true, y_file_pred_localizado),
         "false_positives": int(false_positives),
@@ -368,6 +533,16 @@ def avaliar_combo(
         "positive_predictions": int(len(positivos_preditos)),
         "positive_predictions_with_overlap": int(positives_with_overlap),
         "positive_predictions_without_overlap": int(positive_predictions_without_overlap),
+        "event_precision": event_precision,
+        "event_sensitivity": event_sensitivity,
+        "event_f1": event_f1,
+        "detected_seizure_events": int(eventos_detectados),
+        "total_seizure_events": int(total_eventos),
+        "false_alarm_events": int(falsos_alarmes),
+        "normal_hours": float(horas_normais),
+        "false_alarms_per_hour": (
+            float(falsos_alarmes / horas_normais) if horas_normais > 0 else 0.0
+        ),
         "files": files,
     }
 
@@ -419,6 +594,16 @@ def main() -> None:
     parser.add_argument("--files", nargs="+", default=["chb11_01.edf", "chb11_82.edf"])
     parser.add_argument("--max-normal-windows-per-file", type=int, default=None)
     parser.add_argument("--max-seizure-windows-per-file", type=int, default=None)
+    parser.add_argument(
+        "--allow-sampled-evaluation",
+        action="store_true",
+        help="Permite limitar janelas; nao usar para metricas finais ou calibracao de producao.",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=PROJECT_ROOT / "modelos" / "sequence_dataset_cache",
+    )
     parser.add_argument("--thresholds", default="0.5,0.6,0.7,0.8,0.85,0.9,0.95,0.98")
     parser.add_argument("--durations", default="10,20,30,60,120,180,240,300")
     parser.add_argument("--max-suspicious-coverage", type=float, default=0.7)
@@ -427,6 +612,15 @@ def main() -> None:
     parser.add_argument("--selection-mode", choices=["conservative", "balanced"], default="balanced")
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "modelos" / "calibration_sequence_cnn_lstm_chb11.json")
     args = parser.parse_args()
+
+    if (
+        args.max_normal_windows_per_file is not None
+        or args.max_seizure_windows_per_file is not None
+    ) and not args.allow_sampled_evaluation:
+        raise SystemExit(
+            "A calibracao final deve analisar o EDF completo. Remova os limites de janelas "
+            "ou use --allow-sampled-evaluation apenas para experimentos exploratorios."
+        )
 
     import tensorflow as tf
 
@@ -448,6 +642,12 @@ def main() -> None:
         sequence_stride=int(metadata["sequence_stride"]),
         feature_mode=str(metadata.get("feature_mode") or "mean"),
         canais_referencia=list(metadata.get("canais_referencia") or []) or None,
+        sequence_target_mode=str(metadata.get("sequence_target_mode") or "any"),
+        min_window_ictal_overlap_ratio=float(
+            metadata.get("min_window_ictal_overlap_ratio") or 0.0
+        ),
+        cache_dir=args.cache_dir,
+        feature_normalization=str(metadata.get("feature_normalization") or "global_scaler"),
     )
 
     with scaler_path.open("rb") as arquivo:
@@ -490,7 +690,11 @@ def main() -> None:
         "max_suspicious_coverage": float(args.max_suspicious_coverage),
         "min_overlap_seconds": float(args.min_overlap_seconds),
         "min_overlap_ratio": float(args.min_overlap_ratio),
+        "cache_dir": str(args.cache_dir.resolve()) if args.cache_dir else None,
         "selection_mode": args.selection_mode,
+        "evaluation_scope": (
+            "sampled_windows" if args.allow_sampled_evaluation else "full_edf"
+        ),
         "best": resultados_ordenados[0],
         "best_aligned": resultados_alinhados[0] if resultados_alinhados else None,
         "warning": (

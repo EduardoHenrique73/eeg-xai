@@ -50,6 +50,7 @@ interface IaLaudoPanelProps {
   nSequencesAnalisadas?: number | null
   minDurationSeconds?: number | null
   decisionThreshold?: number | null
+  xaiMethod?: string | null
   laudoTextoInicial?: string | null
   statusExameInicial?: string | null
   erro?: string | null
@@ -85,6 +86,7 @@ export function IaLaudoPanel({
   nSequencesAnalisadas,
   minDurationSeconds,
   decisionThreshold,
+  xaiMethod,
   laudoTextoInicial,
   statusExameInicial,
   erro,
@@ -268,6 +270,14 @@ export function IaLaudoPanel({
                       duração mínima:{' '}
                       <span className="font-medium text-clinical-700">
                         {minDurationSeconds.toFixed(0)}s
+                      </span>
+                    </span>
+                  )}
+                  {xaiMethod && (
+                    <span>
+                      explicabilidade:{' '}
+                      <span className="font-medium text-clinical-700">
+                        {xaiMethod === 'gradient_shap' ? 'Gradient SHAP' : xaiMethod}
                       </span>
                     </span>
                   )}

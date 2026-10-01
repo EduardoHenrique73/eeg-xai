@@ -108,6 +108,7 @@ export interface DiagnosticoConcluido extends DiagnosticoExameBase {
   min_duration_seconds?: number | null
   max_suspicious_coverage?: number | null
   score_agregacao?: string | null
+  xai_method?: string | null
   data_analise: string
 }
 
@@ -120,9 +121,15 @@ export interface EegPonto {
   amplitude: number
 }
 
+export interface EegCanalSerie {
+  canal: string
+  pontos: EegPonto[]
+}
+
 export interface SinaisExameResponse {
   exame_id: number
   pontos: EegPonto[]
+  series: EegCanalSerie[]
   taxa_amostragem_hz: number
   n_canais_eeg: number
   canais_eeg: string[]

@@ -26,6 +26,8 @@ from app.ai_engine.feature_extractor import (
     FEATURE_MODE_RAW_SIGNAL,
     FEATURE_MODE_TIME_FREQUENCY,
     FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
+    FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
     nomes_features_por_modo,
     extrair_features_por_modo_de_valores,
     extrair_features_de_valores,
@@ -46,6 +48,7 @@ class WindowSpec:
     end_seconds: float
     label: int
     context: str = "unknown"
+    ictal_overlap_ratio: float = 0.0
 
 
 FEATURE_MODE_MEAN = "mean"
@@ -123,6 +126,35 @@ def window_overlaps_seizure(
     )
 
 
+def seizure_overlap_seconds(
+    start_seconds: float,
+    end_seconds: float,
+    intervals: list[SeizureInterval],
+) -> float:
+    """Soma a sobreposicao da janela com intervalos de crise."""
+    return float(
+        sum(
+            max(
+                0.0,
+                min(end_seconds, interval.end_seconds)
+                - max(start_seconds, interval.start_seconds),
+            )
+            for interval in intervals
+        )
+    )
+
+
+def seizure_overlap_ratio(
+    start_seconds: float,
+    end_seconds: float,
+    intervals: list[SeizureInterval],
+) -> float:
+    duration = max(0.0, end_seconds - start_seconds)
+    if duration <= 0:
+        return 0.0
+    return float(min(1.0, seizure_overlap_seconds(start_seconds, end_seconds, intervals) / duration))
+
+
 def classificar_contexto_janela(
     start_seconds: float,
     end_seconds: float,
@@ -149,6 +181,7 @@ def gerar_janelas_temporais(
     *,
     window_seconds: float = 10.0,
     step_seconds: float = 5.0,
+    min_ictal_overlap_ratio: float = 0.0,
 ) -> list[WindowSpec]:
     """
     Gera janelas sobrepostas. Esse janelamento e a forma inicial de data augmentation.
@@ -157,6 +190,8 @@ def gerar_janelas_temporais(
         raise ValueError("window_seconds deve ser maior que zero.")
     if step_seconds <= 0:
         raise ValueError("step_seconds deve ser maior que zero.")
+    if not 0.0 <= min_ictal_overlap_ratio <= 1.0:
+        raise ValueError("min_ictal_overlap_ratio deve estar entre 0 e 1.")
     if duration_seconds < window_seconds:
         return []
 
@@ -164,12 +199,18 @@ def gerar_janelas_temporais(
     start = 0.0
     while start + window_seconds <= duration_seconds:
         end = start + window_seconds
+        overlap_ratio = seizure_overlap_ratio(start, end, intervals)
+        label = int(overlap_ratio > 0.0 and overlap_ratio >= min_ictal_overlap_ratio)
+        context = classificar_contexto_janela(start, end, intervals)
+        if label == 0 and overlap_ratio > 0.0:
+            context = "boundary"
         specs.append(
             WindowSpec(
                 start_seconds=start,
                 end_seconds=end,
-                label=1 if window_overlaps_seizure(start, end, intervals) else 0,
-                context=classificar_contexto_janela(start, end, intervals),
+                label=label,
+                context=context,
+                ictal_overlap_ratio=overlap_ratio,
             )
         )
         start += step_seconds
@@ -182,6 +223,7 @@ def _limitar_janelas_por_classe(
     *,
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
+    min_contiguous_windows: int = 1,
 ) -> list[WindowSpec]:
     if max_windows_per_class is None and max_normal_windows is None and max_seizure_windows is None:
         return specs
@@ -194,7 +236,12 @@ def _limitar_janelas_por_classe(
         if limite == 1:
             return [classe[len(classe) // 2]]
 
-        n_blocos = min(4, limite, len(classe))
+        n_blocos = min(
+            4,
+            max(1, limite // max(1, min_contiguous_windows)),
+            limite,
+            len(classe),
+        )
         tamanho_bloco = max(1, limite // n_blocos)
         sobras = limite - (tamanho_bloco * n_blocos)
         inicios = np.linspace(0, len(classe) - 1, n_blocos, dtype=int)
@@ -227,6 +274,11 @@ def _limitar_janelas_por_classe(
             return selecionar_blocos_uniformes(classe, limite)
 
         grupos = {
+            "boundary": sorted(
+                [spec for spec in classe if spec.context == "boundary"],
+                key=lambda spec: spec.ictal_overlap_ratio,
+                reverse=True,
+            ),
             "pre_ictal": sorted(
                 [spec for spec in classe if spec.context == "pre_ictal"],
                 key=lambda spec: spec.start_seconds,
@@ -238,7 +290,7 @@ def _limitar_janelas_por_classe(
             ),
             "interictal": [spec for spec in classe if spec.context == "interictal"],
         }
-        pesos = {"pre_ictal": 0.35, "post_ictal": 0.35, "interictal": 0.30}
+        pesos = {"boundary": 0.25, "pre_ictal": 0.25, "post_ictal": 0.25, "interictal": 0.25}
         selecionadas: list[WindowSpec] = []
         usados: set[tuple[float, float]] = set()
 
@@ -255,7 +307,7 @@ def _limitar_janelas_por_classe(
                     usados.add(chave)
 
         if len(selecionadas) < limite:
-            for contexto in ("pre_ictal", "post_ictal", "interictal"):
+            for contexto in ("boundary", "pre_ictal", "post_ictal", "interictal"):
                 for spec in grupos[contexto]:
                     chave = (spec.start_seconds, spec.end_seconds)
                     if chave in usados:
@@ -288,6 +340,52 @@ def _limitar_janelas_por_classe(
     return sorted(selecionadas, key=lambda spec: spec.start_seconds)
 
 
+def limitar_dataset_janelado(
+    x: np.ndarray,
+    y: np.ndarray,
+    metadados: list[dict[str, Any]],
+    *,
+    max_normal_windows: int | None = None,
+    max_seizure_windows: int | None = None,
+    min_contiguous_windows: int = 1,
+) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
+    """Aplica a amostragem depois da extracao ou normalizacao das janelas."""
+    matriz = np.asarray(x)
+    rotulos = np.asarray(y)
+    if len(matriz) != len(rotulos) or len(rotulos) != len(metadados):
+        raise ValueError("x, y e metadados devem ter o mesmo tamanho.")
+    if max_normal_windows is None and max_seizure_windows is None:
+        return matriz, rotulos, metadados
+
+    specs = [
+        WindowSpec(
+            start_seconds=float(meta["start_seconds"]),
+            end_seconds=float(meta["end_seconds"]),
+            label=int(label),
+            context=str(meta.get("context") or "interictal"),
+            ictal_overlap_ratio=float(meta.get("ictal_overlap_ratio") or 0.0),
+        )
+        for label, meta in zip(rotulos, metadados)
+    ]
+    selecionadas = _limitar_janelas_por_classe(
+        specs,
+        None,
+        max_normal_windows=max_normal_windows,
+        max_seizure_windows=max_seizure_windows,
+        min_contiguous_windows=min_contiguous_windows,
+    )
+    chaves = {
+        (spec.start_seconds, spec.end_seconds, spec.label)
+        for spec in selecionadas
+    }
+    indices = [
+        indice
+        for indice, (label, meta) in enumerate(zip(rotulos, metadados))
+        if (float(meta["start_seconds"]), float(meta["end_seconds"]), int(label)) in chaves
+    ]
+    return matriz[indices], rotulos[indices], [metadados[indice] for indice in indices]
+
+
 def extrair_dataset_janelado_de_sinal(
     signal: np.ndarray,
     sfreq: float,
@@ -299,6 +397,8 @@ def extrair_dataset_janelado_de_sinal(
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
     feature_mode: str = FEATURE_MODE_MEAN,
+    min_ictal_overlap_ratio: float = 0.0,
+    min_contiguous_windows: int = 1,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     """Extrai matriz X/y de features a partir de um sinal 1D ja carregado."""
     sinal = np.asarray(signal, dtype=float).ravel()
@@ -308,12 +408,14 @@ def extrair_dataset_janelado_de_sinal(
         intervals,
         window_seconds=window_seconds,
         step_seconds=step_seconds,
+        min_ictal_overlap_ratio=min_ictal_overlap_ratio,
     )
     specs = _limitar_janelas_por_classe(
         specs,
         max_windows_per_class,
         max_normal_windows=max_normal_windows,
         max_seizure_windows=max_seizure_windows,
+        min_contiguous_windows=min_contiguous_windows,
     )
 
     x_rows: list[list[float]] = []
@@ -340,6 +442,7 @@ def extrair_dataset_janelado_de_sinal(
                 "end_seconds": spec.end_seconds,
                 "label": spec.label,
                 "context": spec.context,
+                "ictal_overlap_ratio": spec.ictal_overlap_ratio,
             }
         )
 
@@ -382,6 +485,8 @@ def extrair_dataset_janelado_multicanal(
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
     feature_mode: str = FEATURE_MODE_PER_CHANNEL,
+    min_ictal_overlap_ratio: float = 0.0,
+    min_contiguous_windows: int = 1,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     """
     Extrai features por canal para cada janela sem colapsar o EEG em media global.
@@ -403,12 +508,14 @@ def extrair_dataset_janelado_multicanal(
         intervals,
         window_seconds=window_seconds,
         step_seconds=step_seconds,
+        min_ictal_overlap_ratio=min_ictal_overlap_ratio,
     )
     specs = _limitar_janelas_por_classe(
         specs,
         max_windows_per_class,
         max_normal_windows=max_normal_windows,
         max_seizure_windows=max_seizure_windows,
+        min_contiguous_windows=min_contiguous_windows,
     )
 
     x_rows: list[list[float]] = []
@@ -439,6 +546,7 @@ def extrair_dataset_janelado_multicanal(
                 "end_seconds": spec.end_seconds,
                 "label": spec.label,
                 "context": spec.context,
+                "ictal_overlap_ratio": spec.ictal_overlap_ratio,
                 "n_canais": int(n_canais),
             }
         )
@@ -457,13 +565,16 @@ def extrair_dataset_janelado_multicanal_referencia(
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
     feature_mode: str = FEATURE_MODE_PER_CHANNEL,
+    min_ictal_overlap_ratio: float = 0.0,
+    min_contiguous_windows: int = 1,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     """Extrai features por canal em uma montagem fixa, zerando canais ausentes."""
     if not canais_referencia:
         raise ValueError("canais_referencia nao pode ser vazio em modo por canal.")
 
+    canais_validos_lista = selecionar_canais_eeg_validos(raw)
     canais_disponiveis = list(raw.ch_names)
-    canais_validos = set(selecionar_canais_eeg_validos(raw))
+    canais_validos = set(canais_validos_lista)
     sfreq = float(raw.info["sfreq"])
     duration_seconds = raw.n_times / sfreq
     specs = gerar_janelas_temporais(
@@ -471,18 +582,32 @@ def extrair_dataset_janelado_multicanal_referencia(
         intervals,
         window_seconds=window_seconds,
         step_seconds=step_seconds,
+        min_ictal_overlap_ratio=min_ictal_overlap_ratio,
     )
     specs = _limitar_janelas_por_classe(
         specs,
         max_windows_per_class,
         max_normal_windows=max_normal_windows,
         max_seizure_windows=max_seizure_windows,
+        min_contiguous_windows=min_contiguous_windows,
     )
 
     x_rows: list[list[float]] = []
     y_rows: list[int] = []
     metadados: list[dict[str, Any]] = []
     nomes_features = nomes_features_por_modo(feature_mode)
+    indices_referencia = {
+        canal: canais_disponiveis.index(canal)
+        for canal in canais_referencia
+        if canal in canais_validos
+    }
+    sinais_referencia = {
+        canal: sinal
+        for canal, sinal in zip(
+            indices_referencia,
+            raw.get_data(picks=list(indices_referencia.values())),
+        )
+    }
 
     for spec in specs:
         inicio = int(round(spec.start_seconds * sfreq))
@@ -499,8 +624,7 @@ def extrair_dataset_janelado_multicanal_referencia(
                 canais_omitidos.append(canal)
                 continue
 
-            idx = canais_disponiveis.index(canal)
-            sinal_canal = np.asarray(raw.get_data(picks=[idx], start=inicio, stop=fim)[0], dtype=float)
+            sinal_canal = np.asarray(sinais_referencia[canal][inicio:fim], dtype=float)
             feat = extrair_features_por_modo_de_valores(
                 sinal_canal,
                 feature_mode=feature_mode,
@@ -517,6 +641,7 @@ def extrair_dataset_janelado_multicanal_referencia(
                 "end_seconds": spec.end_seconds,
                 "label": spec.label,
                 "context": spec.context,
+                "ictal_overlap_ratio": spec.ictal_overlap_ratio,
                 "n_canais": int(len(canais_processados)),
                 "canais_omitidos": canais_omitidos,
             }
@@ -536,12 +661,19 @@ def extrair_dataset_janelado_edf(
     max_seizure_windows: int | None = None,
     canais_selecionados: list[str] | None = None,
     feature_mode: str = FEATURE_MODE_MEAN,
+    min_ictal_overlap_ratio: float = 0.0,
+    min_contiguous_windows: int = 1,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     """Carrega um EDF, calcula sinal medio dos canais e extrai features por janela."""
     path = Path(edf_path)
     raw = mne.io.read_raw_edf(path, preload=True, verbose=False)
     sfreq = float(raw.info["sfreq"])
-    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_RAW_SIGNAL}:
+    if feature_mode in {
+        FEATURE_MODE_MEAN,
+        FEATURE_MODE_TIME_FREQUENCY,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
+        FEATURE_MODE_RAW_SIGNAL,
+    }:
         raw.pick(selecionar_canais_eeg_validos(raw, canais_selecionados))
         sinais = raw.get_data()
         signal = np.mean(sinais, axis=0)
@@ -555,8 +687,14 @@ def extrair_dataset_janelado_edf(
             max_normal_windows=max_normal_windows,
             max_seizure_windows=max_seizure_windows,
             feature_mode=feature_mode,
+            min_ictal_overlap_ratio=min_ictal_overlap_ratio,
+            min_contiguous_windows=min_contiguous_windows,
         )
-    elif feature_mode in {FEATURE_MODE_PER_CHANNEL, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
+    elif feature_mode in {
+        FEATURE_MODE_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+    }:
         if canais_selecionados:
             x, y, metadados = extrair_dataset_janelado_multicanal_referencia(
                 raw,
@@ -568,6 +706,8 @@ def extrair_dataset_janelado_edf(
                 max_normal_windows=max_normal_windows,
                 max_seizure_windows=max_seizure_windows,
                 feature_mode=feature_mode,
+                min_ictal_overlap_ratio=min_ictal_overlap_ratio,
+                min_contiguous_windows=min_contiguous_windows,
             )
         else:
             raw.pick(selecionar_canais_eeg_validos(raw))
@@ -582,6 +722,8 @@ def extrair_dataset_janelado_edf(
                 max_normal_windows=max_normal_windows,
                 max_seizure_windows=max_seizure_windows,
                 feature_mode=feature_mode,
+                min_ictal_overlap_ratio=min_ictal_overlap_ratio,
+                min_contiguous_windows=min_contiguous_windows,
             )
     else:
         raise ValueError(f"feature_mode invalido: {feature_mode}")

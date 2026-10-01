@@ -1,0 +1,410 @@
+{
+  "model_type": "sequence_cnn_lstm",
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\manifests\\expanded_20260702_patient_split_train.txt",
+  "train_files": [
+    "chb01_01.edf",
+    "chb01_03.edf",
+    "chb01_04.edf",
+    "chb01_15.edf",
+    "chb02_01.edf",
+    "chb02_16+.edf",
+    "chb02_16.edf",
+    "chb04_01.edf",
+    "chb04_02.edf",
+    "chb04_05.edf",
+    "chb04_08.edf",
+    "chb04_28.edf",
+    "chb05_01.edf",
+    "chb05_06.edf",
+    "chb05_13.edf",
+    "chb07_12.edf",
+    "chb07_13.edf",
+    "chb07_19.edf",
+    "chb08_02.edf",
+    "chb08_03.edf",
+    "chb08_05.edf",
+    "chb08_21.edf",
+    "chb09_06.edf",
+    "chb09_19.edf",
+    "chb10_01.edf",
+    "chb10_12.edf",
+    "chb10_20.edf",
+    "chb10_27.edf",
+    "chb12_06.edf",
+    "chb12_08.edf",
+    "chb12_19.edf",
+    "chb15_01.edf",
+    "chb15_06.edf",
+    "chb15_10.edf",
+    "chb15_17.edf",
+    "chb15_20.edf",
+    "chb15_31.edf",
+    "chb16_10.edf",
+    "chb16_11.edf",
+    "chb16_17.edf",
+    "chb18_01.edf",
+    "chb18_02.edf",
+    "chb18_29.edf",
+    "chb18_30.edf",
+    "chb19_28.edf",
+    "chb19_29.edf",
+    "chb19_30.edf",
+    "chb20_01.edf",
+    "chb20_12.edf",
+    "chb20_13.edf",
+    "chb20_14.edf",
+    "chb24_01.edf",
+    "chb24_03.edf",
+    "chb24_04.edf"
+  ],
+  "holdout_files": [
+    "chb06_01.edf",
+    "chb06_02.edf",
+    "chb17a_03.edf",
+    "chb17a_05.edf",
+    "chb21_01.edf",
+    "chb21_02.edf",
+    "chb21_19.edf",
+    "chb21_20.edf",
+    "chb22_01.edf",
+    "chb22_20.edf",
+    "chb22_25.edf",
+    "chb23_06.edf",
+    "chb23_07.edf"
+  ],
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "feature_mode": "time_frequency_relative_per_channel",
+  "canais_referencia": [
+    "FP1-F7",
+    "F7-T7",
+    "T7-P7",
+    "P7-O1",
+    "FP1-F3",
+    "F3-C3",
+    "C3-P3",
+    "P3-O1",
+    "FP2-F4",
+    "F4-C4",
+    "C4-P4",
+    "P4-O2",
+    "FP2-F8",
+    "F8-T8",
+    "T8-P8-0",
+    "P8-O2",
+    "FZ-CZ",
+    "CZ-PZ",
+    "P7-T7",
+    "T7-FT9",
+    "FT9-FT10",
+    "FT10-T8",
+    "T8-P8-1"
+  ],
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "sequence_target_mode": "center",
+  "min_window_ictal_overlap_ratio": 0.5,
+  "boundary_sample_weight": 1.5,
+  "validation_source": "holdout_patients",
+  "feature_normalization": "per_edf_robust",
+  "cache_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_dataset_cache",
+  "max_normal_windows_per_file": 96,
+  "max_seizure_windows_per_file": 32,
+  "max_holdout_normal_windows_per_file": 144,
+  "max_holdout_seizure_windows_per_file": 48,
+  "class_weight_mode": "manual",
+  "class_weight": {
+    "0": 1.0,
+    "1": 1.0
+  },
+  "early_stopping_patience": 4,
+  "threshold": 0.5,
+  "min_duration_seconds": 20.0,
+  "training_history": {
+    "accuracy": [
+      0.8914798498153687,
+      0.9345291256904602,
+      0.9573991298675537,
+      0.9704036116600037,
+      0.9739910364151001
+    ],
+    "loss": [
+      0.30635154247283936,
+      0.1844201683998108,
+      0.12709906697273254,
+      0.09248840063810349,
+      0.08699951320886612
+    ],
+    "val_accuracy": [
+      0.890070915222168,
+      0.9042553305625916,
+      0.911347508430481,
+      0.9054373502731323,
+      0.9066193699836731
+    ],
+    "val_loss": [
+      0.26537346839904785,
+      0.2762916386127472,
+      0.32351210713386536,
+      0.33967697620391846,
+      0.3516029715538025
+    ]
+  },
+  "train": {
+    "n_sequences": 2230,
+    "class_counts": {
+      "0": 1904,
+      "1": 326
+    }
+  },
+  "holdout": {
+    "n_sequences": 846,
+    "class_counts": {
+      "0": 736,
+      "1": 110
+    },
+    "sequence_metrics": {
+      "accuracy": 0.8900709219858156,
+      "precision": 0.6666666666666666,
+      "recall": 0.3090909090909091,
+      "f1": 0.422360248447205
+    },
+    "edf_metrics": {
+      "metrics": {
+        "accuracy": 0.6153846153846154,
+        "precision": 1.0,
+        "recall": 0.2857142857142857,
+        "f1": 0.4444444444444444
+      },
+      "files": [
+        {
+          "arquivo": "chb06_01.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 59,
+          "score_max": 0.1291777491569519,
+          "score_mean": 0.037020303308963776,
+          "trecho_suspeito": {
+            "start_seconds": 7468.0,
+            "end_seconds": 7472.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.1291777491569519,
+            "score_max": 0.1291777491569519,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb06_02.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 60,
+          "score_max": 0.06737316399812698,
+          "score_mean": 0.034519534558057785,
+          "trecho_suspeito": {
+            "start_seconds": 14354.0,
+            "end_seconds": 14358.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.06737316399812698,
+            "score_max": 0.06737316399812698,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb17a_03.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 78,
+          "score_max": 0.8504217863082886,
+          "score_mean": 0.1178436428308487,
+          "trecho_suspeito": {
+            "start_seconds": 2286.0,
+            "end_seconds": 2302.0,
+            "duration_seconds": 16.0,
+            "n_sequences": 4,
+            "score_mean": 0.7466210722923279,
+            "score_max": 0.8504217863082886,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb17a_05.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 60,
+          "score_max": 0.7281957864761353,
+          "score_mean": 0.05003024637699127,
+          "trecho_suspeito": {
+            "start_seconds": 1226.0,
+            "end_seconds": 1230.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.7281957864761353,
+            "score_max": 0.7281957864761353,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb21_01.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 60,
+          "score_max": 0.24942709505558014,
+          "score_mean": 0.04100137576460838,
+          "trecho_suspeito": {
+            "start_seconds": 1170.0,
+            "end_seconds": 1174.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.24942709505558014,
+            "score_max": 0.24942709505558014,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb21_02.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 60,
+          "score_max": 0.08179351687431335,
+          "score_mean": 0.03210078179836273,
+          "trecho_suspeito": {
+            "start_seconds": 2424.0,
+            "end_seconds": 2428.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.08179351687431335,
+            "score_max": 0.08179351687431335,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb21_19.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 69,
+          "score_max": 0.7172638773918152,
+          "score_mean": 0.09006184339523315,
+          "trecho_suspeito": {
+            "start_seconds": 1284.0,
+            "end_seconds": 1288.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.7172638773918152,
+            "score_max": 0.7172638773918152,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb21_20.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 67,
+          "score_max": 0.5557063817977905,
+          "score_mean": 0.0973704531788826,
+          "trecho_suspeito": {
+            "start_seconds": 2606.0,
+            "end_seconds": 2614.0,
+            "duration_seconds": 8.0,
+            "n_sequences": 2,
+            "score_mean": 0.5321843028068542,
+            "score_max": 0.5553174018859863,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb22_01.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 60,
+          "score_max": 0.6300197839736938,
+          "score_mean": 0.09458605200052261,
+          "trecho_suspeito": {
+            "start_seconds": 1194.0,
+            "end_seconds": 1206.0,
+            "duration_seconds": 12.0,
+            "n_sequences": 3,
+            "score_mean": 0.5457634329795837,
+            "score_max": 0.5846782922744751,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb22_20.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 69,
+          "score_max": 0.9026386141777039,
+          "score_mean": 0.2381606101989746,
+          "trecho_suspeito": {
+            "start_seconds": 3362.0,
+            "end_seconds": 3430.0,
+            "duration_seconds": 68.0,
+            "n_sequences": 17,
+            "score_mean": 0.8413030505180359,
+            "score_max": 0.9026386141777039,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb22_25.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 73,
+          "score_max": 0.8683788180351257,
+          "score_mean": 0.23605448007583618,
+          "trecho_suspeito": {
+            "start_seconds": 3170.0,
+            "end_seconds": 3210.0,
+            "duration_seconds": 40.0,
+            "n_sequences": 10,
+            "score_mean": 0.7592946290969849,
+            "score_max": 0.8302685618400574,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb23_06.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 71,
+          "score_max": 0.3435753583908081,
+          "score_mean": 0.05987723544239998,
+          "trecho_suspeito": {
+            "start_seconds": 3998.0,
+            "end_seconds": 4002.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.3435753583908081,
+            "score_max": 0.3435753583908081,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb23_07.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 60,
+          "score_max": 0.598564624786377,
+          "score_mean": 0.0740039125084877,
+          "trecho_suspeito": {
+            "start_seconds": 2494.0,
+            "end_seconds": 2502.0,
+            "duration_seconds": 8.0,
+            "n_sequences": 2,
+            "score_mean": 0.5647802352905273,
+            "score_max": 0.598564624786377,
+            "threshold": 0.5
+          }
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_tf_relative_robust_normalref_per_channel_center_v5.keras",
+    "scaler_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_tf_relative_robust_normalref_per_channel_center_v5_scaler.pkl",
+    "metadata_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_tf_relative_robust_normalref_per_channel_center_v5_metadata.json"
+  }
+}

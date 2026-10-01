@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import Settings, get_settings
 from app.core.deps import get_current_user
 from app.database import get_db
 from app.models import Paciente, Usuario
@@ -16,33 +15,24 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)],
 )
 
-USUARIO_PADRAO_DEV_ID = 1
-
-
-async def _resolver_id_usuario(
-    payload: PacienteCreate,
+async def _obter_paciente_do_usuario(
+    paciente_id: int,
+    usuario: Usuario,
     db: AsyncSession,
-    settings: Settings,
-) -> int:
-    usuario_id = payload.id_usuario
-
-    if usuario_id is None:
-        if settings.is_development:
-            usuario_id = USUARIO_PADRAO_DEV_ID
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="id_usuario e obrigatorio fora do ambiente de desenvolvimento.",
-            )
-
-    medico = await db.get(Usuario, usuario_id)
-    if medico is None:
+) -> Paciente:
+    result = await db.execute(
+        select(Paciente).where(
+            Paciente.id == paciente_id,
+            Paciente.id_usuario == usuario.id,
+        )
+    )
+    paciente = result.scalar_one_or_none()
+    if paciente is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Usuario (medico) com id {usuario_id} nao encontrado.",
+            detail=f"Paciente com id {paciente_id} nao encontrado.",
         )
-
-    return usuario_id
+    return paciente
 
 
 def _is_unique_violation(exc: Exception) -> bool:
@@ -53,8 +43,13 @@ def _is_unique_violation(exc: Exception) -> bool:
 @router.get("", response_model=list[PacienteResponse], summary="Listar pacientes")
 async def listar_pacientes(
     db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
 ) -> list[PacienteResponse]:
-    result = await db.execute(select(Paciente).order_by(Paciente.nome.asc()))
+    result = await db.execute(
+        select(Paciente)
+        .where(Paciente.id_usuario == usuario.id)
+        .order_by(Paciente.nome.asc())
+    )
     return list(result.scalars().all())
 
 
@@ -66,14 +61,9 @@ async def listar_pacientes(
 async def obter_paciente(
     paciente_id: int,
     db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
 ) -> PacienteResponse:
-    paciente = await db.get(Paciente, paciente_id)
-    if paciente is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Paciente com id {paciente_id} nao encontrado.",
-        )
-    return paciente
+    return await _obter_paciente_do_usuario(paciente_id, usuario, db)
 
 
 @router.post(
@@ -85,9 +75,13 @@ async def obter_paciente(
 async def criar_paciente(
     payload: PacienteCreate,
     db: AsyncSession = Depends(get_db),
-    settings: Settings = Depends(get_settings),
+    usuario: Usuario = Depends(get_current_user),
 ) -> PacienteResponse:
-    usuario_id = await _resolver_id_usuario(payload, db, settings)
+    if payload.id_usuario is not None and payload.id_usuario != usuario.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nao e permitido cadastrar paciente para outro medico.",
+        )
 
     paciente = Paciente(
         nome=payload.nome,
@@ -96,7 +90,7 @@ async def criar_paciente(
         cpf=payload.cpf,
         telefone=payload.telefone,
         observacoes=payload.observacoes,
-        id_usuario=usuario_id,
+        id_usuario=usuario.id,
     )
     db.add(paciente)
 
@@ -124,23 +118,17 @@ async def atualizar_paciente(
     paciente_id: int,
     payload: PacienteUpdate,
     db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
 ) -> PacienteResponse:
-    paciente = await db.get(Paciente, paciente_id)
-    if paciente is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Paciente com id {paciente_id} nao encontrado.",
-        )
+    paciente = await _obter_paciente_do_usuario(paciente_id, usuario, db)
 
     dados = payload.model_dump(exclude_unset=True)
     usuario_id = dados.get("id_usuario")
-    if usuario_id is not None:
-        medico = await db.get(Usuario, usuario_id)
-        if medico is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Usuario (medico) com id {usuario_id} nao encontrado.",
-            )
+    if usuario_id is not None and usuario_id != usuario.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nao e permitido transferir paciente para outro medico.",
+        )
 
     for campo, valor in dados.items():
         setattr(paciente, campo, valor)
@@ -168,13 +156,9 @@ async def atualizar_paciente(
 async def excluir_paciente(
     paciente_id: int,
     db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
 ) -> None:
-    paciente = await db.get(Paciente, paciente_id)
-    if paciente is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Paciente com id {paciente_id} nao encontrado.",
-        )
+    paciente = await _obter_paciente_do_usuario(paciente_id, usuario, db)
 
     await db.delete(paciente)
     await db.flush()

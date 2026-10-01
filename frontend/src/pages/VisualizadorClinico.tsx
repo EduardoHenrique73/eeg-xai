@@ -254,6 +254,9 @@ export function VisualizadorClinico() {
             <EegSignalChart
               exameId={exameId}
               mapaShapUrl={medico?.exibir_shap === false ? null : concluido?.mapa_shap_url}
+              canaisSelecionados={canaisSelecionados}
+              trechoSuspeito={concluido?.trecho_suspeito}
+              topTrechosSuspeitos={concluido?.top_trechos_suspeitos ?? []}
               placeholder={placeholderGrafico}
             />
           }
@@ -288,6 +291,7 @@ export function VisualizadorClinico() {
               nSequencesAnalisadas={concluido?.n_sequences_analisadas}
               minDurationSeconds={concluido?.min_duration_seconds}
               decisionThreshold={concluido?.threshold}
+              xaiMethod={concluido?.xai_method}
               laudoTextoInicial={diagnostico?.laudo_texto}
               statusExameInicial={diagnostico?.status_exame}
               erro={erroUpload ?? erroDiagnostico}

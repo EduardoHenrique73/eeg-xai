@@ -25,6 +25,7 @@ import numpy as np
 from app.ai_engine.feature_extractor import (
     FEATURE_MODE_MEAN,
     extrair_features_edf_janelado,
+    normalizar_matriz_features_robusta,
 )
 from app.config import Settings
 
@@ -167,6 +168,7 @@ def construir_sequencias(
     *,
     sequence_length: int,
     sequence_stride: int,
+    target_mode: str = "span",
 ) -> tuple[np.ndarray, list[dict[str, Any]]]:
     """Monta blocos temporais de janelas consecutivas.
 
@@ -175,6 +177,25 @@ def construir_sequencias(
     """
     if not janelas:
         return np.empty((0, sequence_length, 0), dtype=np.float32), []
+    if target_mode not in {"span", "center"}:
+        raise ValueError("target_mode deve ser 'span' ou 'center'.")
+
+    def metadados_temporais(bloco: list[dict[str, Any]], target_idx: int) -> dict[str, float]:
+        alvo = bloco[target_idx]
+        return {
+            "start_seconds": float(
+                alvo.get("window_start_seconds", 0.0)
+                if target_mode == "center"
+                else bloco[0].get("window_start_seconds", 0.0)
+            ),
+            "end_seconds": float(
+                alvo.get("window_end_seconds", 0.0)
+                if target_mode == "center"
+                else bloco[-1].get("window_end_seconds", 0.0)
+            ),
+            "context_start_seconds": float(bloco[0].get("window_start_seconds", 0.0)),
+            "context_end_seconds": float(bloco[-1].get("window_end_seconds", 0.0)),
+        }
 
     vetores = [np.asarray(j["feature_vector"], dtype=np.float32) for j in janelas]
     n_features = vetores[0].shape[0]
@@ -184,10 +205,8 @@ def construir_sequencias(
         vetores = vetores + [vetores[-1]] * faltam
         janelas_pad = list(janelas) + [janelas[-1]] * faltam
         bloco = np.stack(vetores[:sequence_length])
-        meta = {
-            "start_seconds": float(janelas_pad[0].get("window_start_seconds", 0.0)),
-            "end_seconds": float(janelas_pad[sequence_length - 1].get("window_end_seconds", 0.0)),
-        }
+        target_idx = min(len(janelas) - 1, sequence_length // 2)
+        meta = metadados_temporais(janelas_pad[:sequence_length], target_idx)
         return bloco.reshape(1, sequence_length, n_features).astype(np.float32), [meta]
 
     x_seq: list[np.ndarray] = []
@@ -195,12 +214,7 @@ def construir_sequencias(
     for inicio in range(0, len(vetores) - sequence_length + 1, sequence_stride):
         fim = inicio + sequence_length
         x_seq.append(np.stack(vetores[inicio:fim]))
-        meta_seq.append(
-            {
-                "start_seconds": float(janelas[inicio].get("window_start_seconds", 0.0)),
-                "end_seconds": float(janelas[fim - 1].get("window_end_seconds", 0.0)),
-            }
-        )
+        meta_seq.append(metadados_temporais(janelas[inicio:fim], sequence_length // 2))
 
     return np.asarray(x_seq, dtype=np.float32), meta_seq
 
@@ -226,6 +240,7 @@ def _segmento(
     duration = float(max(0.0, end - start))
     score_medio = float(np.mean(scores[indices]))
     score_max = float(np.max(scores[indices]))
+    evidencia_acumulada = float(np.sum(np.maximum(scores[indices] - threshold, 0.0)))
     return {
         "start_seconds": start,
         "end_seconds": end,
@@ -234,6 +249,7 @@ def _segmento(
         "n_janelas": int(indices.size),
         "score_medio": score_medio,
         "score_max": score_max,
+        "evidencia_acumulada": evidencia_acumulada,
         "threshold": float(threshold),
         "atingiu_duracao_minima": bool(
             duration >= min_duration_seconds and score_medio >= threshold
@@ -287,6 +303,7 @@ def agregar_trechos_suspeitos(
     segmentos.sort(
         key=lambda seg: (
             bool(seg["atingiu_duracao_minima"]),
+            float(seg["evidencia_acumulada"]),
             float(seg["score_medio"]),
             float(seg["score_max"]),
             float(seg["duration_seconds"]),
@@ -328,12 +345,14 @@ def analisar_exame_sequencial(
     recursos: RecursosSequenciais,
     settings: Settings,
     canais_selecionados: list[str] | None = None,
+    threshold_override: float | None = None,
 ) -> dict[str, Any]:
     """Executa o pipeline sequencial completo e retorna o resultado agregado."""
     metadata = recursos.metadata
     feature_mode = str(metadata.get("feature_mode") or settings.ai_sequence_feature_mode or FEATURE_MODE_MEAN)
     sequence_length = int(metadata.get("sequence_length") or settings.ai_sequence_length or SEQUENCE_LENGTH_DEFAULT)
     sequence_stride = int(metadata.get("sequence_stride") or settings.ai_sequence_stride or SEQUENCE_STRIDE_DEFAULT)
+    sequence_target_mode = str(metadata.get("sequence_target_mode") or "span")
     window_seconds = float(metadata.get("window_seconds") or settings.ai_sequence_window_seconds or WINDOW_SECONDS_DEFAULT)
     step_seconds = float(metadata.get("step_seconds") or settings.ai_sequence_step_seconds or STEP_SECONDS_DEFAULT)
     canais_referencia = metadata.get("canais_referencia") or None
@@ -350,10 +369,21 @@ def analisar_exame_sequencial(
     if not janelas:
         raise ValueError("Nenhuma janela temporal foi gerada para inferencia sequencial.")
 
+    feature_normalization = str(metadata.get("feature_normalization") or "global_scaler")
+    if feature_normalization == "per_edf_robust":
+        matriz_janelas = normalizar_matriz_features_robusta(
+            np.asarray([janela["feature_vector"] for janela in janelas], dtype=np.float32)
+        )
+        janelas = [
+            {**janela, "feature_vector": matriz_janelas[idx].tolist()}
+            for idx, janela in enumerate(janelas)
+        ]
+
     x_seq, meta_seq = construir_sequencias(
         janelas,
         sequence_length=sequence_length,
         sequence_stride=sequence_stride,
+        target_mode=sequence_target_mode,
     )
     if x_seq.shape[0] == 0:
         raise ValueError("Nao foi possivel montar sequencias para inferencia.")
@@ -365,6 +395,8 @@ def analisar_exame_sequencial(
     threshold, min_duration = resolver_threshold_duracao(
         metadata, recursos.calibration, settings
     )
+    if threshold_override is not None:
+        threshold = float(np.clip(threshold_override, 0.0, 1.0))
 
     trechos = agregar_trechos_suspeitos(
         scores,
@@ -426,6 +458,7 @@ def analisar_exame_sequencial(
         "min_duration_seconds": float(min_duration),
         "max_suspicious_coverage": float(settings.ai_sequence_max_suspicious_coverage),
         "feature_mode": feature_mode,
+        "feature_normalization": feature_normalization,
         "canais_processados": canais_processados,
         "canais_omitidos": canais_omitidos,
         "montagem_incompleta": montagem_incompleta,
@@ -438,4 +471,9 @@ def analisar_exame_sequencial(
         "janela_pico": janela_pico,
         "trecho_suspeito": trecho_principal,
         "top_trechos_suspeitos": trechos,
+        "xai_method": "gradient_shap",
+        "_xai_input": x_scaled[indice_pico : indice_pico + 1],
+        "_xai_background": x_scaled[
+            np.linspace(0, len(x_scaled) - 1, min(16, len(x_scaled)), dtype=int)
+        ],
     }

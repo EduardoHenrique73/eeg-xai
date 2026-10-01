@@ -31,6 +31,22 @@ def test_construir_sequencias_gera_blocos_consecutivos():
     assert meta[-1]["start_seconds"] == 6.0
 
 
+def test_construir_sequencias_center_retorna_janela_central():
+    janelas = [_janela(i * 2.0, i * 2.0 + 4.0, float(i)) for i in range(6)]
+    x, meta = construir_sequencias(
+        janelas,
+        sequence_length=4,
+        sequence_stride=1,
+        target_mode="center",
+    )
+
+    assert x.shape == (3, 4, 3)
+    assert meta[0]["start_seconds"] == 4.0
+    assert meta[0]["end_seconds"] == 8.0
+    assert meta[0]["context_start_seconds"] == 0.0
+    assert meta[0]["context_end_seconds"] == 10.0
+
+
 def test_construir_sequencias_completa_quando_poucas_janelas():
     janelas = [_janela(0.0, 4.0, 1.0), _janela(2.0, 6.0, 2.0)]
     x, meta = construir_sequencias(janelas, sequence_length=4, sequence_stride=2)
@@ -55,8 +71,8 @@ def test_agregar_trechos_agrupa_sequencias_contiguas():
     assert principal["atingiu_duracao_minima"] is True
 
 
-def test_agregar_trechos_prioriza_confianca_antes_de_duracao():
-    scores = np.array([0.81, 0.82, 0.83, 0.2, 0.96, 0.97])
+def test_agregar_trechos_prioriza_evidencia_sustentada():
+    scores = np.array([0.92, 0.92, 0.92, 0.2, 0.96, 0.97])
     meta = [{"start_seconds": float(i * 2), "end_seconds": float(i * 2 + 4)} for i in range(len(scores))]
 
     trechos = agregar_trechos_suspeitos(
@@ -64,8 +80,9 @@ def test_agregar_trechos_prioriza_confianca_antes_de_duracao():
     )
 
     assert len(trechos) == 2
-    assert trechos[0]["score_medio"] > 0.95
-    assert trechos[0]["duration_seconds"] < trechos[1]["duration_seconds"]
+    assert trechos[0]["n_sequences"] == 3
+    assert trechos[0]["evidencia_acumulada"] > trechos[1]["evidencia_acumulada"]
+    assert trechos[0]["duration_seconds"] > trechos[1]["duration_seconds"]
 
 
 def test_agregar_trechos_usa_pico_quando_nada_acima_do_threshold():

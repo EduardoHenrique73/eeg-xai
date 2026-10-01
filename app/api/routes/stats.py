@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
 from app.database import get_db
-from app.models import Exame, Paciente
+from app.models import Exame, Paciente, Usuario
 from app.models.exame import STATUS_EXAME_CONCLUIDO
 
 router = APIRouter(prefix="/api/stats", tags=["Dashboard"])
@@ -27,13 +27,24 @@ class DashboardStats(BaseModel):
     summary="Estatísticas gerais do dashboard",
     dependencies=[Depends(get_current_user)],
 )
-async def obter_stats(db: AsyncSession = Depends(get_db)) -> DashboardStats:
-    total_pacientes = await db.scalar(select(func.count()).select_from(Paciente)) or 0
+async def obter_stats(
+    db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
+) -> DashboardStats:
+    total_pacientes = (
+        await db.scalar(
+            select(func.count())
+            .select_from(Paciente)
+            .where(Paciente.id_usuario == usuario.id)
+        )
+    ) or 0
 
     exames_pendentes = (
         await db.scalar(
             select(func.count())
             .select_from(Exame)
+            .join(Paciente, Paciente.id == Exame.id_paciente)
+            .where(Paciente.id_usuario == usuario.id)
             .where(Exame.status_exame != STATUS_EXAME_CONCLUIDO)
         )
     ) or 0
@@ -42,6 +53,8 @@ async def obter_stats(db: AsyncSession = Depends(get_db)) -> DashboardStats:
         await db.scalar(
             select(func.count())
             .select_from(Exame)
+            .join(Paciente, Paciente.id == Exame.id_paciente)
+            .where(Paciente.id_usuario == usuario.id)
             .where(Exame.status_exame == STATUS_EXAME_CONCLUIDO)
         )
     ) or 0

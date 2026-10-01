@@ -2,12 +2,15 @@
 
 import pytest
 import pytest_asyncio
+from datetime import date
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.core.deps import get_current_user
 from app.database import get_db
 from app.main import app
+from app.core.security import hash_password
+from app.models import Paciente, Usuario
 
 
 @pytest_asyncio.fixture
@@ -58,6 +61,32 @@ async def test_obter_paciente_inexistente_retorna_404(client_pacientes):
 
 
 @pytest.mark.asyncio
+async def test_paciente_de_outro_medico_nao_e_exposto(client_pacientes, db_session):
+    outro_medico = Usuario(
+        nome="Dr. Outro",
+        crm="999999-SP",
+        email="outro@hospital.com",
+        senha_hash=hash_password("senha-teste"),
+    )
+    db_session.add(outro_medico)
+    await db_session.flush()
+    outro_paciente = Paciente(
+        nome="Paciente Restrito",
+        data_nascimento=date(1991, 1, 1),
+        sexo="F",
+        cpf="52998224725",
+        id_usuario=outro_medico.id,
+    )
+    db_session.add(outro_paciente)
+    await db_session.commit()
+
+    lista = await client_pacientes.get("/api/pacientes")
+    assert all(item["id"] != outro_paciente.id for item in lista.json())
+    detalhe = await client_pacientes.get(f"/api/pacientes/{outro_paciente.id}")
+    assert detalhe.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_criar_paciente_vincula_usuario_padrao_dev(
     client_pacientes,
     usuario_medico,
@@ -68,7 +97,7 @@ async def test_criar_paciente_vincula_usuario_padrao_dev(
             "nome": "Maria Souza",
             "data_nascimento": "1990-07-20",
             "sexo": "F",
-            "cpf": "98765432100",
+            "cpf": "52998224725",
             "telefone": "11988887777",
         },
     )

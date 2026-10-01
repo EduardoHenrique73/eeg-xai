@@ -24,6 +24,8 @@ eeg_xai_dev.db
 .pytest_cache/
 .coverage
 htmlcov/
+backend-*.log
+tmp/
 
 # Storage (dados clínicos — nunca versionar)
 storage/edf/*

@@ -94,19 +94,24 @@ Interpretacao correta:
 - o medico deve confirmar visualmente no EEG;
 - o sistema nao deve dizer sozinho que o paciente "tem epilepsia".
 
-## Melhor modelo recomendado atualmente
+## Melhor resultado experimental atualmente
 
-Com base nos testes registrados, o melhor candidato conhecido para localizacao temporal e:
+O melhor equilibrio interpaciente de desenvolvimento foi obtido pela `v11`:
 
 ```text
-sequence_cnn_lstm_tf_per_channel_localized_w1
+features tempo-frequencia hibridas por canal
+normalizacao robusta no EDF completo
+ranqueamento por evidencia acumulada
+quatro pacientes de calibracao por dobra
 ```
 
-Motivo:
+Resultado medio em `chb09`, `chb15` e `chb18`:
 
-- melhor F1 localizado que o modelo mais recente expandido;
-- menos falsos positivos que o novo modelo expandido;
-- menos erros de localizacao.
+- F1 por EDF `0.8222`;
+- F1 localizado `0.6111`;
+- 1 falso positivo e 2 falsos negativos;
+- 4 de 9 crises localizadas.
 
-O modelo expandido `expanded_20260702` nao deve ser promovido ainda.
-
+Esse conjunto ja foi consultado durante o desenvolvimento. Portanto, a `v11`
+ainda nao deve ser promovida nem descrita como resultado final do TCC. O modelo
+ativo deve permanecer inalterado ate o teste em pacientes intocados.

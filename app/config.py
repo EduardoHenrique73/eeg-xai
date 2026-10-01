@@ -118,10 +118,20 @@ class Settings(BaseSettings):
     def parse_feature_mode(cls, value: object) -> object:
         if isinstance(value, str):
             normalized = value.strip().lower()
-            if normalized not in {"mean", "per_channel", "time_frequency", "time_frequency_per_channel", "raw_signal"}:
+            if normalized not in {
+                "mean",
+                "per_channel",
+                "time_frequency",
+                "time_frequency_per_channel",
+                "time_frequency_relative",
+                "time_frequency_relative_per_channel",
+                "raw_signal",
+            }:
                 raise ValueError(
                     "AI_SEQUENCE_FEATURE_MODE deve ser 'mean', 'per_channel', "
-                    "'time_frequency', 'time_frequency_per_channel' ou 'raw_signal'."
+                    "'time_frequency', 'time_frequency_per_channel', "
+                    "'time_frequency_relative', 'time_frequency_relative_per_channel' "
+                    "ou 'raw_signal'."
                 )
             return normalized
         return value

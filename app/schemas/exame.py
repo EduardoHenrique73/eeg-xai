@@ -70,6 +70,7 @@ class DiagnosticoConcluido(DiagnosticoExameBase):
     min_duration_seconds: float | None = None
     max_suspicious_coverage: float | None = None
     score_agregacao: str | None = None
+    xai_method: str | None = None
     data_analise: datetime
 
 
@@ -78,9 +79,15 @@ class EegPontoVisualizacao(BaseModel):
     amplitude: float
 
 
+class EegCanalVisualizacao(BaseModel):
+    canal: str
+    pontos: list[EegPontoVisualizacao]
+
+
 class SinaisExameResponse(BaseModel):
     exame_id: int
     pontos: list[EegPontoVisualizacao]
+    series: list[EegCanalVisualizacao] = Field(default_factory=list)
     taxa_amostragem_hz: float
     n_canais_eeg: int
     canais_eeg: list[str] = Field(default_factory=list)

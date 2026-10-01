@@ -32,6 +32,7 @@ from app.ai_engine.sequence_inference import (
     analisar_exame_sequencial,
     carregar_recursos_sequenciais,
 )
+from app.ai_engine.sequence_shap import gerar_mapa_shap_sequencial
 from app.ai_engine.shap_explainer import gerar_mapa_shap
 from app.config import Settings, get_settings
 from app.database import AsyncSessionLocal
@@ -304,6 +305,7 @@ def _detalhes_sequenciais(resultado: dict[str, Any]) -> dict[str, Any]:
         "n_janelas_analisadas": resultado.get("n_janelas_analisadas"),
         "n_sequences_analisadas": resultado.get("n_sequences_analisadas"),
         "score_agregacao": resultado.get("score_agregacao"),
+        "xai_method": resultado.get("xai_method"),
         "janela_pico": resultado.get("janela_pico"),
         "trecho_suspeito": resultado.get("trecho_suspeito"),
         "top_trechos_suspeitos": list(resultado.get("top_trechos_suspeitos", [])),
@@ -318,8 +320,10 @@ async def _processar_exame_sequencial(
     recursos: RecursosSequenciais,
     settings: Settings,
     canais_selecionados: list[str] | None,
+    threshold_override: float | None,
+    gerar_shap: bool,
 ) -> None:
-    """Fluxo do modelo sequencial global (sem SHAP, com trechos suspeitos)."""
+    """Fluxo do modelo sequencial global com trechos e Gradient SHAP."""
     logger.info("Usando modelo sequencial (global) para exame %s", exame_id)
     resultado = await asyncio.to_thread(
         analisar_exame_sequencial,
@@ -327,6 +331,7 @@ async def _processar_exame_sequencial(
         recursos=recursos,
         settings=settings,
         canais_selecionados=canais_selecionados,
+        threshold_override=threshold_override,
     )
 
     score = float(resultado["score_geral"])
@@ -338,10 +343,27 @@ async def _processar_exame_sequencial(
         int(resultado.get("n_sequences_analisadas", 0)),
     )
 
+    mapa_shap_path = ""
+    if gerar_shap:
+        try:
+            pico = resultado.get("janela_pico") or {}
+            mapa_shap_path = await asyncio.to_thread(
+                gerar_mapa_shap_sequencial,
+                recursos.model,
+                resultado["_xai_background"],
+                resultado["_xai_input"],
+                exame_id=exame_id,
+                canais=list(resultado.get("canais_processados", [])),
+                inicio_seconds=float(pico.get("start_seconds", 0.0)),
+                fim_seconds=float(pico.get("end_seconds", 0.0)),
+            )
+        except Exception:
+            logger.exception("Falha ao gerar Gradient SHAP sequencial para exame %s", exame_id)
+
     predicao = PredicaoIA(
         id_exame=exame_id,
         resultado_score=score,
-        mapa_shap_path="",
+        mapa_shap_path=mapa_shap_path,
         detalhes_json=json.dumps(detalhes, ensure_ascii=False),
     )
     session.add(predicao)
@@ -356,6 +378,8 @@ async def processar_exame_ia(
     extrair_features: FeatureExtractorFn | None = None,
     inferir: InferenciaFn | None = None,
     gerar_shap: ShapFn | None = None,
+    threshold_override: float | None = None,
+    gerar_shap_sequencial: bool = True,
 ) -> None:
     """
     Pipeline completo em background: features -> CNN-LSTM -> SHAP -> PredicaoIA.
@@ -393,6 +417,8 @@ async def processar_exame_ia(
                         recursos=recursos,
                         settings=settings,
                         canais_selecionados=canais_selecionados,
+                        threshold_override=threshold_override,
+                        gerar_shap=gerar_shap_sequencial,
                     )
                     return
                 logger.warning(

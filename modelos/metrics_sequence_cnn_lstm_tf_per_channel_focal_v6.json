@@ -1,0 +1,381 @@
+{
+  "model_type": "sequence_cnn_lstm",
+  "dataset_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\manifests\\fp_reduction_patient_split_train.txt",
+  "train_files": [
+    "chb01_01.edf",
+    "chb01_03.edf",
+    "chb01_04.edf",
+    "chb01_15.edf",
+    "chb02_01.edf",
+    "chb02_16+.edf",
+    "chb02_16.edf",
+    "chb04_01.edf",
+    "chb04_05.edf",
+    "chb05_01.edf",
+    "chb05_06.edf",
+    "chb07_12.edf",
+    "chb07_13.edf",
+    "chb08_02.edf",
+    "chb08_21.edf",
+    "chb09_06.edf",
+    "chb09_19.edf",
+    "chb10_12.edf",
+    "chb10_27.edf",
+    "chb12_06.edf",
+    "chb12_08.edf",
+    "chb12_19.edf",
+    "chb15_01.edf",
+    "chb15_06.edf",
+    "chb15_10.edf",
+    "chb15_17.edf",
+    "chb15_20.edf",
+    "chb15_31.edf",
+    "chb16_10.edf",
+    "chb16_17.edf",
+    "chb18_01.edf",
+    "chb18_29.edf",
+    "chb19_28.edf",
+    "chb19_29.edf",
+    "chb20_12.edf",
+    "chb20_13.edf",
+    "chb24_01.edf"
+  ],
+  "holdout_files": [
+    "chb06_01.edf",
+    "chb06_02.edf",
+    "chb17a_03.edf",
+    "chb17a_05.edf",
+    "chb21_01.edf",
+    "chb21_19.edf",
+    "chb22_01.edf",
+    "chb22_20.edf",
+    "chb23_06.edf",
+    "chb23_07.edf"
+  ],
+  "window_seconds": 4.0,
+  "step_seconds": 2.0,
+  "feature_mode": "time_frequency_per_channel",
+  "canais_referencia": [
+    "FP1-F7",
+    "F7-T7",
+    "T7-P7",
+    "P7-O1",
+    "FP1-F3",
+    "F3-C3",
+    "C3-P3",
+    "P3-O1",
+    "FP2-F4",
+    "F4-C4",
+    "C4-P4",
+    "P4-O2",
+    "FP2-F8",
+    "F8-T8",
+    "T8-P8-0",
+    "P8-O2",
+    "FZ-CZ",
+    "CZ-PZ",
+    "P7-T7",
+    "T7-FT9",
+    "FT9-FT10",
+    "FT10-T8",
+    "T8-P8-1"
+  ],
+  "sequence_length": 8,
+  "sequence_stride": 2,
+  "sequence_target_mode": "center",
+  "min_window_ictal_overlap_ratio": 0.5,
+  "boundary_sample_weight": 2.0,
+  "validation_source": "holdout_patients",
+  "feature_normalization": "global_scaler",
+  "cache_dir": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_dataset_cache",
+  "max_normal_windows_per_file": 180,
+  "max_seizure_windows_per_file": 60,
+  "max_holdout_normal_windows_per_file": 180,
+  "max_holdout_seizure_windows_per_file": 60,
+  "class_weight_mode": "none",
+  "loss": "focal",
+  "focal_alpha": 0.65,
+  "focal_gamma": 2.0,
+  "class_weight": null,
+  "early_stopping_patience": 4,
+  "threshold": 0.5,
+  "min_duration_seconds": 30.0,
+  "training_history": {
+    "accuracy": [
+      0.9139615297317505,
+      0.9568231701850891,
+      0.9643869996070862,
+      0.973526656627655,
+      0.9807752966880798
+    ],
+    "loss": [
+      0.0308628361672163,
+      0.018241677433252335,
+      0.014054134488105774,
+      0.010243772529065609,
+      0.008253468200564384
+    ],
+    "pr_auc": [
+      0.7826244831085205,
+      0.9185027480125427,
+      0.9498926401138306,
+      0.9703734517097473,
+      0.9762457013130188
+    ],
+    "precision": [
+      0.7331838607788086,
+      0.8568464517593384,
+      0.8786008358001709,
+      0.907597541809082,
+      0.939330518245697
+    ],
+    "recall": [
+      0.6798336505889893,
+      0.8586278557777405,
+      0.8877338767051697,
+      0.9189189076423645,
+      0.9334719181060791
+    ],
+    "val_accuracy": [
+      0.7732207775115967,
+      0.7683956623077393,
+      0.7563329339027405,
+      0.7587454915046692,
+      0.7611580491065979
+    ],
+    "val_loss": [
+      0.08455325663089752,
+      0.11478360742330551,
+      0.14544084668159485,
+      0.16890868544578552,
+      0.21694384515285492
+    ],
+    "val_pr_auc": [
+      0.16748367249965668,
+      0.17219078540802002,
+      0.166428804397583,
+      0.15688106417655945,
+      0.14541441202163696
+    ],
+    "val_precision": [
+      0.18589743971824646,
+      0.15068493783473969,
+      0.1111111119389534,
+      0.1071428582072258,
+      0.11971831321716309
+    ],
+    "val_recall": [
+      0.3222222328186035,
+      0.24444444477558136,
+      0.17777778208255768,
+      0.1666666716337204,
+      0.18888889253139496
+    ]
+  },
+  "train": {
+    "n_sequences": 3173,
+    "class_counts": {
+      "0": 2692,
+      "1": 481
+    }
+  },
+  "holdout": {
+    "n_sequences": 829,
+    "class_counts": {
+      "0": 739,
+      "1": 90
+    },
+    "sequence_metrics": {
+      "accuracy": 0.773220747889023,
+      "precision": 0.1858974358974359,
+      "recall": 0.32222222222222224,
+      "f1": 0.23577235772357724
+    },
+    "edf_metrics": {
+      "metrics": {
+        "accuracy": 0.6,
+        "precision": 0.6666666666666666,
+        "recall": 0.4,
+        "f1": 0.5
+      },
+      "files": [
+        {
+          "arquivo": "chb06_01.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 78,
+          "score_max": 0.8279463052749634,
+          "score_mean": 0.7489390969276428,
+          "trecho_suspeito": {
+            "start_seconds": 1702.0,
+            "end_seconds": 1794.0,
+            "duration_seconds": 92.0,
+            "n_sequences": 23,
+            "score_mean": 0.7675029039382935,
+            "score_max": 0.8279463052749634,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb06_02.edf",
+          "label": 0,
+          "pred": 1,
+          "n_sequences": 76,
+          "score_max": 0.8140387535095215,
+          "score_mean": 0.6360612511634827,
+          "trecho_suspeito": {
+            "start_seconds": 8.0,
+            "end_seconds": 84.0,
+            "duration_seconds": 76.0,
+            "n_sequences": 19,
+            "score_mean": 0.7890660762786865,
+            "score_max": 0.8079890012741089,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb17a_03.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 96,
+          "score_max": 0.6031001806259155,
+          "score_mean": 0.21708236634731293,
+          "trecho_suspeito": {
+            "start_seconds": 2330.0,
+            "end_seconds": 2346.0,
+            "duration_seconds": 16.0,
+            "n_sequences": 4,
+            "score_mean": 0.5589612722396851,
+            "score_max": 0.6031001806259155,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb17a_05.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 76,
+          "score_max": 0.3807777762413025,
+          "score_mean": 0.16193993389606476,
+          "trecho_suspeito": {
+            "start_seconds": 1228.0,
+            "end_seconds": 1232.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.3807777762413025,
+            "score_max": 0.3807777762413025,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb21_01.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 76,
+          "score_max": 0.42831534147262573,
+          "score_mean": 0.2362954020500183,
+          "trecho_suspeito": {
+            "start_seconds": 2416.0,
+            "end_seconds": 2420.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.42831534147262573,
+            "score_max": 0.42831534147262573,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb21_19.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 87,
+          "score_max": 0.48378756642341614,
+          "score_mean": 0.2145010381937027,
+          "trecho_suspeito": {
+            "start_seconds": 1284.0,
+            "end_seconds": 1288.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.48378756642341614,
+            "score_max": 0.48378756642341614,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb22_01.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 76,
+          "score_max": 0.5216368436813354,
+          "score_mean": 0.26326897740364075,
+          "trecho_suspeito": {
+            "start_seconds": 1200.0,
+            "end_seconds": 1216.0,
+            "duration_seconds": 16.0,
+            "n_sequences": 4,
+            "score_mean": 0.5123674273490906,
+            "score_max": 0.5216368436813354,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb22_20.edf",
+          "label": 1,
+          "pred": 1,
+          "n_sequences": 87,
+          "score_max": 0.7887270450592041,
+          "score_mean": 0.28854599595069885,
+          "trecho_suspeito": {
+            "start_seconds": 3382.0,
+            "end_seconds": 3422.0,
+            "duration_seconds": 40.0,
+            "n_sequences": 10,
+            "score_mean": 0.6993839144706726,
+            "score_max": 0.7887270450592041,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb23_06.edf",
+          "label": 1,
+          "pred": 0,
+          "n_sequences": 101,
+          "score_max": 0.6651381254196167,
+          "score_mean": 0.225240558385849,
+          "trecho_suspeito": {
+            "start_seconds": 3990.0,
+            "end_seconds": 4010.0,
+            "duration_seconds": 20.0,
+            "n_sequences": 5,
+            "score_mean": 0.6092329025268555,
+            "score_max": 0.6651381254196167,
+            "threshold": 0.5
+          }
+        },
+        {
+          "arquivo": "chb23_07.edf",
+          "label": 0,
+          "pred": 0,
+          "n_sequences": 76,
+          "score_max": 0.3922381103038788,
+          "score_mean": 0.19096407294273376,
+          "trecho_suspeito": {
+            "start_seconds": 886.0,
+            "end_seconds": 890.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.3922381103038788,
+            "score_max": 0.3922381103038788,
+            "threshold": 0.5
+          }
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "model_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_tf_per_channel_focal_v6.keras",
+    "scaler_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_tf_per_channel_focal_v6_scaler.pkl",
+    "metadata_path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\sequence_cnn_lstm_tf_per_channel_focal_v6_metadata.json"
+  }
+}

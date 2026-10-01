@@ -11,22 +11,23 @@ O projeto ja possui:
 - Gestao basica de pacientes.
 - Upload e armazenamento de arquivos `.edf` em disco.
 - Leitura de EDF real com MNE-Python.
-- Visualizacao de sinais EEG com downsampling para o frontend.
+- Visualizacao multicanal de sinais EEG com downsampling e trechos suspeitos.
 - Selecao de canais EEG para analise.
 - Extracao de 19 features por dinamica simbolica, estatisticas e entropia de Shannon.
 - Inferencia com modelo CNN-LSTM Keras.
-- Geracao de grafico SHAP salvo em `storage/shap`.
+- Gradient SHAP do modelo sequencial salvo em `storage/shap`.
 - Emissao de laudo medico final.
+- Configuracoes medicas de threshold, montagem e exibicao SHAP.
+- Isolamento de pacientes, exames e estatisticas por medico autenticado.
 - Testes automatizados com pytest.
 
 Pontos ainda pendentes para aderencia completa ao TCC:
 
-- CRUD completo de pacientes: editar e excluir.
 - Zoom/pan real no grafico EEG.
 - Persistencia automatica de metadados extraidos do EDF, como taxa de amostragem e canais.
-- SHAP temporal sobreposto ao sinal EEG por tempo/canal, ou ajuste do texto do TCC para explicar que o prototipo usa importancia de features.
-- Pipeline de treino, janelamento temporal/data augmentation e validacao cruzada com metricas clinicas.
-- Tela de configuracoes: threshold, montagem padrao e controle de exibicao SHAP.
+- Validacao final agrupada por paciente em um conjunto de teste ainda intocado.
+- Calibracao em EDFs completos com sensibilidade por evento e falsos alarmes por hora.
+- Estudo formal de usabilidade e desempenho para concluir a avaliacao do TCC.
 
 ## Stack
 
@@ -146,3 +147,9 @@ npm run dev
 ## Observacao Sobre o Modelo
 
 O arquivo em `modelos/cnn_lstm_hybrid.keras` deve ser substituido por um modelo treinado e validado para uso cientifico. Em ambiente de desenvolvimento, o pipeline pode criar um modelo dummy se o artefato estiver ausente; esse comportamento serve apenas para testes tecnicos e nao deve ser apresentado como modelo clinicamente validado.
+
+O fluxo sequencial CNN-LSTM integrado tambem deve ser tratado como apoio
+experimental. A aplicacao ja suporta analise multicanal, localizacao de trechos,
+Gradient SHAP e configuracao por `.env`, mas nenhum artefato atual possui
+validacao clinica. Consulte `docs/ia/03_experimentos_e_metricas.md` e
+`docs/ia/05_proximos_passos.md` antes de trocar o modelo ativo.

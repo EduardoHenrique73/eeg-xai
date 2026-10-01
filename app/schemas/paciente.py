@@ -2,7 +2,23 @@
 
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+def _validar_cpf(valor: str | None) -> str | None:
+    if valor is None:
+        return None
+    cpf = "".join(caractere for caractere in valor if caractere.isdigit())
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        raise ValueError("CPF invalido.")
+    for posicao in (9, 10):
+        soma = sum(int(cpf[indice]) * (posicao + 1 - indice) for indice in range(posicao))
+        digito = (soma * 10) % 11
+        if digito == 10:
+            digito = 0
+        if digito != int(cpf[posicao]):
+            raise ValueError("CPF invalido.")
+    return cpf
 
 
 class PacienteCreate(BaseModel):
@@ -17,6 +33,8 @@ class PacienteCreate(BaseModel):
         description="Médico responsável; padrão id=1 em desenvolvimento.",
     )
 
+    _cpf_valido = field_validator("cpf")(_validar_cpf)
+
 
 class PacienteUpdate(BaseModel):
     nome: str | None = Field(default=None, min_length=2, max_length=200)
@@ -26,6 +44,8 @@ class PacienteUpdate(BaseModel):
     telefone: str | None = Field(default=None, max_length=20)
     observacoes: str | None = None
     id_usuario: int | None = None
+
+    _cpf_valido = field_validator("cpf")(_validar_cpf)
 
 
 class PacienteResponse(BaseModel):

@@ -4,26 +4,33 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import { obterSinaisExame } from '../../api/exames'
-import type { EegPonto } from '../../types/api'
+import type { SinaisExameResponse, TrechoSuspeito } from '../../types/api'
 
 interface EegSignalChartProps {
   exameId: number | null
   mapaShapUrl?: string | null
+  canaisSelecionados?: string[]
+  trechoSuspeito?: TrechoSuspeito | null
+  topTrechosSuspeitos?: TrechoSuspeito[]
   placeholder?: string
 }
 
 export function EegSignalChart({
   exameId,
   mapaShapUrl,
+  canaisSelecionados = [],
+  trechoSuspeito,
+  topTrechosSuspeitos = [],
   placeholder = 'Aguardando importacao do exame...',
 }: EegSignalChartProps) {
-  const [serie, setSerie] = useState<EegPonto[] | undefined>(undefined)
+  const [sinais, setSinais] = useState<SinaisExameResponse | undefined>(undefined)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [shapExpandido, setShapExpandido] = useState(false)
@@ -31,7 +38,7 @@ export function EegSignalChart({
 
   useEffect(() => {
     if (exameId == null) {
-      setSerie(undefined)
+      setSinais(undefined)
       setCarregando(false)
       setErro(null)
       setEscalaVertical(1)
@@ -41,12 +48,12 @@ export function EegSignalChart({
     let cancelado = false
     setCarregando(true)
     setErro(null)
-    setSerie(undefined)
+    setSinais(undefined)
     setEscalaVertical(1)
 
     obterSinaisExame(exameId)
       .then((resposta) => {
-        if (!cancelado) setSerie(resposta.pontos)
+        if (!cancelado) setSinais(resposta)
       })
       .catch(() => {
         if (!cancelado) {
@@ -62,13 +69,37 @@ export function EegSignalChart({
     }
   }, [exameId])
 
-  const possuiSerie = Boolean(serie && serie.length > 0)
-  const dominioY = useMemo(() => {
-    if (!serie || serie.length === 0) return undefined
-    const maxAbs = Math.max(...serie.map((p) => Math.abs(p.amplitude)), 1)
-    const limite = maxAbs / escalaVertical
-    return [-limite, limite] as [number, number]
-  }, [serie, escalaVertical])
+  const seriesVisiveis = useMemo(() => {
+    if (!sinais) return []
+    const disponiveis = sinais.series?.length
+      ? sinais.series
+      : [{ canal: 'Media dos canais', pontos: sinais.pontos }]
+    if (canaisSelecionados.length === 0) return disponiveis
+    const filtradas = disponiveis.filter((serie) => canaisSelecionados.includes(serie.canal))
+    return filtradas.length > 0 ? filtradas : disponiveis
+  }, [sinais, canaisSelecionados])
+
+  const dadosGrafico = useMemo(() => {
+    if (seriesVisiveis.length === 0) return []
+    const escalas = seriesVisiveis.map((serie) => {
+      const absolutos = serie.pontos.map((ponto) => Math.abs(ponto.amplitude)).sort((a, b) => a - b)
+      return Math.max(absolutos[Math.floor(absolutos.length * 0.95)] ?? 1, 1)
+    })
+    return seriesVisiveis[0].pontos.map((ponto, indice) => {
+      const linha: Record<string, number> = { tempo: ponto.tempo }
+      seriesVisiveis.forEach((serie, canalIndice) => {
+        const base = (seriesVisiveis.length - canalIndice - 1) * 4
+        const amplitude = serie.pontos[indice]?.amplitude ?? 0
+        const normalizada = Math.max(-1.6, Math.min(1.6, amplitude / escalas[canalIndice]))
+        linha[`canal_${canalIndice}`] = base + normalizada * escalaVertical
+      })
+      return linha
+    })
+  }, [seriesVisiveis, escalaVertical])
+
+  const possuiSerie = dadosGrafico.length > 0
+  const dominioY: [number, number] = [-2, Math.max(2, (seriesVisiveis.length - 1) * 4 + 2)]
+  const ticksY = seriesVisiveis.map((_, indice) => (seriesVisiveis.length - indice - 1) * 4)
 
   const mensagem = carregando
     ? 'Carregando ondas cerebrais...'
@@ -83,7 +114,7 @@ export function EegSignalChart({
               Visualizador de Sinais EEG
             </h2>
             <p className="text-xs text-clinical-500">
-              Serie temporal real com zoom horizontal e escala vertical
+              Tracados multicanais com zoom horizontal e marcacao dos trechos suspeitos
             </p>
           </div>
 
@@ -138,7 +169,7 @@ export function EegSignalChart({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={serie} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+            <LineChart data={dadosGrafico} margin={{ top: 8, right: 16, left: 24, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="tempo"
@@ -153,14 +184,13 @@ export function EegSignalChart({
               />
               <YAxis
                 domain={dominioY}
+                ticks={ticksY}
                 tick={{ fontSize: 11, fill: '#64748b' }}
-                label={{
-                  value: 'uV',
-                  angle: -90,
-                  position: 'insideLeft',
-                  fill: '#64748b',
-                  fontSize: 11,
+                tickFormatter={(value) => {
+                  const indice = ticksY.indexOf(Number(value))
+                  return indice >= 0 ? seriesVisiveis[indice].canal : ''
                 }}
+                width={82}
               />
               <Tooltip
                 contentStyle={{
@@ -169,14 +199,38 @@ export function EegSignalChart({
                   fontSize: 12,
                 }}
               />
-              <Line
-                type="monotone"
-                dataKey="amplitude"
-                stroke="#0d9488"
-                strokeWidth={1.2}
-                dot={false}
-                isAnimationActive={false}
-              />
+              {topTrechosSuspeitos.slice(1).map((trecho, indice) => (
+                <ReferenceArea
+                  key={`${trecho.start_seconds}-${trecho.end_seconds}-${indice}`}
+                  x1={trecho.start_seconds}
+                  x2={trecho.end_seconds}
+                  fill="#f59e0b"
+                  fillOpacity={0.1}
+                  strokeOpacity={0}
+                />
+              ))}
+              {trechoSuspeito && (
+                <ReferenceArea
+                  x1={trechoSuspeito.start_seconds}
+                  x2={trechoSuspeito.end_seconds}
+                  fill="#dc2626"
+                  fillOpacity={0.16}
+                  stroke="#dc2626"
+                  strokeOpacity={0.45}
+                />
+              )}
+              {seriesVisiveis.map((serie, indice) => (
+                <Line
+                  key={serie.canal}
+                  type="linear"
+                  dataKey={`canal_${indice}`}
+                  name={serie.canal}
+                  stroke="#334155"
+                  strokeWidth={0.85}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              ))}
               <Brush
                 dataKey="tempo"
                 height={24}

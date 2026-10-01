@@ -9,13 +9,16 @@ import pytest
 from app.ai_engine.feature_extractor import (
     FEATURE_NAMES,
     FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
     RAW_SIGNAL_FEATURE_NAMES,
     TIME_FREQUENCY_FEATURE_NAMES,
+    TIME_FREQUENCY_RELATIVE_FEATURE_NAMES,
     carregar_sinal_edf,
     extrair_features_por_modo_de_valores,
     extrair_features_de_valores,
     extrair_features_edf,
     nomes_features_por_modo,
+    normalizar_matriz_features_robusta,
     selecionar_canais_eeg_validos,
 )
 from app.ai_engine.symbolic_dynamics import (
@@ -129,8 +132,59 @@ class TestExtrairFeatures:
         assert vetor.shape == (128,)
         assert np.std(vetor) == pytest.approx(1.0)
 
+    def test_features_tempo_frequencia_relativas_sao_invariantes_a_amplitude(self):
+        sfreq = 128.0
+        t = np.arange(0, 4.0, 1.0 / sfreq)
+        sinal = np.sin(2 * np.pi * 10 * t) + 0.4 * np.sin(2 * np.pi * 5 * t)
+
+        original = extrair_features_por_modo_de_valores(
+            sinal,
+            feature_mode="time_frequency_relative_per_channel",
+            sfreq=sfreq,
+        )
+        escalado = extrair_features_por_modo_de_valores(
+            sinal * 25.0,
+            feature_mode="time_frequency_relative_per_channel",
+            sfreq=sfreq,
+        )
+
+        assert original["feature_names"] == TIME_FREQUENCY_RELATIVE_FEATURE_NAMES
+        assert np.asarray(original["feature_vector"]) == pytest.approx(
+            np.asarray(escalado["feature_vector"]), rel=1e-8, abs=1e-8
+        )
+        assert all(0.0 <= original[name] <= 1.0 for name in [
+            "frequencia_dominante_normalizada",
+            "centroide_espectral_normalizado",
+            "entropia_espectral_normalizada",
+        ])
+
     def test_nomes_features_tempo_frequencia_por_canal_usa_base_espectral(self):
         assert nomes_features_por_modo(FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL) == TIME_FREQUENCY_FEATURE_NAMES
+        assert (
+            nomes_features_por_modo(FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL)
+            == TIME_FREQUENCY_RELATIVE_FEATURE_NAMES
+        )
+
+    def test_normalizacao_robusta_remove_baseline_do_edf(self):
+        matriz = np.asarray(
+            [[10.0, 100.0], [12.0, 100.0], [14.0, 100.0], [1000.0, 100.0]],
+            dtype=np.float32,
+        )
+
+        normalizada = normalizar_matriz_features_robusta(matriz)
+
+        assert np.median(normalizada[:, 0]) == pytest.approx(0.0)
+        assert normalizada[:, 1].tolist() == [0.0, 0.0, 0.0, 0.0]
+        assert np.max(np.abs(normalizada)) <= 10.0
+
+    def test_normalizacao_robusta_aceita_referencia_normal_separada(self):
+        normais = np.asarray([[9.0], [10.0], [11.0]], dtype=np.float32)
+        todas = np.asarray([[9.0], [10.0], [11.0], [100.0]], dtype=np.float32)
+
+        normalizada = normalizar_matriz_features_robusta(todas, referencia=normais)
+
+        assert normalizada[1, 0] == pytest.approx(0.0)
+        assert normalizada[-1, 0] == pytest.approx(10.0)
 
 
 class TestExtrairFeaturesEdf:

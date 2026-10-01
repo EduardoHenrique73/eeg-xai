@@ -17,12 +17,12 @@ def test_extrair_sinais_downsample_para_max_pontos(monkeypatch) -> None:
     sinal_longo = np.sin(np.linspace(0, 40 * np.pi, 10_000))
 
     monkeypatch.setattr(
-        "app.services.exame_sinais.carregar_sinal_edf",
-        lambda *_args, **_kwargs: (sinal_longo, taxa, 4),
-    )
-    monkeypatch.setattr(
-        "app.services.exame_sinais.listar_canais_eeg_edf",
-        lambda *_args, **_kwargs: _mock_canais(4),
+        "app.services.exame_sinais.carregar_sinais_edf",
+        lambda *_args, **_kwargs: (
+            np.vstack([sinal_longo] * 4),
+            taxa,
+            _mock_canais(4),
+        ),
     )
 
     resultado = extrair_sinais_para_visualizacao("fake.edf", max_pontos=1500)
@@ -31,6 +31,7 @@ def test_extrair_sinais_downsample_para_max_pontos(monkeypatch) -> None:
     assert resultado["n_pontos_retornados"] == 1500
     assert resultado["n_canais_eeg"] == 4
     assert resultado["canais_eeg"] == _mock_canais(4)
+    assert len(resultado["series"]) == 4
     assert len(resultado["pontos"]) == 1500
     assert resultado["pontos"][0]["tempo"] == 0.0
     assert resultado["pontos"][-1]["tempo"] > 0
@@ -42,12 +43,12 @@ def test_extrair_sinais_mantem_todos_pontos_quando_curto(monkeypatch) -> None:
     sinal_curto = np.array([1e-6, 2e-6, 3e-6, 4e-6])
 
     monkeypatch.setattr(
-        "app.services.exame_sinais.carregar_sinal_edf",
-        lambda *_args, **_kwargs: (sinal_curto, taxa, 2),
-    )
-    monkeypatch.setattr(
-        "app.services.exame_sinais.listar_canais_eeg_edf",
-        lambda *_args, **_kwargs: _mock_canais(2),
+        "app.services.exame_sinais.carregar_sinais_edf",
+        lambda *_args, **_kwargs: (
+            np.vstack([sinal_curto, sinal_curto]),
+            taxa,
+            _mock_canais(2),
+        ),
     )
 
     resultado = extrair_sinais_para_visualizacao("fake.edf", max_pontos=1500)
@@ -61,12 +62,8 @@ def test_extrair_sinais_converte_volts_para_microvolts(monkeypatch) -> None:
     sinal = np.array([50e-6, -30e-6])
 
     monkeypatch.setattr(
-        "app.services.exame_sinais.carregar_sinal_edf",
-        lambda *_args, **_kwargs: (sinal, taxa, 1),
-    )
-    monkeypatch.setattr(
-        "app.services.exame_sinais.listar_canais_eeg_edf",
-        lambda *_args, **_kwargs: ["FP1"],
+        "app.services.exame_sinais.carregar_sinais_edf",
+        lambda *_args, **_kwargs: (sinal.reshape(1, -1), taxa, ["FP1"]),
     )
 
     resultado = extrair_sinais_para_visualizacao("fake.edf", max_pontos=1500)

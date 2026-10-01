@@ -1,6 +1,6 @@
 # Documentacao da IA do EEG-XAI
 
-Atualizado em: 2026-07-03
+Atualizado em: 2026-10-01
 
 Esta pasta documenta o estado atual da IA do projeto, o que foi feito, quais experimentos foram executados, quais problemas ainda existem e quais sao os proximos passos recomendados.
 
@@ -19,5 +19,8 @@ O sistema ja possui integracao completa para o modelo sequencial CNN-LSTM, com f
 
 O gargalo atual nao e mais integracao. O gargalo e qualidade do modelo: ele ainda tem falsos positivos e principalmente dificuldade para localizar corretamente o trecho real da crise em pacientes novos.
 
-O melhor artefato ate agora para localizacao temporal continua sendo o modelo `sequence_cnn_lstm_tf_per_channel_localized_w1`, nao o modelo mais recente `expanded_20260702`.
-
+O melhor pipeline experimental atual e a `v11` hibrida com normalizacao robusta,
+evidencia acumulada e quatro pacientes de calibracao. Ela obteve F1 por EDF
+`0.8222` e F1 localizado `0.6111`, mas localizou somente 4 de 9 crises no
+conjunto de desenvolvimento. Nenhum novo modelo foi promovido; ainda falta o
+teste final em pacientes intocados.

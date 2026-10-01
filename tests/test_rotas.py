@@ -142,6 +142,8 @@ async def test_solicitar_analise_ia_retorna_202(client, exame, db_session, tmp_p
     mock_processar.assert_awaited_once_with(
         exame.id,
         canais_selecionados=["FP1", "F7"],
+        threshold_override=0.5,
+        gerar_shap_sequencial=True,
     )
 
 

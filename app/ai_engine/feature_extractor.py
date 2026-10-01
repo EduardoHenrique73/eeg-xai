@@ -22,6 +22,8 @@ FEATURE_MODE_MEAN = "mean"
 FEATURE_MODE_PER_CHANNEL = "per_channel"
 FEATURE_MODE_TIME_FREQUENCY = "time_frequency"
 FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL = "time_frequency_per_channel"
+FEATURE_MODE_TIME_FREQUENCY_RELATIVE = "time_frequency_relative"
+FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL = "time_frequency_relative_per_channel"
 FEATURE_MODE_RAW_SIGNAL = "raw_signal"
 
 FEATURE_NAMES: list[str] = [
@@ -61,8 +63,41 @@ TIME_FREQUENCY_FEATURE_NAMES: list[str] = [
     "razao_theta_alpha",
     "razao_beta_alpha",
 ]
+TIME_FREQUENCY_RELATIVE_FEATURE_NAMES: list[str] = [
+    *(f"potencia_relativa_{nome}" for nome, _low, _high in TIME_FREQUENCY_BANDS),
+    "frequencia_dominante_normalizada",
+    "centroide_espectral_normalizado",
+    "entropia_espectral_normalizada",
+    "log_razao_theta_alpha",
+    "log_razao_beta_alpha",
+]
 RAW_SIGNAL_POINTS = 128
 RAW_SIGNAL_FEATURE_NAMES: list[str] = [f"raw_{idx:03d}" for idx in range(RAW_SIGNAL_POINTS)]
+
+
+def normalizar_matriz_features_robusta(
+    valores: np.ndarray,
+    *,
+    referencia: np.ndarray | None = None,
+    clip: float = 10.0,
+) -> np.ndarray:
+    """Centraliza features pelo EDF usando mediana e intervalo interquartil."""
+    matriz = np.asarray(valores, dtype=np.float32)
+    if matriz.ndim != 2:
+        raise ValueError("valores deve ter shape (n_janelas, n_features).")
+    if matriz.shape[0] == 0:
+        return matriz.copy()
+
+    base = matriz if referencia is None else np.asarray(referencia, dtype=np.float32)
+    if base.ndim != 2 or base.shape[1] != matriz.shape[1] or base.shape[0] == 0:
+        raise ValueError("referencia deve ter shape (n_referencias, n_features).")
+
+    mediana = np.median(base, axis=0)
+    q25, q75 = np.percentile(base, [25.0, 75.0], axis=0)
+    escala = q75 - q25
+    escala = np.where(escala > 1e-8, escala, 1.0)
+    normalizada = (matriz - mediana) / escala
+    return np.clip(normalizada, -abs(clip), abs(clip)).astype(np.float32)
 
 
 def nomes_features_por_modo(feature_mode: str) -> list[str]:
@@ -70,6 +105,11 @@ def nomes_features_por_modo(feature_mode: str) -> list[str]:
         return FEATURE_NAMES
     if feature_mode in {FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
         return TIME_FREQUENCY_FEATURE_NAMES
+    if feature_mode in {
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+    }:
+        return TIME_FREQUENCY_RELATIVE_FEATURE_NAMES
     if feature_mode == FEATURE_MODE_RAW_SIGNAL:
         return RAW_SIGNAL_FEATURE_NAMES
     raise ValueError(f"feature_mode invalido: {feature_mode}")
@@ -194,13 +234,29 @@ def carregar_sinal_edf(
     arquivo_path: str | Path,
     max_duration_seconds: float | None = MAX_DURATION_SECONDS,
 ) -> tuple[np.ndarray, float, int]:
-    raw = _preparar_raw_edf(arquivo_path, max_duration_seconds=max_duration_seconds)
-    n_canais = len(raw.ch_names)
-    dados = raw.get_data()
-    sinal = np.mean(dados, axis=0)
-    taxa_amostragem = float(raw.info["sfreq"])
+    sinais, taxa_amostragem, canais = carregar_sinais_edf(
+        arquivo_path,
+        max_duration_seconds=max_duration_seconds,
+    )
+    sinal = np.mean(sinais, axis=0)
+    return np.asarray(sinal, dtype=float), taxa_amostragem, len(canais)
 
-    return np.asarray(sinal, dtype=float), taxa_amostragem, n_canais
+
+def carregar_sinais_edf(
+    arquivo_path: str | Path,
+    max_duration_seconds: float | None = MAX_DURATION_SECONDS,
+    canais_selecionados: list[str] | None = None,
+) -> tuple[np.ndarray, float, list[str]]:
+    """Carrega a matriz EEG preservando os canais para visualizacao clinica."""
+    raw = _preparar_raw_edf(arquivo_path, max_duration_seconds=max_duration_seconds)
+    if canais_selecionados:
+        invalidos = [canal for canal in canais_selecionados if canal not in raw.ch_names]
+        if invalidos:
+            raise ValueError(f"Canais EEG invalidos: {', '.join(invalidos)}")
+        raw.pick(canais_selecionados)
+    dados = np.asarray(raw.get_data(), dtype=float)
+    taxa_amostragem = float(raw.info["sfreq"])
+    return dados, taxa_amostragem, list(raw.ch_names)
 
 
 def extrair_features_de_valores(
@@ -287,6 +343,38 @@ def extrair_features_tempo_frequencia_de_valores(
     return features
 
 
+def extrair_features_tempo_frequencia_relativas_de_valores(
+    valores: np.ndarray,
+    sfreq: float,
+) -> dict[str, Any]:
+    """Features espectrais invariantes a escala de amplitude do sinal."""
+    sinal = np.asarray(valores, dtype=float).ravel()
+    base = extrair_features_tempo_frequencia_de_valores(sinal, sfreq=sfreq)
+    nyquist = max(float(sfreq) / 2.0, 1e-12)
+    n_bins_uteis = max(2, int(np.fft.rfftfreq(sinal.size, d=1.0 / sfreq)[1:].size))
+
+    features: dict[str, Any] = {
+        f"potencia_relativa_{nome}": float(base[f"potencia_relativa_{nome}"])
+        for nome, _low, _high in TIME_FREQUENCY_BANDS
+    }
+    features["frequencia_dominante_normalizada"] = float(base["frequencia_dominante"] / nyquist)
+    features["centroide_espectral_normalizado"] = float(base["centroide_espectral"] / nyquist)
+    features["entropia_espectral_normalizada"] = float(
+        base["entropia_espectral"] / np.log2(n_bins_uteis)
+    )
+    features["log_razao_theta_alpha"] = float(
+        np.clip(np.log(max(float(base["razao_theta_alpha"]), 1e-12)), -12.0, 12.0)
+    )
+    features["log_razao_beta_alpha"] = float(
+        np.clip(np.log(max(float(base["razao_beta_alpha"]), 1e-12)), -12.0, 12.0)
+    )
+    features["feature_names"] = TIME_FREQUENCY_RELATIVE_FEATURE_NAMES
+    features["feature_vector"] = [
+        float(features[name]) for name in TIME_FREQUENCY_RELATIVE_FEATURE_NAMES
+    ]
+    return features
+
+
 def extrair_features_sinal_bruto_de_valores(valores: np.ndarray) -> dict[str, Any]:
     sinal = np.asarray(valores, dtype=float).ravel()
     if sinal.size < 2:
@@ -318,6 +406,11 @@ def extrair_features_por_modo_de_valores(
         return extrair_features_de_valores(valores, m=m)
     if feature_mode in {FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
         return extrair_features_tempo_frequencia_de_valores(valores, sfreq=sfreq)
+    if feature_mode in {
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+    }:
+        return extrair_features_tempo_frequencia_relativas_de_valores(valores, sfreq=sfreq)
     if feature_mode == FEATURE_MODE_RAW_SIGNAL:
         return extrair_features_sinal_bruto_de_valores(valores)
     raise ValueError(f"feature_mode invalido: {feature_mode}")
@@ -343,7 +436,12 @@ def extrair_features_edf(
     else:
         canais_usuario = list(canais_validos)
 
-    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_RAW_SIGNAL}:
+    if feature_mode in {
+        FEATURE_MODE_MEAN,
+        FEATURE_MODE_TIME_FREQUENCY,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
+        FEATURE_MODE_RAW_SIGNAL,
+    }:
         alvos = canais_usuario
         vetores: list[list[float]] = []
         for canal in alvos:
@@ -366,7 +464,11 @@ def extrair_features_edf(
         for i, name in enumerate(nomes_features):
             features[name] = float(vetor_medio[i])
         canais_omitidos: list[str] = []
-    elif feature_mode in {FEATURE_MODE_PER_CHANNEL, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
+    elif feature_mode in {
+        FEATURE_MODE_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+    }:
         referencia = list(canais_referencia or canais_usuario)
         if not referencia:
             raise ValueError("Nenhum canal de referencia disponivel para inferencia por canal.")
@@ -427,7 +529,12 @@ def _montar_features_de_janela(
 ) -> dict[str, Any]:
     canais_disponiveis = list(raw.ch_names)
 
-    if feature_mode in {FEATURE_MODE_MEAN, FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_RAW_SIGNAL}:
+    if feature_mode in {
+        FEATURE_MODE_MEAN,
+        FEATURE_MODE_TIME_FREQUENCY,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
+        FEATURE_MODE_RAW_SIGNAL,
+    }:
         alvos = canais_usuario
         vetores: list[list[float]] = []
         for canal in alvos:
@@ -451,7 +558,11 @@ def _montar_features_de_janela(
         features["feature_vector"] = [float(v) for v in vetor_medio]
         canais_processados = list(alvos)
         canais_omitidos: list[str] = []
-    elif feature_mode in {FEATURE_MODE_PER_CHANNEL, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
+    elif feature_mode in {
+        FEATURE_MODE_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+    }:
         referencia = list(canais_referencia or canais_usuario)
         if not referencia:
             raise ValueError("Nenhum canal de referencia disponivel para inferencia por canal.")

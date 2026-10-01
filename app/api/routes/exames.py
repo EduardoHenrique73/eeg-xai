@@ -47,6 +47,25 @@ router = APIRouter(
 )
 
 
+async def _obter_exame_do_usuario(
+    exame_id: int,
+    usuario: Usuario,
+    db: AsyncSession,
+) -> Exame:
+    result = await db.execute(
+        select(Exame)
+        .join(Paciente, Paciente.id == Exame.id_paciente)
+        .where(Exame.id == exame_id, Paciente.id_usuario == usuario.id)
+    )
+    exame = result.scalar_one_or_none()
+    if exame is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Exame com id {exame_id} não encontrado.",
+        )
+    return exame
+
+
 @router.get(
     "/{exame_id}/diagnostico",
     response_model=DiagnosticoConcluido,
@@ -72,12 +91,7 @@ async def obter_diagnostico_exame(
     - **206**: exame existe, mas `PredicaoIA` ainda não foi persistida.
     - **200**: laudo concluído com score, classificação e URL pública do mapa SHAP.
     """
-    exame = await db.get(Exame, exame_id)
-    if exame is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Exame com id {exame_id} não encontrado.",
-        )
+    exame = await _obter_exame_do_usuario(exame_id, usuario, db)
 
     metadados = {
         "exame_id": exame.id,
@@ -147,6 +161,7 @@ async def obter_diagnostico_exame(
         min_duration_seconds=detalhes.get("min_duration_seconds"),
         max_suspicious_coverage=detalhes.get("max_suspicious_coverage"),
         score_agregacao=detalhes.get("score_agregacao"),
+        xai_method=detalhes.get("xai_method"),
         mapa_shap_url=mapa_shap_url,
         data_analise=predicao.data_analise,
     )
@@ -161,18 +176,14 @@ async def salvar_laudo_exame(
     exame_id: int,
     payload: LaudoUpdate,
     db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
 ) -> LaudoExameResponse:
     """
     Persiste o parecer médico e marca o exame como concluído.
 
     Após emitido, o laudo torna-se imutável (HTTP 409 em novas tentativas).
     """
-    exame = await db.get(Exame, exame_id)
-    if exame is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Exame com id {exame_id} não encontrado.",
-        )
+    exame = await _obter_exame_do_usuario(exame_id, usuario, db)
 
     if exame.status_exame == STATUS_EXAME_CONCLUIDO:
         raise HTTPException(
@@ -208,18 +219,14 @@ async def obter_sinais_exame(
     exame_id: int,
     db: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_settings),
+    usuario: Usuario = Depends(get_current_user),
 ) -> SinaisExameResponse:
     """
     Retorna amplitudes reais do .edf (média dos canais EEG) com downsampling.
 
     Limita a ~1500 pontos para renderização fluida no Recharts.
     """
-    exame = await db.get(Exame, exame_id)
-    if exame is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Exame com id {exame_id} não encontrado.",
-        )
+    exame = await _obter_exame_do_usuario(exame_id, usuario, db)
 
     arquivo = Path(exame.arquivo_path)
     if not arquivo.exists():
@@ -243,6 +250,7 @@ async def obter_sinais_exame(
     return SinaisExameResponse(
         exame_id=exame_id,
         pontos=dados["pontos"],  # type: ignore[arg-type]
+        series=dados.get("series", []),  # type: ignore[arg-type]
         taxa_amostragem_hz=float(dados["taxa_amostragem_hz"]),  # type: ignore[arg-type]
         n_canais_eeg=int(dados["n_canais_eeg"]),  # type: ignore[arg-type]
         canais_eeg=list(dados.get("canais_eeg", [])),  # type: ignore[arg-type]
@@ -262,18 +270,14 @@ async def solicitar_analise_ia(
     payload: AnaliseIARequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
 ) -> AnaliseIAResponse:
     """
     Dispara o pipeline de IA para o exame, processando os canais EEG selecionados.
 
     Se `canais_selecionados` for omitido ou vazio, todos os canais EEG do .edf são usados.
     """
-    exame = await db.get(Exame, exame_id)
-    if exame is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Exame com id {exame_id} não encontrado.",
-        )
+    exame = await _obter_exame_do_usuario(exame_id, usuario, db)
 
     arquivo = Path(exame.arquivo_path)
     if not arquivo.exists():
@@ -312,6 +316,8 @@ async def solicitar_analise_ia(
         processar_exame_ia,
         exame_id,
         canais_selecionados=canais,
+        threshold_override=usuario.threshold_confianca,
+        gerar_shap_sequencial=usuario.exibir_shap,
     )
 
     return AnaliseIAResponse(
@@ -340,6 +346,7 @@ async def upload_exame(
     ),
     db: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_settings),
+    usuario: Usuario = Depends(get_current_user),
 ) -> ExameUploadResponse:
     """
     Recebe um arquivo .edf e persiste no disco.
@@ -353,7 +360,13 @@ async def upload_exame(
             detail="Apenas arquivos com extensão .edf são aceitos.",
         )
 
-    paciente = await db.get(Paciente, paciente_id)
+    paciente_result = await db.execute(
+        select(Paciente).where(
+            Paciente.id == paciente_id,
+            Paciente.id_usuario == usuario.id,
+        )
+    )
+    paciente = paciente_result.scalar_one_or_none()
     if paciente is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

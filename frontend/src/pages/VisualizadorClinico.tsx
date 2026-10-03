@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft, CheckCircle2, Clock3, FileHeart } from 'lucide-react'
 
 import { obterSinaisExame, uploadExame } from '../api/exames'
 
@@ -18,8 +19,10 @@ import { EegSignalChart } from '../components/visualizador/EegSignalChart'
 
 import { useDiagnosticoPolling } from '../hooks/useDiagnosticoPolling'
 
-import type { Paciente } from '../types/api'
+import type { Paciente, TrechoSuspeito } from '../types/api'
 import { useAuth } from '../contexts/AuthContext'
+
+const SEM_TRECHOS: TrechoSuspeito[] = []
 
 export function VisualizadorClinico() {
   const { medico } = useAuth()
@@ -219,19 +222,26 @@ export function VisualizadorClinico() {
       : 'Arraste um arquivo .edf para visualizar os sinais EEG.'
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-clinical-200 bg-white px-6 py-3">
-        <Link
-          to="/pacientes"
-          className="text-sm font-medium text-accent hover:underline"
-        >
-          ← Voltar para Pacientes
-        </Link>
-        <p className="mt-1 text-xs text-clinical-500">
-          Visualizador de exame — Paciente #{paciente.id}
-          {exameId != null && ` · Exame #${exameId}`}
-        </p>
-      </div>
+    <div className="flex min-h-full flex-col xl:h-full xl:min-h-0">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-clinical-200 bg-white px-5 py-4 xl:px-6">
+        <div className="min-w-0">
+          <Link to="/pacientes" className="inline-flex items-center gap-1.5 text-xs font-medium text-clinical-500 hover:text-accent">
+            <ArrowLeft size={14} aria-hidden="true" />
+            Pacientes
+          </Link>
+          <div className="mt-1 flex min-w-0 items-center gap-2.5">
+            <FileHeart size={21} className="shrink-0 text-accent" aria-hidden="true" />
+            <h1 className="truncate text-lg font-semibold text-clinical-900">Análise EEG · {paciente.nome}</h1>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-clinical-500">
+          {exameId != null && <span className="font-mono">Exame #{exameId}</span>}
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-clinical-200 bg-clinical-50 px-2.5 py-1.5 font-medium text-clinical-700">
+            {concluido ? <CheckCircle2 size={14} className="text-green-600" aria-hidden="true" /> : <Clock3 size={14} className="text-accent" aria-hidden="true" />}
+            {concluido ? 'Análise concluída' : analiseEmAndamento ? 'Em análise' : 'Aguardando exame'}
+          </span>
+        </div>
+      </header>
 
       <div className="min-h-0 flex-1">
         <ClinicalLayout
@@ -254,9 +264,10 @@ export function VisualizadorClinico() {
             <EegSignalChart
               exameId={exameId}
               mapaShapUrl={medico?.exibir_shap === false ? null : concluido?.mapa_shap_url}
+              shapOverlay={medico?.exibir_shap === false ? null : concluido?.shap_overlay}
               canaisSelecionados={canaisSelecionados}
               trechoSuspeito={concluido?.trecho_suspeito}
-              topTrechosSuspeitos={concluido?.top_trechos_suspeitos ?? []}
+              topTrechosSuspeitos={concluido?.top_trechos_suspeitos ?? SEM_TRECHOS}
               placeholder={placeholderGrafico}
             />
           }
@@ -286,7 +297,7 @@ export function VisualizadorClinico() {
               janelaPico={concluido?.janela_pico}
               janelasTop={concluido?.janelas_top ?? []}
               trechoSuspeito={concluido?.trecho_suspeito}
-              topTrechosSuspeitos={concluido?.top_trechos_suspeitos ?? []}
+              topTrechosSuspeitos={concluido?.top_trechos_suspeitos ?? SEM_TRECHOS}
               modelType={concluido?.model_type}
               nSequencesAnalisadas={concluido?.n_sequences_analisadas}
               minDurationSeconds={concluido?.min_duration_seconds}

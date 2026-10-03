@@ -70,11 +70,23 @@ export interface TrechoSuspeito {
   max_suspicious_coverage?: number
 }
 
+export interface ShapOverlay {
+  scope: 'peak_sequence'
+  basis: 'window_features'
+  cells: Array<{
+    canal: string
+    start_seconds: number
+    end_seconds: number
+    intensity: number
+  }>
+}
+
 export interface DiagnosticoConcluido extends DiagnosticoExameBase {
   status: 'concluido'
   resultado_score: number
   classificacao_clinica: string
   mapa_shap_url?: string | null
+  shap_overlay?: ShapOverlay | null
   threshold_confianca: number
   model_type?: string | null
   feature_mode?: string | null

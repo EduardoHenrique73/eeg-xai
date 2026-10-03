@@ -11,4 +11,20 @@
   body {
     @apply m-0 bg-clinical-50 font-sans text-clinical-800 antialiased;
   }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #1d5fc1;
+    outline-offset: 2px;
+  }
 }

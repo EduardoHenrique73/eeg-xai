@@ -49,12 +49,17 @@ def construir_alvos_temporais(
             label = int(ratio >= min_ictal_overlap_ratio)
             contexto = "ictal" if label else ("boundary" if overlap > 0 else "interictal")
             evento_idx: int | None = None
+            event_duration_seconds: float | None = None
             if label and intervalos:
                 sobreposicoes = [
                     max(0.0, min(fim, item.end_seconds) - max(inicio, item.start_seconds))
                     for item in intervalos
                 ]
                 evento_idx = int(np.argmax(sobreposicoes))
+                evento = intervalos[evento_idx]
+                event_duration_seconds = float(
+                    evento.end_seconds - evento.start_seconds
+                )
             labels_bloco.append(label)
             metas_bloco.append(
                 {
@@ -66,6 +71,7 @@ def construir_alvos_temporais(
                     "context": contexto,
                     "ictal_overlap_ratio": float(ratio),
                     "event_key": f"{arquivo}:{evento_idx}" if evento_idx is not None else None,
+                    "event_duration_seconds": event_duration_seconds,
                 }
             )
         alvos.append(labels_bloco)
@@ -116,8 +122,14 @@ def pesos_temporais(
     boundary_weight: float,
     class_weight: dict[int, float] | None,
     balance_events: bool = False,
+    short_event_max_duration_seconds: float | None = None,
+    short_event_weight: float = 1.0,
 ) -> np.ndarray:
     """Gera pesos por passo para bordas e desbalanceamento de classes."""
+    if short_event_max_duration_seconds is not None and short_event_max_duration_seconds <= 0:
+        raise ValueError("short_event_max_duration_seconds deve ser positivo.")
+    if short_event_weight <= 0:
+        raise ValueError("short_event_weight deve ser positivo.")
     pesos = np.ones(alvos.shape[:2], dtype=np.float32)
     for seq_idx, metas_bloco in enumerate(metas_temporais):
         for passo, meta in enumerate(metas_bloco):
@@ -125,6 +137,14 @@ def pesos_temporais(
                 pesos[seq_idx, passo] *= boundary_weight
             if class_weight is not None:
                 pesos[seq_idx, passo] *= float(class_weight[int(alvos[seq_idx, passo, 0])])
+            event_duration = meta.get("event_duration_seconds")
+            if (
+                int(alvos[seq_idx, passo, 0]) == 1
+                and short_event_max_duration_seconds is not None
+                and event_duration is not None
+                and float(event_duration) <= short_event_max_duration_seconds
+            ):
+                pesos[seq_idx, passo] *= short_event_weight
     if balance_events:
         contagens: dict[str, int] = defaultdict(int)
         for seq_idx, metas_bloco in enumerate(metas_temporais):

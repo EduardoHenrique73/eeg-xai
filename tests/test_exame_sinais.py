@@ -71,3 +71,28 @@ def test_extrair_sinais_converte_volts_para_microvolts(monkeypatch) -> None:
     assert resultado["pontos"][0]["amplitude"] == 50.0
     assert resultado["pontos"][1]["amplitude"] == -30.0
     assert resultado["canais_eeg"] == ["FP1"]
+
+
+def test_recorte_temporal_mantem_tempo_absoluto_e_mais_pontos(monkeypatch) -> None:
+    taxa = 10.0
+    sinal = np.arange(1000, dtype=float) * 1e-6
+    monkeypatch.setattr(
+        "app.services.exame_sinais.carregar_sinais_edf",
+        lambda *_args, **_kwargs: (sinal.reshape(1, -1), taxa, ["A"]),
+    )
+
+    resultado = extrair_sinais_para_visualizacao(
+        "fake.edf", max_pontos=1500, start_seconds=20, end_seconds=24
+    )
+
+    assert resultado["n_pontos_retornados"] == 40
+    assert resultado["pontos"][0]["tempo"] == 20.0
+    assert resultado["pontos"][-1]["tempo"] == 23.9
+    assert resultado["pontos"][0]["amplitude"] == 200.0
+
+
+def test_recorte_temporal_rejeita_intervalo_excessivo() -> None:
+    with pytest.raises(ValueError, match="120 segundos"):
+        extrair_sinais_para_visualizacao(
+            "fake.edf", start_seconds=0, end_seconds=121
+        )

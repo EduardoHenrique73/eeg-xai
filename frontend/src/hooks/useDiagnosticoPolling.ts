@@ -4,7 +4,7 @@ import type { DiagnosticoConcluido, DiagnosticoResponse } from '../types/api'
 import { isDiagnosticoConcluido } from '../utils/eeg'
 
 const INTERVALO_POLL_MS = 2500
-const MAX_TENTATIVAS = 40
+const MAX_TENTATIVAS = 360
 
 export function useDiagnosticoPolling() {
   const [exameId, setExameId] = useState<number | null>(null)

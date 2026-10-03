@@ -1,33 +1,14 @@
 import { type FormEvent, useState } from 'react'
+import { Activity, ArrowRight, LoaderCircle } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { RecuperarSenhaModal } from '../components/RecuperarSenhaModal'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 
-function Spinner() {
-  return (
-    <svg
-      className="h-4 w-4 animate-spin-slow"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2.5}
-        d="M12 3v3m6.364 1.636l-2.121 2.121M21 12h-3m-1.636 6.364l-2.121-2.121M12 21v-3m-6.364-1.636l2.121-2.121M3 12h3m1.636-6.364l2.121 2.121"
-      />
-    </svg>
-  )
-}
-
 export function Login() {
   const { login, isAuthenticated, isLoading } = useAuth()
   const { sucesso } = useToast()
   const navigate = useNavigate()
-
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
@@ -35,15 +16,12 @@ export function Login() {
   const [agitando, setAgitando] = useState(false)
   const [modalRecuperar, setModalRecuperar] = useState(false)
 
-  if (!isLoading && isAuthenticated) {
-    return <Navigate to="/" replace />
-  }
+  if (!isLoading && isAuthenticated) return <Navigate to="/" replace />
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     setErro(null)
     setEntrando(true)
-
     try {
       await login(email, senha)
       sucesso('Bem-vindo à plataforma EEG-XAI!')
@@ -58,107 +36,45 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
-
-      {/* Fundo decorativo */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
-      </div>
-
-      <div className={[
-        'relative w-full max-w-md animate-slide-up',
-        agitando ? 'animate-shake' : '',
-      ].join(' ')}>
-
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-xl font-bold text-white shadow-lg ring-4 ring-accent/20">
-            EEG
+    <div className="flex min-h-screen items-center justify-center bg-clinical-50 px-4 py-8">
+      <div className={`w-full max-w-md ${agitando ? 'animate-shake' : ''}`}>
+        <div className="mb-7 flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-md bg-accent text-white">
+            <Activity size={24} aria-hidden="true" />
+          </span>
+          <div>
+            <h1 className="text-xl font-bold text-clinical-900">EEG-XAI</h1>
+            <p className="text-xs text-clinical-500">Ambiente clínico</p>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">EEG-XAI</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Plataforma clínica de diagnóstico neurológico com IA explicável
-          </p>
         </div>
 
-        {/* Card */}
-        <form
-          onSubmit={(e) => void handleSubmit(e)}
-          className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm"
-        >
-          <h2 className="text-lg font-semibold text-white">Acesso Médico</h2>
-          <p className="mt-1 text-sm text-slate-400">
-            Entre com suas credenciais institucionais.
-          </p>
+        <form onSubmit={(event) => void handleSubmit(event)} className="rounded-md border border-clinical-200 border-t-4 border-t-accent bg-white p-7 shadow-clinical sm:p-8">
+          <h2 className="text-xl font-semibold text-clinical-900">Acesso médico</h2>
+          <p className="mt-1 text-sm text-clinical-500">Entre com sua conta institucional.</p>
 
           <div className="mt-6 space-y-4">
             <label className="block text-sm">
-              <span className="font-medium text-slate-300">E-mail</span>
-              <input
-                required
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white outline-none placeholder:text-slate-500 transition focus:border-accent focus:bg-white/10 focus:ring-2 focus:ring-accent/30"
-                placeholder="ana.silva@hospital.com"
-              />
+              <span className="font-medium text-clinical-700">E-mail</span>
+              <input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="seu.email@hospital.com" className="mt-1 w-full rounded-md border border-clinical-300 bg-white px-3 py-2.5 text-clinical-900 outline-none placeholder:text-clinical-500 transition focus:border-accent focus:ring-2 focus:ring-accent/20" />
             </label>
-
             <label className="block text-sm">
-              <span className="font-medium text-slate-300">Senha</span>
-              <input
-                required
-                type="password"
-                autoComplete="current-password"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white outline-none placeholder:text-slate-500 transition focus:border-accent focus:bg-white/10 focus:ring-2 focus:ring-accent/30"
-                placeholder="••••••••"
-              />
+              <span className="font-medium text-clinical-700">Senha</span>
+              <input required type="password" autoComplete="current-password" value={senha} onChange={(event) => setSenha(event.target.value)} className="mt-1 w-full rounded-md border border-clinical-300 bg-white px-3 py-2.5 text-clinical-900 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" />
             </label>
           </div>
 
-          {erro && (
-            <div
-              role="alert"
-              className="mt-4 flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-300 animate-fade-in"
-            >
-              <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              </svg>
-              {erro}
-            </div>
-          )}
+          {erro && <p role="alert" className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{erro}</p>}
 
-          <button
-            type="submit"
-            disabled={entrando}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-accent py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-accent-dark disabled:opacity-70"
-          >
-            {entrando && <Spinner />}
-            {entrando ? 'Verificando credenciais...' : 'Entrar no Sistema'}
+          <button type="submit" disabled={entrando} className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-accent py-3 text-sm font-semibold text-white transition hover:bg-accent-dark disabled:opacity-70">
+            {entrando ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : null}
+            {entrando ? 'Verificando credenciais...' : 'Entrar no sistema'}
+            {!entrando && <ArrowRight size={16} aria-hidden="true" />}
           </button>
-
-          <button
-            type="button"
-            onClick={() => setModalRecuperar(true)}
-            className="mt-4 w-full text-center text-sm text-slate-500 transition hover:text-accent"
-          >
-            Esqueci minha senha
-          </button>
+          <button type="button" onClick={() => setModalRecuperar(true)} className="mt-4 w-full text-center text-sm text-clinical-500 hover:text-accent">Esqueci minha senha</button>
         </form>
-
-        <p className="mt-5 text-center text-xs text-slate-600">
-          Dev: ana.silva@hospital.com / senha123
-        </p>
       </div>
 
-      <RecuperarSenhaModal
-        aberto={modalRecuperar}
-        onFechar={() => setModalRecuperar(false)}
-      />
+      <RecuperarSenhaModal aberto={modalRecuperar} onFechar={() => setModalRecuperar(false)} />
     </div>
   )
 }

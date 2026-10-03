@@ -45,11 +45,25 @@ class DiagnosticoEmProcessamento(DiagnosticoExameBase):
     message: str = "Análise IA em andamento. Tente novamente em instantes."
 
 
+class ShapCell(BaseModel):
+    canal: str
+    start_seconds: float
+    end_seconds: float
+    intensity: float = Field(ge=0.0, le=1.0)
+
+
+class ShapOverlay(BaseModel):
+    scope: Literal["peak_sequence"]
+    basis: Literal["window_features"]
+    cells: list[ShapCell]
+
+
 class DiagnosticoConcluido(DiagnosticoExameBase):
     status: Literal["concluido"] = "concluido"
     resultado_score: float = Field(ge=0.0, le=1.0)
     classificacao_clinica: str
     mapa_shap_url: str | None = None
+    shap_overlay: ShapOverlay | None = None
     threshold_confianca: float = Field(default=0.5, ge=0.0, le=1.0)
     model_type: str | None = None
     feature_mode: str | None = None

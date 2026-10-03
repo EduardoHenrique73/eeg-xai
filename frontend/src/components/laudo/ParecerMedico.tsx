@@ -18,7 +18,7 @@ export function ParecerMedico({
   const somenteLeitura = disabled || bloqueado
 
   return (
-    <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+    <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
         Parecer Médico
       </h3>

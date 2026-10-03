@@ -12,6 +12,7 @@ from app.ai_engine.training import (
     carregar_resumos_chbmit,
     extrair_dataset_janelado_de_sinal,
     extrair_dataset_janelado_multicanal,
+    extrair_dataset_janelado_multicanal_referencia,
     extrair_dataset_janelado_edf,
     gerar_janelas_temporais,
     limitar_dataset_janelado,
@@ -252,6 +253,29 @@ def test_limitar_dataset_janelado_preserva_valores_processados():
     assert y_limitado.tolist() == [0, 1, 1, 0]
     assert x_limitado.tolist() == x[[0, 2, 3, 4]].tolist()
     assert [item["start_seconds"] for item in meta_limitado] == [0.0, 4.0, 6.0, 8.0]
+
+
+def test_limitar_dataset_janelado_balanceia_todos_eventos_positivos():
+    starts = list(range(0, 20, 2)) + list(range(100, 120, 2)) + list(range(200, 220, 2))
+    x = np.arange(len(starts), dtype=np.float32)[:, None]
+    y = np.ones(len(starts), dtype=np.int64)
+    meta = [
+        {"start_seconds": float(start), "end_seconds": float(start + 4), "context": "ictal"}
+        for start in starts
+    ]
+
+    _x, _y, selecionados = limitar_dataset_janelado(
+        x, y, meta, max_seizure_windows=9, balance_positive_events=True,
+    )
+
+    grupos = [
+        [item for item in selecionados if inicio <= item["start_seconds"] < inicio + 20]
+        for inicio in (0, 100, 200)
+    ]
+    assert [len(grupo) for grupo in grupos] == [3, 3, 3]
+    assert [[item["start_seconds"] for item in grupo] for grupo in grupos] == [
+        [0.0, 8.0, 18.0], [100.0, 108.0, 118.0], [200.0, 208.0, 218.0],
+    ]
 
 
 def test_resolver_sample_weights_reforca_borda_da_crise():
@@ -630,6 +654,39 @@ def test_extrair_dataset_janelado_multicanal_preserva_features_por_canal():
     assert x.shape[1] == 38
     assert len(y) == len(meta)
     assert set(y.tolist()) == {0, 1}
+
+
+def test_montagem_referencia_deriva_bipolar_de_referencia_comum():
+    class RawFake:
+        def __init__(self) -> None:
+            self.ch_names = ["F7-CS2", "T7-CS2", "P7-CS2"]
+            self.info = {"sfreq": 64.0}
+            self.n_times = 640
+            tempo = np.arange(self.n_times) / self.info["sfreq"]
+            self._data = np.vstack([
+                np.sin(2 * np.pi * 5 * tempo),
+                0.5 * np.sin(2 * np.pi * 10 * tempo),
+                0.25 * np.sin(2 * np.pi * 15 * tempo),
+            ])
+
+        def pick(self, picks):
+            return self
+
+        def get_data(self, picks=None, start=0, stop=None):
+            indices = np.arange(len(self.ch_names)) if picks is None else np.asarray(picks)
+            return self._data[indices, start:stop]
+
+    x, y, meta = extrair_dataset_janelado_multicanal_referencia(
+        RawFake(), [], ["F7-T7", "T7-P7"],
+        window_seconds=10.0, step_seconds=10.0,
+        feature_mode=FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    )
+
+    assert x.shape == (1, 2 * len(TIME_FREQUENCY_FEATURE_NAMES))
+    assert not np.allclose(x, 0.0)
+    assert y.tolist() == [0]
+    assert meta[0]["canais_omitidos"] == []
+    assert meta[0]["canais_derivados"] == ["F7-T7", "T7-P7"]
 
 
 def test_extrair_dataset_janelado_edf_per_channel_zera_canal_ausente(monkeypatch, tmp_path):

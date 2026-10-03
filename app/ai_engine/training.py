@@ -26,6 +26,7 @@ from app.ai_engine.feature_extractor import (
     FEATURE_MODE_RAW_SIGNAL,
     FEATURE_MODE_TIME_FREQUENCY,
     FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL,
     FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
     FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
     nomes_features_por_modo,
@@ -224,6 +225,7 @@ def _limitar_janelas_por_classe(
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
     min_contiguous_windows: int = 1,
+    balance_positive_events: bool = False,
 ) -> list[WindowSpec]:
     if max_windows_per_class is None and max_normal_windows is None and max_seizure_windows is None:
         return specs
@@ -318,6 +320,41 @@ def _limitar_janelas_por_classe(
                         return selecionadas
         return selecionadas[:limite]
 
+    def selecionar_positivos_por_evento(
+        classe: list[WindowSpec], limite: int,
+    ) -> list[WindowSpec]:
+        """Distribute the positive budget across contiguous seizure events."""
+        ordenados = sorted(classe, key=lambda spec: spec.start_seconds)
+        grupos: list[list[WindowSpec]] = []
+        for spec in ordenados:
+            if not grupos or spec.start_seconds > grupos[-1][-1].end_seconds + 1e-6:
+                grupos.append([spec])
+            else:
+                grupos[-1].append(spec)
+        if len(ordenados) <= limite or len(grupos) <= 1:
+            return selecionar_blocos_uniformes(ordenados, limite)
+
+        base, extra = divmod(limite, len(grupos))
+        quotas = [min(len(grupo), base + (indice < extra)) for indice, grupo in enumerate(grupos)]
+        while sum(quotas) < limite:
+            alterou = False
+            for indice, grupo in enumerate(grupos):
+                if quotas[indice] < len(grupo):
+                    quotas[indice] += 1
+                    alterou = True
+                    if sum(quotas) >= limite:
+                        break
+            if not alterou:
+                break
+
+        selecionadas_eventos: list[WindowSpec] = []
+        for grupo, quota in zip(grupos, quotas):
+            if quota <= 0:
+                continue
+            indices = np.linspace(0, len(grupo) - 1, quota, dtype=int)
+            selecionadas_eventos.extend(grupo[int(indice)] for indice in indices)
+        return selecionadas_eventos
+
     positivos = [spec for spec in specs if spec.label == 1]
     selecionadas: list[WindowSpec] = []
     for label in (0, 1):
@@ -334,6 +371,8 @@ def _limitar_janelas_por_classe(
             continue
         if label == 0:
             selecionadas.extend(selecionar_normais_contextuais(classe, positivos, limite))
+        elif balance_positive_events:
+            selecionadas.extend(selecionar_positivos_por_evento(classe, limite))
         else:
             selecionadas.extend(selecionar_blocos_uniformes(classe, limite))
 
@@ -348,6 +387,7 @@ def limitar_dataset_janelado(
     max_normal_windows: int | None = None,
     max_seizure_windows: int | None = None,
     min_contiguous_windows: int = 1,
+    balance_positive_events: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     """Aplica a amostragem depois da extracao ou normalizacao das janelas."""
     matriz = np.asarray(x)
@@ -373,6 +413,7 @@ def limitar_dataset_janelado(
         max_normal_windows=max_normal_windows,
         max_seizure_windows=max_seizure_windows,
         min_contiguous_windows=min_contiguous_windows,
+        balance_positive_events=balance_positive_events,
     )
     chaves = {
         (spec.start_seconds, spec.end_seconds, spec.label)
@@ -574,7 +615,50 @@ def extrair_dataset_janelado_multicanal_referencia(
 
     canais_validos_lista = selecionar_canais_eeg_validos(raw)
     canais_disponiveis = list(raw.ch_names)
-    canais_validos = set(canais_validos_lista)
+    indices_validos = [canais_disponiveis.index(canal) for canal in canais_validos_lista]
+    dados_validos = raw.get_data(picks=indices_validos)
+    sinais_disponiveis = {
+        canal: np.asarray(sinal, dtype=float)
+        for canal, sinal in zip(canais_validos_lista, dados_validos)
+    }
+    sinais_referencia: dict[str, np.ndarray] = {}
+    canais_derivados: set[str] = set()
+    for canal in canais_referencia:
+        if canal in sinais_disponiveis:
+            sinais_referencia[canal] = sinais_disponiveis[canal]
+            continue
+
+        # MNE adds running-number suffixes to duplicate channel names.
+        canal_base = re.sub(r"-\d+$", "", canal)
+        partes = canal_base.split("-")
+        if len(partes) != 2:
+            continue
+        eletrodo_a, eletrodo_b = partes
+        inverso = f"{eletrodo_b}-{eletrodo_a}"
+        if inverso in sinais_disponiveis:
+            sinais_referencia[canal] = -sinais_disponiveis[inverso]
+            canais_derivados.add(canal)
+            continue
+
+        prefixo_a = f"{eletrodo_a}-"
+        referencias_a = {
+            nome[len(prefixo_a):]: sinal
+            for nome, sinal in sinais_disponiveis.items()
+            if nome.startswith(prefixo_a)
+        }
+        prefixo_b = f"{eletrodo_b}-"
+        referencias_b = {
+            nome[len(prefixo_b):]: sinal
+            for nome, sinal in sinais_disponiveis.items()
+            if nome.startswith(prefixo_b)
+        }
+        referencias_comuns = sorted(set(referencias_a) & set(referencias_b))
+        if referencias_comuns:
+            referencia = referencias_comuns[0]
+            sinais_referencia[canal] = (
+                referencias_a[referencia] - referencias_b[referencia]
+            )
+            canais_derivados.add(canal)
     sfreq = float(raw.info["sfreq"])
     duration_seconds = raw.n_times / sfreq
     specs = gerar_janelas_temporais(
@@ -596,19 +680,6 @@ def extrair_dataset_janelado_multicanal_referencia(
     y_rows: list[int] = []
     metadados: list[dict[str, Any]] = []
     nomes_features = nomes_features_por_modo(feature_mode)
-    indices_referencia = {
-        canal: canais_disponiveis.index(canal)
-        for canal in canais_referencia
-        if canal in canais_validos
-    }
-    sinais_referencia = {
-        canal: sinal
-        for canal, sinal in zip(
-            indices_referencia,
-            raw.get_data(picks=list(indices_referencia.values())),
-        )
-    }
-
     for spec in specs:
         inicio = int(round(spec.start_seconds * sfreq))
         fim = int(round(spec.end_seconds * sfreq))
@@ -619,7 +690,7 @@ def extrair_dataset_janelado_multicanal_referencia(
         canais_processados: list[str] = []
         canais_omitidos: list[str] = []
         for canal in canais_referencia:
-            if canal not in canais_validos:
+            if canal not in sinais_referencia:
                 vetor.extend([0.0] * len(nomes_features))
                 canais_omitidos.append(canal)
                 continue
@@ -644,6 +715,7 @@ def extrair_dataset_janelado_multicanal_referencia(
                 "ictal_overlap_ratio": spec.ictal_overlap_ratio,
                 "n_canais": int(len(canais_processados)),
                 "canais_omitidos": canais_omitidos,
+                "canais_derivados": sorted(canais_derivados),
             }
         )
 
@@ -694,6 +766,7 @@ def extrair_dataset_janelado_edf(
         FEATURE_MODE_PER_CHANNEL,
         FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
         FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL,
     }:
         if canais_selecionados:
             x, y, metadados = extrair_dataset_janelado_multicanal_referencia(

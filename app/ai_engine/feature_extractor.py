@@ -24,6 +24,7 @@ FEATURE_MODE_TIME_FREQUENCY = "time_frequency"
 FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL = "time_frequency_per_channel"
 FEATURE_MODE_TIME_FREQUENCY_RELATIVE = "time_frequency_relative"
 FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL = "time_frequency_relative_per_channel"
+FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL = "time_frequency_morphology_per_channel"
 FEATURE_MODE_RAW_SIGNAL = "raw_signal"
 
 FEATURE_NAMES: list[str] = [
@@ -71,6 +72,19 @@ TIME_FREQUENCY_RELATIVE_FEATURE_NAMES: list[str] = [
     "log_razao_theta_alpha",
     "log_razao_beta_alpha",
 ]
+MORPHOLOGY_FEATURE_NAMES: list[str] = [
+    "line_length_normalized",
+    "hjorth_mobility",
+    "hjorth_complexity",
+    "zero_crossing_rate",
+    "crest_factor",
+    "skewness_normalized",
+    "kurtosis_normalized",
+    "symbolic_entropy",
+]
+TIME_FREQUENCY_MORPHOLOGY_FEATURE_NAMES = (
+    TIME_FREQUENCY_FEATURE_NAMES + MORPHOLOGY_FEATURE_NAMES
+)
 RAW_SIGNAL_POINTS = 128
 RAW_SIGNAL_FEATURE_NAMES: list[str] = [f"raw_{idx:03d}" for idx in range(RAW_SIGNAL_POINTS)]
 
@@ -105,6 +119,8 @@ def nomes_features_por_modo(feature_mode: str) -> list[str]:
         return FEATURE_NAMES
     if feature_mode in {FEATURE_MODE_TIME_FREQUENCY, FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL}:
         return TIME_FREQUENCY_FEATURE_NAMES
+    if feature_mode == FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL:
+        return TIME_FREQUENCY_MORPHOLOGY_FEATURE_NAMES
     if feature_mode in {
         FEATURE_MODE_TIME_FREQUENCY_RELATIVE,
         FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
@@ -375,6 +391,63 @@ def extrair_features_tempo_frequencia_relativas_de_valores(
     return features
 
 
+def extrair_features_morfologicas_de_valores(
+    valores: np.ndarray,
+    *,
+    m: int = SYMBOLIC_M_DEFAULT,
+) -> dict[str, Any]:
+    """Extract amplitude-invariant waveform morphology descriptors."""
+    signal = np.asarray(valores, dtype=float).ravel()
+    if signal.size < 4:
+        raise ValueError("Sinal curto demais para features morfologicas.")
+    centered = signal - float(np.mean(signal))
+    scale = max(float(np.std(centered)), 1e-12)
+    normalized = centered / scale
+    first = np.diff(normalized)
+    second = np.diff(first)
+    var_signal = max(float(np.var(normalized)), 1e-12)
+    var_first = max(float(np.var(first)), 1e-12)
+    mobility = float(np.sqrt(var_first / var_signal))
+    mobility_first = float(np.sqrt(max(float(np.var(second)), 0.0) / var_first))
+    symbolic = aplicar_dinamica_simbolica(normalized, m=m)
+    features: dict[str, float | list[str] | list[float]] = {
+        "line_length_normalized": float(np.mean(np.abs(first))),
+        "hjorth_mobility": mobility,
+        "hjorth_complexity": float(mobility_first / max(mobility, 1e-12)),
+        "zero_crossing_rate": float(np.mean(normalized[1:] * normalized[:-1] < 0)),
+        "crest_factor": float(np.max(np.abs(normalized))),
+        "skewness_normalized": _calcular_skewness(normalized),
+        "kurtosis_normalized": _calcular_kurtosis(normalized),
+        "symbolic_entropy": float(symbolic["entropia"]),
+    }
+    features["feature_names"] = MORPHOLOGY_FEATURE_NAMES
+    features["feature_vector"] = [float(features[name]) for name in MORPHOLOGY_FEATURE_NAMES]
+    return features
+
+
+def extrair_features_tempo_frequencia_morfologia_de_valores(
+    valores: np.ndarray,
+    *,
+    sfreq: float,
+    m: int = SYMBOLIC_M_DEFAULT,
+) -> dict[str, Any]:
+    spectral = extrair_features_tempo_frequencia_de_valores(valores, sfreq=sfreq)
+    morphology = extrair_features_morfologicas_de_valores(valores, m=m)
+    merged = {
+        name: float(value)
+        for name, value in zip(spectral["feature_names"], spectral["feature_vector"])
+    }
+    merged.update({
+        name: float(value)
+        for name, value in zip(morphology["feature_names"], morphology["feature_vector"])
+    })
+    merged["feature_names"] = TIME_FREQUENCY_MORPHOLOGY_FEATURE_NAMES
+    merged["feature_vector"] = [
+        float(merged[name]) for name in TIME_FREQUENCY_MORPHOLOGY_FEATURE_NAMES
+    ]
+    return merged
+
+
 def extrair_features_sinal_bruto_de_valores(valores: np.ndarray) -> dict[str, Any]:
     sinal = np.asarray(valores, dtype=float).ravel()
     if sinal.size < 2:
@@ -411,6 +484,10 @@ def extrair_features_por_modo_de_valores(
         FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
     }:
         return extrair_features_tempo_frequencia_relativas_de_valores(valores, sfreq=sfreq)
+    if feature_mode == FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL:
+        return extrair_features_tempo_frequencia_morfologia_de_valores(
+            valores, sfreq=sfreq, m=m,
+        )
     if feature_mode == FEATURE_MODE_RAW_SIGNAL:
         return extrair_features_sinal_bruto_de_valores(valores)
     raise ValueError(f"feature_mode invalido: {feature_mode}")
@@ -468,6 +545,7 @@ def extrair_features_edf(
         FEATURE_MODE_PER_CHANNEL,
         FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
         FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL,
     }:
         referencia = list(canais_referencia or canais_usuario)
         if not referencia:
@@ -562,6 +640,7 @@ def _montar_features_de_janela(
         FEATURE_MODE_PER_CHANNEL,
         FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
         FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
+        FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL,
     }:
         referencia = list(canais_referencia or canais_usuario)
         if not referencia:
@@ -639,18 +718,19 @@ def extrair_features_edf_janelado(
     janela_amostras = int(round(window_seconds * sfreq))
     passo_amostras = int(round(step_seconds * sfreq))
     if raw.n_times < janela_amostras:
-        return [
-            _montar_features_de_janela(
-                raw=raw,
-                canais_usuario=canais_usuario,
-                canais_validos=canais_validos,
-                canais_referencia=canais_referencia,
-                inicio=0,
-                fim=raw.n_times,
-                feature_mode=feature_mode,
-                m=m,
-            )
-        ]
+        features = _montar_features_de_janela(
+            raw=raw,
+            canais_usuario=canais_usuario,
+            canais_validos=canais_validos,
+            canais_referencia=canais_referencia,
+            inicio=0,
+            fim=raw.n_times,
+            feature_mode=feature_mode,
+            m=m,
+        )
+        features["window_start_seconds"] = 0.0
+        features["window_end_seconds"] = float(raw.n_times / sfreq)
+        return [features]
 
     janelas: list[dict[str, Any]] = []
     inicio = 0

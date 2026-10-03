@@ -347,16 +347,20 @@ async def _processar_exame_sequencial(
     if gerar_shap:
         try:
             pico = resultado.get("janela_pico") or {}
-            mapa_shap_path = await asyncio.to_thread(
+            mapa_shap_path, shap_overlay = await asyncio.to_thread(
                 gerar_mapa_shap_sequencial,
                 recursos.model,
                 resultado["_xai_background"],
                 resultado["_xai_input"],
                 exame_id=exame_id,
-                canais=list(resultado.get("canais_processados", [])),
+                canais=list(resultado.get("_xai_channels", [])),
+                janelas=list(resultado.get("_xai_windows", [])),
+                canais_omitidos=list(resultado.get("canais_omitidos", [])),
                 inicio_seconds=float(pico.get("start_seconds", 0.0)),
                 fim_seconds=float(pico.get("end_seconds", 0.0)),
             )
+            if shap_overlay is not None:
+                detalhes["shap_overlay"] = shap_overlay
         except Exception:
             logger.exception("Falha ao gerar Gradient SHAP sequencial para exame %s", exame_id)
 

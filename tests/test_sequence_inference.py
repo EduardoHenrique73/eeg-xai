@@ -6,6 +6,7 @@ import numpy as np
 
 from app.config import Settings
 from app.ai_engine.sequence_inference import (
+    _janelas_da_sequencia,
     agregar_trechos_suspeitos,
     classificar_resultado_sequencial,
     construir_sequencias,
@@ -54,6 +55,15 @@ def test_construir_sequencias_completa_quando_poucas_janelas():
     assert x.shape == (1, 4, 3)
     assert len(meta) == 1
     assert meta[0]["start_seconds"] == 0.0
+
+
+def test_janelas_shap_seguem_stride_e_preenchimento_da_inferencia():
+    janelas = [_janela(i * 2.0, i * 2.0 + 4.0, float(i)) for i in range(7)]
+    bloco = _janelas_da_sequencia(janelas, 2, sequence_length=3, sequence_stride=2)
+    assert [janela["window_start_seconds"] for janela in bloco] == [8.0, 10.0, 12.0]
+
+    curto = _janelas_da_sequencia(janelas[:2], 0, sequence_length=4, sequence_stride=2)
+    assert [janela["window_start_seconds"] for janela in curto] == [0.0, 2.0, 2.0, 2.0]
 
 
 def test_agregar_trechos_agrupa_sequencias_contiguas():

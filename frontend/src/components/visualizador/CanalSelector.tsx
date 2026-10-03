@@ -37,7 +37,7 @@ export function CanalSelector({
 
   if (carregando) {
     return (
-      <section className="rounded-xl border border-clinical-200 bg-white p-4 shadow-clinical">
+      <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
         <p className="text-sm text-clinical-500 animate-pulse">
           Carregando canais EEG do exame...
         </p>
@@ -47,7 +47,7 @@ export function CanalSelector({
 
   if (canais.length === 0) {
     return (
-      <section className="rounded-xl border border-dashed border-clinical-200 bg-clinical-50 p-4">
+      <section className="rounded-md border border-dashed border-clinical-200 bg-white p-4">
         <p className="text-sm text-clinical-500">
           Envie um arquivo .edf para listar os canais disponíveis.
         </p>
@@ -56,7 +56,7 @@ export function CanalSelector({
   }
 
   return (
-    <section className="rounded-xl border border-clinical-200 bg-white p-4 shadow-clinical">
+    <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">

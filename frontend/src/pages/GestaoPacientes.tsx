@@ -137,7 +137,7 @@ export function GestaoPacientes() {
   const tituloModal = pacienteEditando ? 'Editar Paciente' : 'Novo Paciente'
 
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-6xl px-5 py-7 md:px-8">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-clinical-900">Gestao de Pacientes</h2>
@@ -180,7 +180,7 @@ export function GestaoPacientes() {
         )}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-clinical-200 bg-white shadow-clinical">
+      <div className="overflow-x-auto rounded-md border border-clinical-200 bg-white shadow-clinical">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-clinical-100 bg-clinical-50 text-xs uppercase tracking-wide text-clinical-500">
             <tr>
@@ -250,7 +250,7 @@ export function GestaoPacientes() {
             aria-hidden
           />
           <div
-            className="relative w-full max-w-lg rounded-2xl bg-white p-7 shadow-2xl animate-modal-in"
+            className="relative w-full max-w-lg rounded-md bg-white p-7 shadow-2xl animate-modal-in"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-titulo"

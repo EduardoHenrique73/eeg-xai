@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, type DragEvent } from 'react'
+import { FileUp } from 'lucide-react'
 
 interface EdfDropzoneProps {
   onFileSelected: (file: File) => void
@@ -45,7 +46,7 @@ export function EdfDropzone({
   )
 
   return (
-    <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+    <section className="min-w-0 rounded-md border border-clinical-200 bg-white p-4 shadow-clinical xl:flex-1 2xl:flex-none">
       <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-clinical-500">
         Upload de Exame EEG
       </h3>
@@ -67,7 +68,7 @@ export function EdfDropzone({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={[
-          'flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors',
+          'flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-4 py-6 text-center transition-colors xl:min-h-28 xl:py-3 2xl:min-h-40 2xl:py-6',
           disabled
             ? 'cursor-not-allowed border-clinical-200 bg-clinical-50 opacity-60'
             : isDragging
@@ -75,20 +76,7 @@ export function EdfDropzone({
               : 'border-clinical-300 bg-clinical-50 hover:border-accent hover:bg-white',
         ].join(' ')}
       >
-        <svg
-          className="mb-3 h-10 w-10 text-accent"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          aria-hidden
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6H16a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
-        </svg>
+        <FileUp size={30} strokeWidth={1.6} className="mb-3 text-accent xl:mb-1 2xl:mb-3" aria-hidden="true" />
 
         <p className="text-sm font-medium text-clinical-800">
           Arraste o arquivo .edf ou clique para selecionar

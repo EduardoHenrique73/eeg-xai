@@ -12,6 +12,7 @@ from fastapi import (
     Depends,
     Form,
     HTTPException,
+    Query,
     UploadFile,
     status,
 )
@@ -163,6 +164,7 @@ async def obter_diagnostico_exame(
         score_agregacao=detalhes.get("score_agregacao"),
         xai_method=detalhes.get("xai_method"),
         mapa_shap_url=mapa_shap_url,
+        shap_overlay=detalhes.get("shap_overlay") if usuario.exibir_shap else None,
         data_analise=predicao.data_analise,
     )
 
@@ -217,6 +219,8 @@ async def salvar_laudo_exame(
 )
 async def obter_sinais_exame(
     exame_id: int,
+    start_seconds: float | None = Query(default=None, ge=0),
+    end_seconds: float | None = Query(default=None, gt=0),
     db: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_settings),
     usuario: Usuario = Depends(get_current_user),
@@ -240,6 +244,8 @@ async def obter_sinais_exame(
             extrair_sinais_para_visualizacao,
             arquivo,
             max_duration_seconds=settings.max_edf_duration_seconds,
+            start_seconds=start_seconds,
+            end_seconds=end_seconds,
         )
     except (FileNotFoundError, ValueError) as exc:
         raise HTTPException(

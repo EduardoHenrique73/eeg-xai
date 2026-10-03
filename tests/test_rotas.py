@@ -1,5 +1,6 @@
 """Testes das rotas REST (ingestão clínica)."""
 
+import json
 from io import BytesIO
 from unittest.mock import AsyncMock, patch
 
@@ -256,6 +257,32 @@ async def test_diagnostico_concluido_retorna_200_com_url_shap(
 
 
 @pytest.mark.asyncio
+async def test_overlay_shap_respeita_preferencia_do_medico(
+    client, exame, db_session, usuario_medico
+):
+    overlay = {
+        "scope": "peak_sequence",
+        "basis": "window_features",
+        "cells": [{"canal": "FP1-F7", "start_seconds": 10, "end_seconds": 14, "intensity": 0.8}],
+    }
+    db_session.add(PredicaoIA(
+        id_exame=exame.id,
+        resultado_score=0.8,
+        mapa_shap_path="",
+        detalhes_json=json.dumps({"shap_overlay": overlay}),
+    ))
+    await db_session.commit()
+    http_client, _ = client
+
+    response = await http_client.get(f"/api/exames/{exame.id}/diagnostico")
+    assert response.json()["shap_overlay"] == overlay
+
+    usuario_medico.exibir_shap = False
+    response = await http_client.get(f"/api/exames/{exame.id}/diagnostico")
+    assert response.json()["shap_overlay"] is None
+
+
+@pytest.mark.asyncio
 async def test_diagnostico_score_baixo_classificacao_normal(client, exame, db_session):
     predicao = PredicaoIA(
         id_exame=exame.id,
@@ -301,10 +328,16 @@ async def test_obter_sinais_exame_retorna_pontos_downsampled(
     with patch(
         "app.api.routes.exames.extrair_sinais_para_visualizacao",
         return_value=dados_fake,
-    ):
+    ) as extrair:
         response = await http_client.get(f"/api/exames/{exame.id}/sinais")
+        response_recorte = await http_client.get(
+            f"/api/exames/{exame.id}/sinais?start_seconds=10&end_seconds=20"
+        )
+        assert extrair.call_args.kwargs["start_seconds"] == 10.0
+        assert extrair.call_args.kwargs["end_seconds"] == 20.0
 
     assert response.status_code == 200
+    assert response_recorte.status_code == 200
     payload = response.json()
     assert payload["exame_id"] == exame.id
     assert len(payload["pontos"]) == 2

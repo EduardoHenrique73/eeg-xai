@@ -108,7 +108,7 @@ export function Configuracoes() {
   }
 
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-6xl px-5 py-7 md:px-8">
       <header className="mb-6">
         <h2 className="text-2xl font-bold text-clinical-900">Configuracoes</h2>
         <p className="mt-1 text-sm text-clinical-500">
@@ -117,13 +117,13 @@ export function Configuracoes() {
       </header>
 
       {carregando ? (
-        <div className="rounded-xl border border-clinical-200 bg-white p-6 text-sm text-clinical-500 shadow-clinical">
+        <div className="rounded-md border border-clinical-200 bg-white p-6 text-sm text-clinical-500 shadow-clinical">
           Carregando configuracoes...
         </div>
       ) : (
         <form onSubmit={(event) => void handleSubmit(event)} className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-5">
-            <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+            <section className="rounded-md border border-clinical-200 bg-white p-5 shadow-clinical">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
                 Dados do Perfil
               </h3>
@@ -162,7 +162,7 @@ export function Configuracoes() {
               </label>
             </section>
 
-            <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+            <section className="rounded-md border border-clinical-200 bg-white p-5 shadow-clinical">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
@@ -217,7 +217,7 @@ export function Configuracoes() {
           </div>
 
           <aside className="space-y-5">
-            <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+            <section className="rounded-md border border-clinical-200 bg-white p-5 shadow-clinical">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
                 IA e XAI
               </h3>
@@ -241,7 +241,7 @@ export function Configuracoes() {
                       threshold_confianca: Number(e.target.value),
                     })
                   }
-                  className="mt-3 w-full accent-teal-600"
+                  className="mt-3 w-full accent-accent"
                 />
               </label>
 

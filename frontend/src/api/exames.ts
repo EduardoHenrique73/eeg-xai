@@ -51,9 +51,11 @@ export async function obterDiagnostico(
 
 export async function obterSinaisExame(
   exameId: number,
+  intervalo?: { start_seconds: number; end_seconds: number },
 ): Promise<SinaisExameResponse> {
   const { data } = await apiClient.get<SinaisExameResponse>(
     `/api/exames/${exameId}/sinais`,
+    { params: intervalo },
   )
   return data
 }

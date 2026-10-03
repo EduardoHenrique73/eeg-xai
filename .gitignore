@@ -36,6 +36,11 @@ storage/shap/*
 # Dataset de amostra (arquivos locais de desenvolvimento)
 dataset_amostra/*
 !dataset_amostra/.gitkeep
+!dataset_amostra/manifests/
+dataset_amostra/manifests/*
+!dataset_amostra/manifests/v23_expanded_reserved_test.txt
+!dataset_amostra/manifests/v37_expanded_train.txt
+!dataset_amostra/manifests/v38_expanded_train.txt
 
 # ML artifacts
 *.pkl

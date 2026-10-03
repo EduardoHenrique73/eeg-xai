@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
+import { CheckCircle2, LoaderCircle } from 'lucide-react'
 import { salvarLaudo } from '../../api/exames'
 import type { TrechoSuspeito } from '../../types/api'
 import { useToast } from '../../contexts/ToastContext'
-import { AnaliseLoadingOverlay } from '../visualizador/AnaliseLoadingOverlay'
 import { CanalSelector } from '../visualizador/CanalSelector'
 import { ScoreConfianca } from './ScoreConfianca'
 import { ParecerMedico } from './ParecerMedico'
@@ -96,11 +96,13 @@ export function IaLaudoPanel({
   const [laudoSalvo, setLaudoSalvo] = useState(false)
   const [salvandoLaudo, setSalvandoLaudo] = useState(false)
   const [erroLaudo, setErroLaudo] = useState<string | null>(null)
+  const [aba, setAba] = useState<'analise' | 'laudo'>('analise')
 
   useEffect(() => {
     setParecer(laudoTextoInicial ?? '')
     setLaudoSalvo(statusExameInicial === 'concluido')
     setErroLaudo(null)
+    setAba('analise')
   }, [exameId, laudoTextoInicial, statusExameInicial])
 
   const handleEmitirLaudo = useCallback(async () => {
@@ -115,9 +117,9 @@ export function IaLaudoPanel({
     try {
       await salvarLaudo(exameId, texto)
       setLaudoSalvo(true)
-      toastSucesso('Laudo emitido com sucesso. Registro clinico finalizado.')
+      toastSucesso('Laudo emitido com sucesso. Registro clínico finalizado.')
     } catch {
-      const msg = 'Nao foi possivel salvar o laudo. Tente novamente.'
+      const msg = 'Não foi possível salvar o laudo. Tente novamente.'
       setErroLaudo(msg)
       toastErro(msg)
     } finally {
@@ -151,10 +153,12 @@ export function IaLaudoPanel({
 
   return (
     <div className="relative flex h-full flex-col gap-4">
-      <AnaliseLoadingOverlay
-        visivel={analiseEmAndamento}
-        nCanais={canaisSelecionados.length || canaisEeg.length}
-      />
+      <div className="flex rounded-md border border-clinical-200 bg-white p-1" role="group" aria-label="Painel clínico">
+        <button type="button" onClick={() => setAba('analise')} aria-pressed={aba === 'analise'} className={`flex-1 rounded px-3 py-2 text-sm font-medium ${aba === 'analise' ? 'bg-accent-light text-accent-dark' : 'text-clinical-600 hover:bg-clinical-50'}`}>Análise</button>
+        <button type="button" onClick={() => setAba('laudo')} aria-pressed={aba === 'laudo'} className={`flex-1 rounded px-3 py-2 text-sm font-medium ${aba === 'laudo' ? 'bg-accent-light text-accent-dark' : 'text-clinical-600 hover:bg-clinical-50'}`}>Laudo</button>
+      </div>
+
+      {aba === 'analise' ? <>
 
       <CanalSelector
         canais={canaisEeg}
@@ -164,14 +168,10 @@ export function IaLaudoPanel({
         carregando={carregandoCanais}
       />
 
-      <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+      <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
           Motor de IA
         </h3>
-        <p className="mt-2 text-sm text-clinical-600">
-          Executa a analise multicanal, calcula o score de suspeita e gera o mapa de explicabilidade.
-        </p>
-
         <button
           type="button"
           onClick={onSolicitarAnalise}
@@ -186,24 +186,20 @@ export function IaLaudoPanel({
           ].join(' ')}
         >
           {analiseEmAndamento && (
-            <svg className="h-4 w-4 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v3m6.364 1.636l-2.121 2.121M21 12h-3m-1.636 6.364l-2.121-2.121M12 21v-3m-6.364-1.636l2.121 2.121M3 12h3m1.636-6.364l2.121 2.121" />
-            </svg>
+            <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />
           )}
           {analiseConcluida && (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <CheckCircle2 size={16} aria-hidden="true" />
           )}
           {analiseConcluida
-            ? 'Analise concluida'
+            ? 'Análise concluída'
             : analiseEmAndamento
-              ? 'Processando analise...'
+              ? 'Processando análise...'
               : solicitarDesabilitado
                 ? 'Aguardando upload do .edf'
                 : semCanaisSelecionados
                   ? 'Selecione canais EEG'
-                  : `Iniciar analise IA (${canaisSelecionados.length} canal${canaisSelecionados.length !== 1 ? 'is' : ''})`}
+                  : `Iniciar análise IA (${canaisSelecionados.length} ${canaisSelecionados.length === 1 ? 'canal' : 'canais'})`}
         </button>
 
         {(erro || erroLaudo) && (
@@ -221,14 +217,14 @@ export function IaLaudoPanel({
       />
 
       {analiseConcluida && (
-        <section className="rounded-xl border border-clinical-200 bg-white p-5 shadow-clinical">
+        <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
-            Interpretacao por Canais
+            Interpretação por canais
           </h3>
           <div className="mt-3 space-y-3 text-sm text-clinical-700">
             <p>
               <span className="font-medium text-clinical-800">Modo:</span>{' '}
-              {featureMode === 'per_channel' ? 'Analise por canal' : 'Analise agregada'}
+              {featureMode === 'per_channel' ? 'Análise por canal' : 'Análise agregada'}
             </p>
 
             {modelType === 'sequence_cnn_lstm' && (
@@ -242,12 +238,12 @@ export function IaLaudoPanel({
                 </p>
                 {!resultadoConclusivo && (
                   <p className="mt-2 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
-                    Resultado indeterminado: a IA nao gerou um positivo conclusivo para este exame.
+                    Resultado indeterminado: a IA não gerou um positivo conclusivo para este exame.
                   </p>
                 )}
                 {resultadoPositivoConclusivo && (
                   <p className="mt-2 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-alert-crisis">
-                    Positivo conclusivo pelo criterio automatico; exige revisao medica do trecho destacado.
+                    Positivo conclusivo pelo critério automático; exige revisão médica do trecho destacado.
                   </p>
                 )}
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-clinical-600">
@@ -326,7 +322,7 @@ export function IaLaudoPanel({
               <div className="rounded-md bg-clinical-50 px-3 py-2">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium text-clinical-800">Trecho continuo suspeito</p>
+                    <p className="font-medium text-clinical-800">Trecho contínuo suspeito</p>
                     <p className="mt-1 text-xs text-clinical-600">
                       {formatarTempo(trechoSuspeito.start_seconds)} - {formatarTempo(trechoSuspeito.end_seconds)}
                       {' '}({trechoSuspeito.duration_seconds.toFixed(1)}s, {trechoSuspeito.n_janelas} janelas)
@@ -340,7 +336,7 @@ export function IaLaudoPanel({
                         : 'bg-amber-50 text-amber-700',
                     ].join(' ')}
                   >
-                    {trechoSuspeito.atingiu_duracao_minima ? 'duracao relevante' : 'trecho curto'}
+                    {trechoSuspeito.atingiu_duracao_minima ? 'duração relevante' : 'trecho curto'}
                   </span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-clinical-600">
@@ -353,7 +349,7 @@ export function IaLaudoPanel({
                     </span>
                   )}
                   <span>
-                    score medio:{' '}
+                    score médio:{' '}
                     <span className="font-medium text-clinical-700">
                       {formatarPercentual(trechoSuspeito.score_medio) ?? '-'}
                     </span>
@@ -373,12 +369,12 @@ export function IaLaudoPanel({
                 </div>
                 {trechoSuspeito.cobertura_excessiva && (
                   <p className="mt-2 text-xs font-medium text-amber-700">
-                    Cobertura suspeita extensa demais para conclusao automatica; revisar o exame antes de interpretar como crise.
+                    Cobertura suspeita extensa demais para conclusão automática; revisar o exame antes de interpretar como crise.
                   </p>
                 )}
                 {coberturaExcessiva && !trechoSuspeito.cobertura_excessiva && (
                   <p className="mt-2 text-xs font-medium text-amber-700">
-                    A regra global marcou cobertura excessiva e bloqueou conclusao automatica.
+                    A regra global marcou cobertura excessiva e bloqueou conclusão automática.
                   </p>
                 )}
               </div>
@@ -433,7 +429,7 @@ export function IaLaudoPanel({
 
             {canaisProcessados.length > 0 && (
               <div>
-                <p className="font-medium text-clinical-800">Canais incluidos na analise</p>
+                <p className="font-medium text-clinical-800">Canais incluídos na análise</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {canaisProcessados.map((canal) => (
                     <span
@@ -449,9 +445,9 @@ export function IaLaudoPanel({
 
             {canaisDestaque.length > 0 && (
               <div>
-                <p className="font-medium text-clinical-800">Canais com maior influencia no resultado</p>
+                <p className="font-medium text-clinical-800">Canais com maior influência no resultado</p>
                 <p className="mt-1 text-xs text-clinical-500">
-                  O impacto mostra quanto o score muda quando o canal e removido da analise.
+                  O impacto mostra quanto o score muda quando o canal é removido da análise.
                 </p>
                 <div className="mt-2 space-y-2">
                   {canaisDestaque.map((item) => (
@@ -462,12 +458,12 @@ export function IaLaudoPanel({
                       <div className="flex items-center justify-between gap-3">
                         <span className="font-medium text-clinical-800">{item.canal}</span>
                         <span className="text-xs text-clinical-600">
-                          variacao absoluta do score {formatarPercentual(item.score) ?? '-'}
+                          variação absoluta do score {formatarPercentual(item.score) ?? '-'}
                         </span>
                       </div>
                       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-clinical-600">
                         <span>
-                          diferenca no score:{' '}
+                          diferença no score:{' '}
                           <span className="font-medium text-clinical-700">
                             {formatarPercentual(item.impacto) ?? '-'}
                           </span>
@@ -487,13 +483,13 @@ export function IaLaudoPanel({
 
             {canaisOmitidos.length > 0 && (
               <div>
-                <p className="font-medium text-clinical-800">Canais fora desta execucao</p>
+                <p className="font-medium text-clinical-800">Canais fora desta execução</p>
                 <p className="mt-1 text-xs text-clinical-500">
-                  Estes canais nao entraram no calculo atual e nao influenciaram o score.
+                  Estes canais não entraram no cálculo atual e não influenciaram o score.
                 </p>
                 {montagemIncompleta && (
                   <p className="mt-1 text-xs font-medium text-amber-700">
-                    O modelo por canal foi treinado com a montagem completa; uma analise parcial reduz a confiabilidade do resultado.
+                    O modelo por canal foi treinado com a montagem completa; uma análise parcial reduz a confiabilidade do resultado.
                   </p>
                 )}
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -512,7 +508,7 @@ export function IaLaudoPanel({
         </section>
       )}
 
-      <div className="flex-1">
+      </> : <div className="flex-1">
         <ParecerMedico
           value={parecer}
           onChange={setParecer}
@@ -522,6 +518,7 @@ export function IaLaudoPanel({
           salvando={salvandoLaudo}
         />
       </div>
+      }
     </div>
   )
 }

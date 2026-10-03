@@ -114,6 +114,7 @@ class SequenceDatasetCache:
         canais_referencia: list[str] | None,
         disk_cache_enabled: bool,
         disk_cache_path: Path,
+        event_balanced_sampling: bool = False,
     ) -> None:
         self.dataset_dir = dataset_dir
         self.window_seconds = window_seconds
@@ -132,6 +133,7 @@ class SequenceDatasetCache:
         self.canais_referencia = canais_referencia
         self.disk_cache_enabled = disk_cache_enabled
         self.disk_cache_path = disk_cache_path
+        self.event_balanced_sampling = event_balanced_sampling
         self.intervalos_por_arquivo = carregar_resumos_chbmit(dataset_dir)
         self._cache: dict[tuple[str, int | None, int | None], tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]] = {}
 
@@ -150,7 +152,11 @@ class SequenceDatasetCache:
         sampling_cache_key = (
             "all"
             if max_normal_windows is None and max_seizure_windows is None
-            else self.sampling_level
+            else (
+                "eventsequencev1"
+                if self.sampling_level == "sequence" and self.event_balanced_sampling
+                else self.sampling_level
+            )
         )
         nome = (
             f"{stem}__{self.feature_mode}"
@@ -190,6 +196,11 @@ class SequenceDatasetCache:
                 self.sampling_level == "sequence"
                 and max_normal_windows is not None
             ):
+                full_cache = self._disk_cache_file(
+                    arquivo,
+                    max_normal_windows=None,
+                    max_seizure_windows=None,
+                )
                 limites_maiores = sorted(
                     {
                         item
@@ -197,7 +208,7 @@ class SequenceDatasetCache:
                         if item is not None and item > max_normal_windows
                     }
                 )
-                larger_cache = next(
+                larger_cache = full_cache if full_cache.exists() else next(
                     (
                         candidate
                         for limit in limites_maiores
@@ -222,6 +233,7 @@ class SequenceDatasetCache:
                     max_normal_windows=max_normal_windows,
                     max_seizure_windows=max_seizure_windows,
                     min_contiguous_windows=1,
+                    balance_positive_events=self.event_balanced_sampling,
                 )
             else:
                 return None
@@ -331,6 +343,7 @@ class SequenceDatasetCache:
                     max_normal_windows=max_normal_windows,
                     max_seizure_windows=max_seizure_windows,
                     min_contiguous_windows=1,
+                    balance_positive_events=self.event_balanced_sampling,
                 )
 
         x_seq, y_seq, meta_seq = resultado

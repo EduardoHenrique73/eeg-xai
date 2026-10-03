@@ -219,6 +219,21 @@ def construir_sequencias(
     return np.asarray(x_seq, dtype=np.float32), meta_seq
 
 
+def _janelas_da_sequencia(
+    janelas: list[dict[str, Any]],
+    indice_sequencia: int,
+    *,
+    sequence_length: int,
+    sequence_stride: int,
+) -> list[dict[str, Any]]:
+    inicio = indice_sequencia * sequence_stride
+    bloco = list(janelas[inicio : inicio + sequence_length])
+    if not bloco:
+        raise ValueError("Sequencia SHAP sem janelas correspondentes.")
+    bloco.extend([bloco[-1]] * (sequence_length - len(bloco)))
+    return bloco
+
+
 def _aplicar_scaler(x: np.ndarray, scaler: Any) -> np.ndarray:
     if scaler is None:
         return x.astype(np.float32)
@@ -450,6 +465,13 @@ def analisar_exame_sequencial(
         montagem_incompleta=montagem_incompleta,
     )
 
+    janelas_xai = _janelas_da_sequencia(
+        janelas,
+        indice_pico,
+        sequence_length=sequence_length,
+        sequence_stride=sequence_stride,
+    )
+
     return {
         "model_type": "sequence_cnn_lstm",
         "score_geral": score_geral,
@@ -472,6 +494,18 @@ def analisar_exame_sequencial(
         "trecho_suspeito": trecho_principal,
         "top_trechos_suspeitos": trechos,
         "xai_method": "gradient_shap",
+        "_xai_channels": (
+            list(janelas[0].get("canais_referencia", []))
+            if feature_mode == "per_channel" or feature_mode.endswith("_per_channel")
+            else []
+        ),
+        "_xai_windows": [
+            {
+                "start_seconds": float(janela["window_start_seconds"]),
+                "end_seconds": float(janela["window_end_seconds"]),
+            }
+            for janela in janelas_xai
+        ],
         "_xai_input": x_scaled[indice_pico : indice_pico + 1],
         "_xai_background": x_scaled[
             np.linspace(0, len(x_scaled) - 1, min(16, len(x_scaled)), dtype=int)

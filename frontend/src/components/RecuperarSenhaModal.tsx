@@ -50,7 +50,7 @@ export function RecuperarSenhaModal({ aberto, onFechar }: RecuperarSenhaModalPro
 
       {/* Card */}
       <div
-        className="relative w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl animate-modal-in"
+        className="relative w-full max-w-md rounded-md bg-white p-7 shadow-2xl animate-modal-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="recuperar-senha-titulo"

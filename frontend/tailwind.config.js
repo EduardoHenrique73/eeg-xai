@@ -5,19 +5,19 @@ export default {
     extend: {
       colors: {
         clinical: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          500: '#64748b',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
+          50: '#f7faff',
+          100: '#eef4fb',
+          200: '#dce7f2',
+          300: '#b9cadd',
+          500: '#61758b',
+          700: '#34485f',
+          800: '#23384f',
+          900: '#122a43',
         },
         accent: {
-          DEFAULT: '#0d9488',
-          dark: '#0f766e',
-          light: '#ccfbf1',
+          DEFAULT: '#1d5fc1',
+          dark: '#174c99',
+          light: '#e8f2ff',
         },
         alert: {
           crisis: '#dc2626',
@@ -29,7 +29,7 @@ export default {
         mono: ['ui-monospace', 'Consolas', 'monospace'],
       },
       boxShadow: {
-        clinical: '0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.06)',
+        clinical: '0 1px 3px 0 rgb(18 42 67 / 0.06), 0 8px 24px -18px rgb(18 42 67 / 0.18)',
       },
       keyframes: {
         'toast-in': {

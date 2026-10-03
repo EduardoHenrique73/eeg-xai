@@ -33,6 +33,7 @@ def test_construir_alvos_temporais_rotula_cada_passo():
     assert y.shape == (1, 4, 1)
     assert y[0, :, 0].tolist() == [0.0, 1.0, 1.0, 1.0]
     assert metas_temporais[0][0]["context"] == "interictal"
+    assert metas_temporais[0][1]["event_duration_seconds"] == 4.0
 
 
 def test_agregar_predicoes_temporais_tira_media_das_janelas_repetidas():
@@ -81,3 +82,23 @@ def test_pesos_temporais_balanceia_eventos_longos_e_curtos():
     )
 
     assert float(np.sum(pesos[0])) == pytest.approx(float(pesos[1, 0]))
+
+
+def test_pesos_temporais_aumenta_apenas_evento_curto():
+    y = np.asarray([[[1], [1], [0]]], dtype=np.float32)
+    metas = [[
+        {"context": "ictal", "event_duration_seconds": 12.0},
+        {"context": "ictal", "event_duration_seconds": 45.0},
+        {"context": "interictal", "event_duration_seconds": None},
+    ]]
+
+    pesos = pesos_temporais(
+        y,
+        metas,
+        boundary_weight=1.0,
+        class_weight=None,
+        short_event_max_duration_seconds=30.0,
+        short_event_weight=1.5,
+    )
+
+    assert pesos.tolist() == [[1.5, 1.0, 1.0]]

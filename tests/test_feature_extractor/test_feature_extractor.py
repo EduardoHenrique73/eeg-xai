@@ -9,9 +9,11 @@ import pytest
 from app.ai_engine.feature_extractor import (
     FEATURE_NAMES,
     FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL,
+    FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL,
     FEATURE_MODE_TIME_FREQUENCY_RELATIVE_PER_CHANNEL,
     RAW_SIGNAL_FEATURE_NAMES,
     TIME_FREQUENCY_FEATURE_NAMES,
+    TIME_FREQUENCY_MORPHOLOGY_FEATURE_NAMES,
     TIME_FREQUENCY_RELATIVE_FEATURE_NAMES,
     carregar_sinal_edf,
     extrair_features_por_modo_de_valores,
@@ -157,6 +159,29 @@ class TestExtrairFeatures:
             "centroide_espectral_normalizado",
             "entropia_espectral_normalizada",
         ])
+
+    def test_features_morfologicas_complementam_espectro_e_sao_invariantes_a_escala(self):
+        sfreq = 128.0
+        t = np.arange(0, 4.0, 1.0 / sfreq)
+        sinal = np.sin(2 * np.pi * 8 * t) + 0.25 * np.sin(2 * np.pi * 19 * t)
+
+        original = extrair_features_por_modo_de_valores(
+            sinal,
+            feature_mode=FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL,
+            sfreq=sfreq,
+        )
+        escalado = extrair_features_por_modo_de_valores(
+            sinal * 40.0,
+            feature_mode=FEATURE_MODE_TIME_FREQUENCY_MORPHOLOGY_PER_CHANNEL,
+            sfreq=sfreq,
+        )
+
+        assert original["feature_names"] == TIME_FREQUENCY_MORPHOLOGY_FEATURE_NAMES
+        assert len(original["feature_vector"]) == 23
+        np.testing.assert_allclose(
+            original["feature_vector"][15:], escalado["feature_vector"][15:], rtol=1e-6, atol=1e-6
+        )
+        assert np.all(np.isfinite(original["feature_vector"]))
 
     def test_nomes_features_tempo_frequencia_por_canal_usa_base_espectral(self):
         assert nomes_features_por_modo(FEATURE_MODE_TIME_FREQUENCY_PER_CHANNEL) == TIME_FREQUENCY_FEATURE_NAMES

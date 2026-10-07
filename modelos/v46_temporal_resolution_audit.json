@@ -1,0 +1,948 @@
+{
+  "experiment": "v45_invisible_event_representation_audit",
+  "created_at": "2026-10-07T12:14:41",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\manifests\\v45_short_seizures_train.txt",
+  "target_file": "chb16_17.edf",
+  "target_patient": "chb16",
+  "window_seconds": 2,
+  "step_seconds": 1,
+  "sequence_length": 16,
+  "context_span_seconds": 17,
+  "calibration_patients": [
+    "chb16",
+    "chb19",
+    "chb20",
+    "chb24"
+  ],
+  "training_files": 11,
+  "training_file_names": [
+    "chb07_12.edf",
+    "chb07_13.edf",
+    "chb07_19.edf",
+    "chb05_06.edf",
+    "chb03_01.edf",
+    "chb02_19.edf",
+    "chb21_22.edf",
+    "chb12_08.edf",
+    "chb06_10.edf",
+    "chb06_13.edf",
+    "chb06_18.edf"
+  ],
+  "training_events_with_windows": 14,
+  "training_event_duration_counts": {
+    "le_10_seconds": 1,
+    "le_20_seconds": 7,
+    "gt_20_seconds": 7
+  },
+  "reference_channels": [
+    "FP1-F7",
+    "F7-T7",
+    "T7-P7",
+    "P7-O1",
+    "FP1-F3",
+    "F3-C3",
+    "C3-P3",
+    "P3-O1",
+    "FP2-F4",
+    "F4-C4",
+    "C4-P4",
+    "P4-O2",
+    "FP2-F8",
+    "F8-T8",
+    "T8-P8-0",
+    "P8-O2",
+    "FZ-CZ",
+    "CZ-PZ",
+    "P7-T7",
+    "T7-FT9",
+    "FT9-FT10",
+    "FT10-T8",
+    "T8-P8-1"
+  ],
+  "feature_names": [
+    "potencia_delta",
+    "potencia_theta",
+    "potencia_alpha",
+    "potencia_beta",
+    "potencia_gamma",
+    "potencia_relativa_delta",
+    "potencia_relativa_theta",
+    "potencia_relativa_alpha",
+    "potencia_relativa_beta",
+    "potencia_relativa_gamma",
+    "frequencia_dominante",
+    "centroide_espectral",
+    "entropia_espectral",
+    "razao_theta_alpha",
+    "razao_beta_alpha"
+  ],
+  "target_events": [
+    {
+      "event": 1,
+      "start_seconds": 227.0,
+      "end_seconds": 236.0,
+      "duration_seconds": 9.0,
+      "windows": 5,
+      "top_channels": [
+        {
+          "channel": "C3-P3",
+          "strength": 2.6190125942230225
+        },
+        {
+          "channel": "F3-C3",
+          "strength": 2.3948960304260254
+        },
+        {
+          "channel": "F4-C4",
+          "strength": 2.0362141132354736
+        },
+        {
+          "channel": "P4-O2",
+          "strength": 1.7425364255905151
+        },
+        {
+          "channel": "FP2-F8",
+          "strength": 1.687813401222229
+        }
+      ],
+      "top_features": [
+        {
+          "feature": "potencia_alpha",
+          "strength": 4.407273769378662
+        },
+        {
+          "feature": "potencia_beta",
+          "strength": 3.9898910522460938
+        },
+        {
+          "feature": "potencia_delta",
+          "strength": 2.108376979827881
+        },
+        {
+          "feature": "potencia_theta",
+          "strength": 1.9838571548461914
+        },
+        {
+          "feature": "potencia_gamma",
+          "strength": 1.2763506174087524
+        }
+      ],
+      "channel_concentration_top3": 0.23864229023456573,
+      "local_normal_windows": 121,
+      "local_normal_rms_distance": 2.234659194946289,
+      "local_normal_cosine_similarity": 0.3292546521280454,
+      "nearest_training_events": [
+        {
+          "file": "chb07_13.edf",
+          "event": 1,
+          "start_seconds": 3285.0,
+          "end_seconds": 3381.0,
+          "duration_seconds": 96.0,
+          "windows": 32,
+          "cosine_similarity": 0.7085934911355072
+        },
+        {
+          "file": "chb07_19.edf",
+          "event": 1,
+          "start_seconds": 13688.0,
+          "end_seconds": 13831.0,
+          "duration_seconds": 143.0,
+          "windows": 32,
+          "cosine_similarity": 0.7071414893994303
+        },
+        {
+          "file": "chb07_12.edf",
+          "event": 1,
+          "start_seconds": 4920.0,
+          "end_seconds": 5006.0,
+          "duration_seconds": 86.0,
+          "windows": 32,
+          "cosine_similarity": 0.6937783516245379
+        },
+        {
+          "file": "chb05_06.edf",
+          "event": 1,
+          "start_seconds": 417.0,
+          "end_seconds": 532.0,
+          "duration_seconds": 115.0,
+          "windows": 32,
+          "cosine_similarity": 0.682910278507091
+        },
+        {
+          "file": "chb03_01.edf",
+          "event": 1,
+          "start_seconds": 362.0,
+          "end_seconds": 414.0,
+          "duration_seconds": 52.0,
+          "windows": 26,
+          "cosine_similarity": 0.6690379116084475
+        },
+        {
+          "file": "chb21_22.edf",
+          "event": 1,
+          "start_seconds": 2553.0,
+          "end_seconds": 2565.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.5851146789992966
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 5,
+          "cosine_similarity": 0.5495504696506944
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.5065697235025425
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 4,
+          "start_seconds": 2798.0,
+          "end_seconds": 2824.0,
+          "duration_seconds": 26.0,
+          "windows": 8,
+          "cosine_similarity": 0.48858763228835167
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 2,
+          "start_seconds": 1591.0,
+          "end_seconds": 1614.0,
+          "duration_seconds": 23.0,
+          "windows": 9,
+          "cosine_similarity": 0.46544987865574083
+        }
+      ],
+      "nearest_short_training_events": [
+        {
+          "file": "chb21_22.edf",
+          "event": 1,
+          "start_seconds": 2553.0,
+          "end_seconds": 2565.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.5851146789992966
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 5,
+          "cosine_similarity": 0.5495504696506944
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.5065697235025425
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 8,
+          "cosine_similarity": 0.46121639486546384
+        },
+        {
+          "file": "chb06_18.edf",
+          "event": 1,
+          "start_seconds": 7799.0,
+          "end_seconds": 7811.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.35793836249822164
+        },
+        {
+          "file": "chb06_13.edf",
+          "event": 1,
+          "start_seconds": 506.0,
+          "end_seconds": 519.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.08496602888891415
+        },
+        {
+          "file": "chb06_10.edf",
+          "event": 1,
+          "start_seconds": 10833.0,
+          "end_seconds": 10845.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": -0.04942032454718894
+        }
+      ],
+      "similar_training_events_ge_0_8": 0
+    },
+    {
+      "event": 2,
+      "start_seconds": 1694.0,
+      "end_seconds": 1700.0,
+      "duration_seconds": 6.0,
+      "windows": 3,
+      "top_channels": [
+        {
+          "channel": "C3-P3",
+          "strength": 2.1483538150787354
+        },
+        {
+          "channel": "C4-P4",
+          "strength": 1.929099202156067
+        },
+        {
+          "channel": "F4-C4",
+          "strength": 1.8621070384979248
+        },
+        {
+          "channel": "F3-C3",
+          "strength": 1.8457733392715454
+        },
+        {
+          "channel": "FZ-CZ",
+          "strength": 1.578487753868103
+        }
+      ],
+      "top_features": [
+        {
+          "feature": "potencia_beta",
+          "strength": 5.054438591003418
+        },
+        {
+          "feature": "potencia_gamma",
+          "strength": 2.23095440864563
+        },
+        {
+          "feature": "potencia_alpha",
+          "strength": 2.1375815868377686
+        },
+        {
+          "feature": "potencia_delta",
+          "strength": 1.147018551826477
+        },
+        {
+          "feature": "razao_beta_alpha",
+          "strength": 1.0784270763397217
+        }
+      ],
+      "channel_concentration_top3": 0.23441675305366516,
+      "local_normal_windows": 122,
+      "local_normal_rms_distance": 2.0090043544769287,
+      "local_normal_cosine_similarity": -0.017339247751624456,
+      "nearest_training_events": [
+        {
+          "file": "chb05_06.edf",
+          "event": 1,
+          "start_seconds": 417.0,
+          "end_seconds": 532.0,
+          "duration_seconds": 115.0,
+          "windows": 32,
+          "cosine_similarity": 0.6940061011457145
+        },
+        {
+          "file": "chb03_01.edf",
+          "event": 1,
+          "start_seconds": 362.0,
+          "end_seconds": 414.0,
+          "duration_seconds": 52.0,
+          "windows": 26,
+          "cosine_similarity": 0.6925416982288277
+        },
+        {
+          "file": "chb07_13.edf",
+          "event": 1,
+          "start_seconds": 3285.0,
+          "end_seconds": 3381.0,
+          "duration_seconds": 96.0,
+          "windows": 32,
+          "cosine_similarity": 0.6825307299915125
+        },
+        {
+          "file": "chb07_19.edf",
+          "event": 1,
+          "start_seconds": 13688.0,
+          "end_seconds": 13831.0,
+          "duration_seconds": 143.0,
+          "windows": 32,
+          "cosine_similarity": 0.6733803441154226
+        },
+        {
+          "file": "chb07_12.edf",
+          "event": 1,
+          "start_seconds": 4920.0,
+          "end_seconds": 5006.0,
+          "duration_seconds": 86.0,
+          "windows": 32,
+          "cosine_similarity": 0.6420588507699643
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.5981079853944772
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 2,
+          "start_seconds": 1591.0,
+          "end_seconds": 1614.0,
+          "duration_seconds": 23.0,
+          "windows": 9,
+          "cosine_similarity": 0.5764210113423243
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 8,
+          "cosine_similarity": 0.5304935205564085
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 4,
+          "start_seconds": 2798.0,
+          "end_seconds": 2824.0,
+          "duration_seconds": 26.0,
+          "windows": 8,
+          "cosine_similarity": 0.4836744802414715
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 5,
+          "cosine_similarity": 0.44310701519121776
+        }
+      ],
+      "nearest_short_training_events": [
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.5981079853944772
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 8,
+          "cosine_similarity": 0.5304935205564085
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 5,
+          "cosine_similarity": 0.44310701519121776
+        },
+        {
+          "file": "chb21_22.edf",
+          "event": 1,
+          "start_seconds": 2553.0,
+          "end_seconds": 2565.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.37731692078444995
+        },
+        {
+          "file": "chb06_18.edf",
+          "event": 1,
+          "start_seconds": 7799.0,
+          "end_seconds": 7811.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.3234813004874965
+        },
+        {
+          "file": "chb06_13.edf",
+          "event": 1,
+          "start_seconds": 506.0,
+          "end_seconds": 519.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.20794079064782953
+        },
+        {
+          "file": "chb06_10.edf",
+          "event": 1,
+          "start_seconds": 10833.0,
+          "end_seconds": 10845.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.07445406473787514
+        }
+      ],
+      "similar_training_events_ge_0_8": 0
+    },
+    {
+      "event": 3,
+      "start_seconds": 2162.0,
+      "end_seconds": 2170.0,
+      "duration_seconds": 8.0,
+      "windows": 4,
+      "top_channels": [
+        {
+          "channel": "C4-P4",
+          "strength": 1.7408959865570068
+        },
+        {
+          "channel": "C3-P3",
+          "strength": 1.606677770614624
+        },
+        {
+          "channel": "F3-C3",
+          "strength": 1.5229028463363647
+        },
+        {
+          "channel": "FP2-F8",
+          "strength": 1.4532824754714966
+        },
+        {
+          "channel": "F4-C4",
+          "strength": 1.3724420070648193
+        }
+      ],
+      "top_features": [
+        {
+          "feature": "potencia_beta",
+          "strength": 4.7354817390441895
+        },
+        {
+          "feature": "potencia_alpha",
+          "strength": 2.6528871059417725
+        },
+        {
+          "feature": "potencia_gamma",
+          "strength": 1.623032808303833
+        },
+        {
+          "feature": "potencia_delta",
+          "strength": 1.0787971019744873
+        },
+        {
+          "feature": "potencia_relativa_beta",
+          "strength": 1.052358627319336
+        }
+      ],
+      "channel_concentration_top3": 0.20413941144943237,
+      "local_normal_windows": 122,
+      "local_normal_rms_distance": 1.7930035591125488,
+      "local_normal_cosine_similarity": 0.33182262361904596,
+      "nearest_training_events": [
+        {
+          "file": "chb05_06.edf",
+          "event": 1,
+          "start_seconds": 417.0,
+          "end_seconds": 532.0,
+          "duration_seconds": 115.0,
+          "windows": 32,
+          "cosine_similarity": 0.7186083337136867
+        },
+        {
+          "file": "chb07_19.edf",
+          "event": 1,
+          "start_seconds": 13688.0,
+          "end_seconds": 13831.0,
+          "duration_seconds": 143.0,
+          "windows": 32,
+          "cosine_similarity": 0.7067443060741756
+        },
+        {
+          "file": "chb07_13.edf",
+          "event": 1,
+          "start_seconds": 3285.0,
+          "end_seconds": 3381.0,
+          "duration_seconds": 96.0,
+          "windows": 32,
+          "cosine_similarity": 0.6954062827644422
+        },
+        {
+          "file": "chb03_01.edf",
+          "event": 1,
+          "start_seconds": 362.0,
+          "end_seconds": 414.0,
+          "duration_seconds": 52.0,
+          "windows": 26,
+          "cosine_similarity": 0.6925789402108107
+        },
+        {
+          "file": "chb07_12.edf",
+          "event": 1,
+          "start_seconds": 4920.0,
+          "end_seconds": 5006.0,
+          "duration_seconds": 86.0,
+          "windows": 32,
+          "cosine_similarity": 0.6580711262265687
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.6366063666537343
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 2,
+          "start_seconds": 1591.0,
+          "end_seconds": 1614.0,
+          "duration_seconds": 23.0,
+          "windows": 9,
+          "cosine_similarity": 0.6187759084614672
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 8,
+          "cosine_similarity": 0.5722521261406982
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 4,
+          "start_seconds": 2798.0,
+          "end_seconds": 2824.0,
+          "duration_seconds": 26.0,
+          "windows": 8,
+          "cosine_similarity": 0.5329131507683292
+        },
+        {
+          "file": "chb21_22.edf",
+          "event": 1,
+          "start_seconds": 2553.0,
+          "end_seconds": 2565.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.43656364617013815
+        }
+      ],
+      "nearest_short_training_events": [
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.6366063666537343
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 8,
+          "cosine_similarity": 0.5722521261406982
+        },
+        {
+          "file": "chb21_22.edf",
+          "event": 1,
+          "start_seconds": 2553.0,
+          "end_seconds": 2565.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.43656364617013815
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 5,
+          "cosine_similarity": 0.4205851851233905
+        },
+        {
+          "file": "chb06_18.edf",
+          "event": 1,
+          "start_seconds": 7799.0,
+          "end_seconds": 7811.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.36331030082453375
+        },
+        {
+          "file": "chb06_13.edf",
+          "event": 1,
+          "start_seconds": 506.0,
+          "end_seconds": 519.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.20013470574186187
+        },
+        {
+          "file": "chb06_10.edf",
+          "event": 1,
+          "start_seconds": 10833.0,
+          "end_seconds": 10845.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.10854800630519305
+        }
+      ],
+      "similar_training_events_ge_0_8": 0
+    },
+    {
+      "event": 4,
+      "start_seconds": 3290.0,
+      "end_seconds": 3298.0,
+      "duration_seconds": 8.0,
+      "windows": 4,
+      "top_channels": [
+        {
+          "channel": "FP2-F8",
+          "strength": 2.1286261081695557
+        },
+        {
+          "channel": "FP2-F4",
+          "strength": 1.734967827796936
+        },
+        {
+          "channel": "C4-P4",
+          "strength": 1.6202789545059204
+        },
+        {
+          "channel": "FP1-F3",
+          "strength": 1.5156320333480835
+        },
+        {
+          "channel": "C3-P3",
+          "strength": 1.4251610040664673
+        }
+      ],
+      "top_features": [
+        {
+          "feature": "potencia_beta",
+          "strength": 3.922912359237671
+        },
+        {
+          "feature": "potencia_alpha",
+          "strength": 1.920591115951538
+        },
+        {
+          "feature": "potencia_gamma",
+          "strength": 1.6611846685409546
+        },
+        {
+          "feature": "razao_beta_alpha",
+          "strength": 1.3962491750717163
+        },
+        {
+          "feature": "potencia_relativa_beta",
+          "strength": 0.9674907326698303
+        }
+      ],
+      "channel_concentration_top3": 0.22590917348861694,
+      "local_normal_windows": 122,
+      "local_normal_rms_distance": 1.697618842124939,
+      "local_normal_cosine_similarity": 0.28299277821682384,
+      "nearest_training_events": [
+        {
+          "file": "chb03_01.edf",
+          "event": 1,
+          "start_seconds": 362.0,
+          "end_seconds": 414.0,
+          "duration_seconds": 52.0,
+          "windows": 26,
+          "cosine_similarity": 0.6478910863580456
+        },
+        {
+          "file": "chb07_19.edf",
+          "event": 1,
+          "start_seconds": 13688.0,
+          "end_seconds": 13831.0,
+          "duration_seconds": 143.0,
+          "windows": 32,
+          "cosine_similarity": 0.6470712377865181
+        },
+        {
+          "file": "chb07_13.edf",
+          "event": 1,
+          "start_seconds": 3285.0,
+          "end_seconds": 3381.0,
+          "duration_seconds": 96.0,
+          "windows": 32,
+          "cosine_similarity": 0.6401924320244565
+        },
+        {
+          "file": "chb05_06.edf",
+          "event": 1,
+          "start_seconds": 417.0,
+          "end_seconds": 532.0,
+          "duration_seconds": 115.0,
+          "windows": 32,
+          "cosine_similarity": 0.6307554221999057
+        },
+        {
+          "file": "chb07_12.edf",
+          "event": 1,
+          "start_seconds": 4920.0,
+          "end_seconds": 5006.0,
+          "duration_seconds": 86.0,
+          "windows": 32,
+          "cosine_similarity": 0.6071652807818809
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.5827933134085438
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 2,
+          "start_seconds": 1591.0,
+          "end_seconds": 1614.0,
+          "duration_seconds": 23.0,
+          "windows": 9,
+          "cosine_similarity": 0.5115987627539306
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 8,
+          "cosine_similarity": 0.47876308849406857
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 4,
+          "start_seconds": 2798.0,
+          "end_seconds": 2824.0,
+          "duration_seconds": 26.0,
+          "windows": 8,
+          "cosine_similarity": 0.4627965753473989
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 5,
+          "cosine_similarity": 0.3710675945671753
+        }
+      ],
+      "nearest_short_training_events": [
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.5827933134085438
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 8,
+          "cosine_similarity": 0.47876308849406857
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 5,
+          "cosine_similarity": 0.3710675945671753
+        },
+        {
+          "file": "chb06_18.edf",
+          "event": 1,
+          "start_seconds": 7799.0,
+          "end_seconds": 7811.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.34009327183973215
+        },
+        {
+          "file": "chb21_22.edf",
+          "event": 1,
+          "start_seconds": 2553.0,
+          "end_seconds": 2565.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.3350001152468451
+        },
+        {
+          "file": "chb06_13.edf",
+          "event": 1,
+          "start_seconds": 506.0,
+          "end_seconds": 519.0,
+          "duration_seconds": 13.0,
+          "windows": 7,
+          "cosine_similarity": 0.2315633454614101
+        },
+        {
+          "file": "chb06_10.edf",
+          "event": 1,
+          "start_seconds": 10833.0,
+          "end_seconds": 10845.0,
+          "duration_seconds": 12.0,
+          "windows": 7,
+          "cosine_similarity": 0.09000015327581062
+        }
+      ],
+      "similar_training_events_ge_0_8": 0
+    }
+  ],
+  "reserved_test_files_not_loaded": [
+    "chb09_06.edf",
+    "chb09_19.edf",
+    "chb15_01.edf",
+    "chb15_06.edf",
+    "chb15_10.edf",
+    "chb15_17.edf",
+    "chb15_20.edf",
+    "chb15_31.edf",
+    "chb18_01.edf",
+    "chb18_02.edf",
+    "chb18_29.edf",
+    "chb18_30.edf"
+  ],
+  "test_accessed": false
+}

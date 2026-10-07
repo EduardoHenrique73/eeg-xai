@@ -63,6 +63,56 @@ def test_missing_channel_stays_zero_after_shared_projection():
     assert np.allclose(projected(values).numpy()[:, :, 1, :], 0.0)
 
 
+def test_late_channel_fusion_preserves_temporal_output_and_missing_mask():
+    import tensorflow as tf
+
+    from app.ai_engine.multiscale_segmentation import (
+        create_late_channel_fusion_bilstm,
+    )
+
+    model = create_late_channel_fusion_bilstm(
+        sequence_length=8, n_channels=3, features_per_channel=5,
+    )
+    values = np.zeros((2, 8, 15), dtype=np.float32)
+    values[:, :, :5] = 1.0
+    masked = tf.keras.Model(
+        model.input, model.get_layer("mask_after_temporal_2").output,
+    )(values, training=False)
+
+    assert tuple(model(values, training=False).shape) == (2, 8, 1)
+    assert np.allclose(masked.numpy()[:, :, 1:, :], 0.0)
+
+
+def test_dual_resolution_model_aligns_fine_branch_to_coarse_output():
+    from app.ai_engine.multiscale_segmentation import (
+        create_dual_resolution_channel_fusion_bilstm,
+    )
+
+    model = create_dual_resolution_channel_fusion_bilstm(
+        coarse_steps=8, fine_steps=16, n_channels=3, features_per_channel=5,
+    )
+    output = model([
+        np.zeros((2, 8, 15), dtype=np.float32),
+        np.zeros((2, 16, 15), dtype=np.float32),
+    ], training=False)
+
+    assert tuple(output.shape) == (2, 8, 1)
+
+
+def test_residual_dual_resolution_starts_with_zero_fine_projection():
+    from app.ai_engine.multiscale_segmentation import (
+        create_residual_dual_resolution_bilstm,
+    )
+
+    model = create_residual_dual_resolution_bilstm(
+        coarse_steps=8, fine_steps=16, n_channels=3, features_per_channel=4,
+    )
+
+    projection = model.get_layer("fine_residual_projection")
+    assert model.output_shape == (None, 8, 1)
+    assert np.allclose(projection.get_weights()[0], 0.0)
+
+
 def test_morphology_fusion_preserves_temporal_output():
     from app.ai_engine.multiscale_segmentation import create_morphology_fusion_model
 

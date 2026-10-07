@@ -1,0 +1,201 @@
+{
+  "experiment": "v47_dual_resolution_exploratory_calibration_only",
+  "created_at": "2026-10-07T14:20:24",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\manifests\\v45_short_seizures_train.txt",
+  "training_files": [
+    "chb07_12.edf",
+    "chb07_13.edf",
+    "chb07_19.edf",
+    "chb05_06.edf",
+    "chb03_01.edf",
+    "chb02_19.edf",
+    "chb21_22.edf",
+    "chb12_08.edf",
+    "chb06_10.edf",
+    "chb06_13.edf",
+    "chb06_18.edf"
+  ],
+  "target_file": "chb16_17.edf",
+  "calibration_patients": [
+    "chb16",
+    "chb19",
+    "chb20",
+    "chb24"
+  ],
+  "reserved_test_files_not_loaded": [
+    "chb09_06.edf",
+    "chb09_19.edf",
+    "chb15_01.edf",
+    "chb15_06.edf",
+    "chb15_10.edf",
+    "chb15_17.edf",
+    "chb15_20.edf",
+    "chb15_31.edf",
+    "chb18_01.edf",
+    "chb18_02.edf",
+    "chb18_29.edf",
+    "chb18_30.edf"
+  ],
+  "test_accessed": false,
+  "exploratory_target_used": true,
+  "promotion_allowed": false,
+  "paired_train_sequences": 687,
+  "paired_target_sequences": 896,
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "variants": [
+    "v48_residual_dual_resolution"
+  ],
+  "runs": [
+    {
+      "seed": 42,
+      "v48_residual_dual_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.006505370140075684,
+        "raw_target_scores": {
+          "normal_p95": 0.001291836996097115,
+          "normal_p99": 0.6398913097381594,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9996069073677063,
+              "mean_score": 0.6977865099906921,
+              "contrast_vs_normal_p99": 0.35971559762954686
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.4169732928276062,
+              "mean_score": 0.11035975813865662,
+              "contrast_vs_normal_p99": -0.22291801691055324
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.3146352469921112,
+              "mean_score": 0.07916959375143051,
+              "contrast_vs_normal_p99": -0.32525606274604824
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.7249587178230286,
+              "mean_score": 0.2998308539390564,
+              "contrast_vs_normal_p99": 0.08506740808486912
+            }
+          ]
+        }
+      }
+    },
+    {
+      "seed": 43,
+      "v48_residual_dual_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.02136247046291828,
+        "raw_target_scores": {
+          "normal_p95": 0.1207895584404465,
+          "normal_p99": 0.9902934074401856,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9996981620788574,
+              "mean_score": 0.6084811091423035,
+              "contrast_vs_normal_p99": 0.009404754638671853
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.13704799115657806,
+              "mean_score": 0.036537639796733856,
+              "contrast_vs_normal_p99": -0.8532454162836075
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.9622594118118286,
+              "mean_score": 0.37712565064430237,
+              "contrast_vs_normal_p99": -0.028033995628356956
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.3007138669490814,
+              "mean_score": 0.1894228458404541,
+              "contrast_vs_normal_p99": -0.6895795404911041
+            }
+          ]
+        }
+      }
+    },
+    {
+      "seed": 44,
+      "v48_residual_dual_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.006554824765771627,
+        "raw_target_scores": {
+          "normal_p95": 0.0015636938973329943,
+          "normal_p99": 0.9053855204582227,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9994696378707886,
+              "mean_score": 0.6344053149223328,
+              "contrast_vs_normal_p99": 0.09408411741256584
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.8858892917633057,
+              "mean_score": 0.4723794460296631,
+              "contrast_vs_normal_p99": -0.019496228694917073
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.7515333890914917,
+              "mean_score": 0.18976964056491852,
+              "contrast_vs_normal_p99": -0.15385213136673104
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.9996486306190491,
+              "mean_score": 0.5929274559020996,
+              "contrast_vs_normal_p99": 0.09426311016082634
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

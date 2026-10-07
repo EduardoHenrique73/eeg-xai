@@ -1,0 +1,336 @@
+{
+  "experiment": "v47_dual_resolution_exploratory_calibration_only",
+  "created_at": "2026-10-07T14:16:04",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\manifests\\v45_short_seizures_train.txt",
+  "training_files": [
+    "chb07_12.edf",
+    "chb07_13.edf",
+    "chb07_19.edf",
+    "chb05_06.edf",
+    "chb03_01.edf",
+    "chb02_19.edf",
+    "chb21_22.edf",
+    "chb12_08.edf",
+    "chb06_10.edf",
+    "chb06_13.edf",
+    "chb06_18.edf"
+  ],
+  "target_file": "chb16_17.edf",
+  "calibration_patients": [
+    "chb16",
+    "chb19",
+    "chb20",
+    "chb24"
+  ],
+  "reserved_test_files_not_loaded": [
+    "chb09_06.edf",
+    "chb09_19.edf",
+    "chb15_01.edf",
+    "chb15_06.edf",
+    "chb15_10.edf",
+    "chb15_17.edf",
+    "chb15_20.edf",
+    "chb15_31.edf",
+    "chb18_01.edf",
+    "chb18_02.edf",
+    "chb18_29.edf",
+    "chb18_30.edf"
+  ],
+  "test_accessed": false,
+  "exploratory_target_used": true,
+  "promotion_allowed": false,
+  "paired_train_sequences": 687,
+  "paired_target_sequences": 896,
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "runs": [
+    {
+      "seed": 42,
+      "v43_single_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.00451623322442174,
+        "raw_target_scores": {
+          "normal_p95": 0.06941994428634489,
+          "normal_p99": 0.867461339235307,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9998144507408142,
+              "mean_score": 0.6559291481971741,
+              "contrast_vs_normal_p99": 0.13235311150550721
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.7517123222351074,
+              "mean_score": 0.28201746940612793,
+              "contrast_vs_normal_p99": -0.11574901700019957
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.7491180300712585,
+              "mean_score": 0.35419780015945435,
+              "contrast_vs_normal_p99": -0.11834330916404845
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.7437877655029297,
+              "mean_score": 0.3671700358390808,
+              "contrast_vs_normal_p99": -0.1236735737323773
+            }
+          ]
+        }
+      },
+      "v47_dual_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.0028546792455017567,
+        "raw_target_scores": {
+          "normal_p95": 0.014793143700808286,
+          "normal_p99": 0.9822286617755891,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9998915791511536,
+              "mean_score": 0.6984593868255615,
+              "contrast_vs_normal_p99": 0.01766291737556447
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.6233515739440918,
+              "mean_score": 0.26452064514160156,
+              "contrast_vs_normal_p99": -0.3588770878314973
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.17625907063484192,
+              "mean_score": 0.08057050406932831,
+              "contrast_vs_normal_p99": -0.8059695911407472
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.9905104637145996,
+              "mean_score": 0.4758455157279968,
+              "contrast_vs_normal_p99": 0.008281801939010514
+            }
+          ]
+        }
+      }
+    },
+    {
+      "seed": 43,
+      "v43_single_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.00458048889413476,
+        "raw_target_scores": {
+          "normal_p95": 0.10721028372645244,
+          "normal_p99": 0.9978459358215332,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9997488260269165,
+              "mean_score": 0.6791143417358398,
+              "contrast_vs_normal_p99": 0.0019028902053832564
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.19938428699970245,
+              "mean_score": 0.053902361541986465,
+              "contrast_vs_normal_p99": -0.7984616488218308
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.8179174065589905,
+              "mean_score": 0.41305795311927795,
+              "contrast_vs_normal_p99": -0.17992852926254277
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.9999154806137085,
+              "mean_score": 0.599601149559021,
+              "contrast_vs_normal_p99": 0.0020695447921752486
+            }
+          ]
+        }
+      },
+      "v47_dual_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.0029020211659371853,
+        "raw_target_scores": {
+          "normal_p95": 0.07999380007386155,
+          "normal_p99": 0.9989381790161133,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9998679757118225,
+              "mean_score": 0.6676533818244934,
+              "contrast_vs_normal_p99": 0.0009297966957092507
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.7268227338790894,
+              "mean_score": 0.3220519423484802,
+              "contrast_vs_normal_p99": -0.2721154451370239
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.983569860458374,
+              "mean_score": 0.36529940366744995,
+              "contrast_vs_normal_p99": -0.015368318557739236
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.9761344194412231,
+              "mean_score": 0.464995801448822,
+              "contrast_vs_normal_p99": -0.022803759574890115
+            }
+          ]
+        }
+      }
+    },
+    {
+      "seed": 44,
+      "v43_single_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.004977187141776085,
+        "raw_target_scores": {
+          "normal_p95": 0.1480320677161201,
+          "normal_p99": 0.979797546863556,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9906455278396606,
+              "mean_score": 0.472088485956192,
+              "contrast_vs_normal_p99": 0.01084798097610462
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.001168814254924655,
+              "mean_score": 0.0006318125524558127,
+              "contrast_vs_normal_p99": -0.9786287326086314
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.06190558522939682,
+              "mean_score": 0.013396854512393475,
+              "contrast_vs_normal_p99": -0.9178919616341592
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.7682160139083862,
+              "mean_score": 0.5089311599731445,
+              "contrast_vs_normal_p99": -0.2115815329551698
+            }
+          ]
+        }
+      },
+      "v47_dual_resolution": {
+        "epochs": 16,
+        "final_train_loss": 0.0031154355965554714,
+        "raw_target_scores": {
+          "normal_p95": 0.016619502194225297,
+          "normal_p99": 0.9903871893882754,
+          "events": [
+            {
+              "event": 1,
+              "start_seconds": 227.0,
+              "end_seconds": 236.0,
+              "duration_seconds": 9.0,
+              "max_score": 0.9997273087501526,
+              "mean_score": 0.6656457781791687,
+              "contrast_vs_normal_p99": 0.009340119361877175
+            },
+            {
+              "event": 2,
+              "start_seconds": 1694.0,
+              "end_seconds": 1700.0,
+              "duration_seconds": 6.0,
+              "max_score": 0.6473724842071533,
+              "mean_score": 0.22383329272270203,
+              "contrast_vs_normal_p99": -0.3430147051811221
+            },
+            {
+              "event": 3,
+              "start_seconds": 2162.0,
+              "end_seconds": 2170.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.9974086880683899,
+              "mean_score": 0.4782381057739258,
+              "contrast_vs_normal_p99": 0.00702149868011448
+            },
+            {
+              "event": 4,
+              "start_seconds": 3290.0,
+              "end_seconds": 3298.0,
+              "duration_seconds": 8.0,
+              "max_score": 0.9979757070541382,
+              "mean_score": 0.47573766112327576,
+              "contrast_vs_normal_p99": 0.007588517665862771
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

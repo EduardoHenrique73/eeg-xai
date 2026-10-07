@@ -1,6 +1,6 @@
 # Estado consolidado do EEG-XAI
 
-Atualizado em: 2026-10-03
+Atualizado em: 2026-10-07
 
 Este e o documento canonico sobre o estado tecnico e cientifico do projeto. Os
 arquivos `01` a `17` preservam o historico detalhado, comandos, tabelas e
@@ -65,7 +65,7 @@ antigos precisam ser reanalisados para receber os novos metadados de overlay.
 
 ### Qualidade
 
-- 161 testes automatizados aprovados em 2026-10-03;
+- 168 testes automatizados aprovados em 2026-10-07;
 - build de producao do frontend aprovado;
 - `git diff --check` aprovado;
 - EDFs, caches, modelos `.keras`, scalers e `.env` permanecem fora do Git.
@@ -218,6 +218,51 @@ resolve o problema.
 
 Nenhuma dessas versoes foi promovida para producao.
 
+### Detector temporal duplo v42
+
+A v42 manteve o caminho sustentado da v40b e adicionou um caminho transiente
+de alta confianca com duracao de 6-10 segundos. A media passou de 13,33 para
+13,67 eventos em 20, mas o F1 localizado caiu de 75,0% para 71,0% e o FA/h
+subiu de 0,58 para 0,86. Somente a seed 43 recuperou um evento novo;
+`chb24_04.edf`, evento 3. As outras duas seeds nao recuperaram crises e
+adicionaram falsos alarmes.
+
+Decisao: rejeitar. Uma regra curta baseada apenas em score e duracao nao separa
+transientes normais de crises curtas com estabilidade suficiente.
+
+### Fusao espacial tardia v43
+
+A v43 preserva canais durante duas convolucoes temporais e realiza fusao
+espacial antes do mesmo BiLSTM da baseline. Em cinco seeds no teto 0,75,
+atingiu media de 13,8/20 eventos, F1 localizado de 81,9%, F1 EDF de 96,4% e
+0,64 FA/h. Nas seeds 42-44, superou a baseline em eventos, localizacao e F1
+EDF, com pequeno aumento de FA/h.
+
+Decisao: promissor, mas nao superior. A pior seed caiu para 12/20 e os eventos
+2-4 de `chb16_17` continuaram invisiveis. A arquitetura nao foi promovida.
+
+### Estabilidade de otimizacao v44
+
+A v44 reduziu o learning rate, adicionou reducao por plateau e antecipou F1 EDF
+no desempate de checkpoint. Em cinco seeds, caiu para 13,4/20 eventos, F1
+localizado de 76,7%, F1 EDF de 94,8% e 0,63 FA/h. A pior seed permaneceu em
+12/20. Decisao: rejeitar; a v43 continua como candidata experimental.
+
+### Crises curtas e auditoria de similaridade v45
+
+A auditoria mostrou apenas uma crise de ate 10 segundos entre 72 eventos do
+treino e nenhuma assinatura com similaridade maior ou igual a 0,8 para os
+eventos de `chb16_17`. Foram adicionadas tres crises de 12-13 segundos do
+`chb06`. Em seeds 42-44, a v45 manteve 14/20 eventos, mas o F1 localizado caiu
+de 83,4% para 75,4% e o F1 EDF de 97,1% para 92,5%. Decisao: rejeitar.
+
+### Resolucao temporal v46
+
+A comparacao dirigida entre 4 s/2 s e 2 s/1 s mostrou que a resolucao curta
+melhora separacao e similaridade dos eventos 3 e 4 de `chb16_17`, mas piora os
+eventos 1 e 2. Nao foi executado treino completo. A conclusao e preservar a
+v43 e investigar uma branch multirresolucao pequena, sem substituicao global.
+
 ## 6. Auditoria por crise da v40
 
 Comparando seeds 42 e 44 no teto 0,50:
@@ -289,21 +334,21 @@ experimentos sem nova hipotese.
 
 ## 9. Proximos passos priorizados
 
-### P0 - Detector temporal de dois caminhos
+### P0 - Detector temporal de dois caminhos - concluido
 
-Manter a v40 e comparar somente na calibracao:
+A v42 executou esta hipotese e foi rejeitada. Ela nao deve ser ativada: elevou
+FA/h, reduziu localizacao e nao recuperou eventos de forma consistente.
 
-- caminho sustentado: configuracao atual de 18-26 s;
-- caminho transiente: threshold alto e duracao de 6-10 s;
-- unir candidatos antes de calcular eventos e falsos alarmes;
-- gerar FROC da regra combinada;
-- nao alterar arquitetura, loss ou sampler no mesmo experimento.
+### P1 - Prototipo multirresolucao dirigido
 
-Criterio sugerido para continuar: superar 13,33/20 eventos no teto 0,75,
-manter F1 localizado em pelo menos 75%, F1 EDF em pelo menos 90% e FA/h em no
-maximo 0,75. No teto 0,50, nao deve piorar a v40.
+- manter a v43 congelada como baseline;
+- preservar a branch de 4 s/2 s;
+- adicionar branch curta de 2 s/1 s alinhada ao mesmo eixo temporal;
+- testar primeiro no subconjunto auditado;
+- exigir ganho nos eventos 3-4 sem perder 1-2;
+- gerar cache completo apenas se o prototipo passar.
 
-### P1 - Reprodutibilidade do modelo selecionado
+### P2 - Reprodutibilidade do modelo selecionado
 
 - salvar pesos do checkpoint escolhido;
 - salvar scaler, metadata e calibracao juntos;
@@ -311,7 +356,7 @@ maximo 0,75. No teto 0,50, nao deve piorar a v40.
 - registrar versao do codigo, manifesto, seed e hash dos artefatos;
 - permitir reavaliar pos-processamento sem retreinar.
 
-### P2 - Representacao para eventos realmente invisiveis
+### P3 - Representacao para eventos realmente invisiveis
 
 Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
 
@@ -321,7 +366,7 @@ Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
 - ablacao pareada contra v39/v40;
 - nao repetir a channel attention da v31 sem mudanca fundamentada.
 
-### P3 - Estabilidade
+### P4 - Estabilidade
 
 - aumentar para pelo menos cinco seeds no candidato final;
 - reportar media, desvio e pior seed;
@@ -329,7 +374,7 @@ Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
   o protocolo;
 - nao usar ensemble heterogeneo simples, que ja piorou.
 
-### P4 - Avaliacao final honesta
+### P5 - Avaliacao final honesta
 
 - congelar arquitetura e pos-processamento antes da avaliacao;
 - tratar `chb09/chb15/chb18` como desenvolvimento, nao teste intocado;
@@ -337,7 +382,7 @@ Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
 - reportar intervalo de confianca e resultados por paciente/evento;
 - manter todos os pacientes de um mesmo individuo no mesmo fold.
 
-### P5 - Produto e TCC
+### P6 - Produto e TCC
 
 - validar visualmente EEG + trecho + SHAP em desktop e mobile;
 - medir tempo e memoria em EDF longo;
@@ -365,9 +410,17 @@ Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
 - melhor compromisso recente de calibracao: v40/v40b;
 - melhor reducao recente de FA/h: v40 no teto 0,50;
 - modelo novo promovido: nenhum;
-- proximo experimento aprovado: detector temporal de dois caminhos;
-- gargalo principal: recuperar eventos curtos e evidencia fragmentada sem
-  aumentar falsos alarmes.
+- experimento v42: rejeitado;
+- experimento v43: promissor, ainda nao promovido;
+- experimento v44: rejeitado;
+- experimento v45: rejeitado;
+- auditoria v46: suporta multirresolucao, nao substituicao global;
+- experimento v47: promissor, mas ainda sem avaliacao FROC completa;
+- experimento v48 residual: rejeitado por instabilidade entre seeds;
+- proximo experimento aprovado: v47 no treino/calibracao completos, com
+  pos-processamento fixo e sem acesso aos pacientes reservados;
+- gargalo principal: eventos invisiveis ao primeiro estagio e transientes
+  normais indistinguiveis por threshold/duracao.
 
 ## 12. Mapa da documentacao
 
@@ -389,3 +442,9 @@ Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
 - `16_resultados_v40_v41_checkpoint_eventos.md`: checkpoint e crises curtas;
 - `17_auditoria_estabilidade_v40.md`: comparacao por crise;
 - `18_estado_consolidado_e_plano.md`: estado canonico atual.
+- `19_resultado_v42_detector_duplo.md`: detector temporal de dois caminhos.
+- `20_resultado_v43_fusao_tardia_canais.md`: frontend por canal e fusao tardia.
+- `21_resultado_v44_estabilidade_otimizacao.md`: learning rate e estabilidade.
+- `22_auditoria_v45_crises_curtas.md`: similaridade e expansao com crises curtas.
+- `23_auditoria_v46_resolucao_temporal.md`: comparacao 4 s/2 s contra 2 s/1 s.
+- `24_resultados_v47_v48_multirresolucao.md`: prototipo de duas resolucoes.

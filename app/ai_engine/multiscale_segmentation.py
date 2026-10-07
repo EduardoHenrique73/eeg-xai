@@ -116,6 +116,197 @@ def create_multiscale_model(
     return model
 
 
+def create_late_channel_fusion_bilstm(
+    *,
+    sequence_length: int,
+    n_channels: int,
+    features_per_channel: int,
+    learning_rate: float = 0.001,
+) -> Any:
+    """Preserve channels through a shared temporal frontend before spatial fusion."""
+    inputs = layers.Input(
+        shape=(sequence_length, n_channels * features_per_channel),
+        name="eeg_features",
+    )
+    grouped = layers.Reshape(
+        (sequence_length, n_channels, features_per_channel),
+        name="group_by_channel",
+    )(inputs)
+    presence = layers.Lambda(
+        lambda values: tf.cast(
+            tf.reduce_any(tf.abs(values) > 1e-6, axis=(1, 3)), tf.float32,
+        ),
+        name="observed_channels",
+    )(grouped)
+    presence_mask = layers.Reshape((1, n_channels, 1), name="channel_mask")(presence)
+
+    # Kernels span time and features, but never the channel axis.
+    x = layers.Conv2D(
+        16, (3, 1), padding="same", activation="relu",
+        kernel_regularizer=regularizers.l2(1e-4), name="per_channel_temporal_1",
+    )(grouped)
+    x = layers.LayerNormalization(name="per_channel_norm_1")(x)
+    x = layers.Multiply(name="mask_after_temporal_1")([x, presence_mask])
+    x = layers.Conv2D(
+        16, (3, 1), padding="same", activation="relu",
+        kernel_regularizer=regularizers.l2(1e-4), name="per_channel_temporal_2",
+    )(x)
+    x = layers.LayerNormalization(name="per_channel_norm_2")(x)
+    x = layers.Multiply(name="mask_after_temporal_2")([x, presence_mask])
+
+    x = layers.Reshape(
+        (sequence_length, n_channels * 16), name="late_channel_flatten",
+    )(x)
+    x = layers.Conv1D(64, 1, activation="relu", name="late_spatial_fusion")(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.Conv1D(64, 3, activation="relu", padding="same")(x)
+    x = layers.Bidirectional(layers.LSTM(48, return_sequences=True))(x)
+    x = layers.Dropout(0.25)(x)
+    x = layers.TimeDistributed(layers.Dense(32, activation="relu"))(x)
+    x = layers.Dropout(0.2)(x)
+    outputs = layers.TimeDistributed(
+        layers.Dense(1, activation="sigmoid"), name="ictal_probability",
+    )(x)
+    model = tf.keras.Model(inputs, outputs, name="late_channel_fusion_cnn_bilstm")
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+        loss="binary_crossentropy",
+        metrics=[
+            tf.keras.metrics.Precision(name="precision"),
+            tf.keras.metrics.Recall(name="recall"),
+            tf.keras.metrics.AUC(curve="PR", name="pr_auc"),
+        ],
+    )
+    return model
+
+
+def create_dual_resolution_channel_fusion_bilstm(
+    *,
+    coarse_steps: int,
+    fine_steps: int,
+    n_channels: int,
+    features_per_channel: int,
+    learning_rate: float = 0.001,
+) -> Any:
+    """Fuse 4 s and 2 s per-channel features on the coarse temporal axis."""
+    if fine_steps != coarse_steps * 2:
+        raise ValueError("Fine branch must have exactly twice the temporal steps.")
+
+    def branch(inputs: Any, steps: int, prefix: str) -> Any:
+        grouped = layers.Reshape(
+            (steps, n_channels, features_per_channel), name=f"{prefix}_group",
+        )(inputs)
+        presence = layers.Lambda(
+            lambda values: tf.cast(
+                tf.reduce_any(tf.abs(values) > 1e-6, axis=(1, 3)), tf.float32,
+            ), name=f"{prefix}_presence",
+        )(grouped)
+        mask = layers.Reshape((1, n_channels, 1))(presence)
+        x = layers.Conv2D(
+            12, (3, 1), padding="same", activation="relu",
+            kernel_regularizer=regularizers.l2(1e-4),
+            name=f"{prefix}_temporal",
+        )(grouped)
+        x = layers.LayerNormalization()(x)
+        x = layers.Multiply()([x, mask])
+        x = layers.Reshape((steps, n_channels * 12))(x)
+        x = layers.Conv1D(32, 1, activation="relu", name=f"{prefix}_fusion")(x)
+        return x
+
+    coarse_input = layers.Input(
+        shape=(coarse_steps, n_channels * features_per_channel), name="coarse_4s",
+    )
+    fine_input = layers.Input(
+        shape=(fine_steps, n_channels * features_per_channel), name="fine_2s",
+    )
+    coarse = branch(coarse_input, coarse_steps, "coarse")
+    fine = branch(fine_input, fine_steps, "fine")
+    fine = layers.AveragePooling1D(2, name="align_fine_to_coarse")(fine)
+    x = layers.Concatenate(name="resolution_fusion")([coarse, fine])
+    x = layers.Conv1D(64, 3, padding="same", activation="relu")(x)
+    x = layers.Bidirectional(layers.LSTM(48, return_sequences=True))(x)
+    x = layers.Dropout(0.25)(x)
+    x = layers.TimeDistributed(layers.Dense(32, activation="relu"))(x)
+    outputs = layers.TimeDistributed(
+        layers.Dense(1, activation="sigmoid"), name="ictal_probability",
+    )(x)
+    model = tf.keras.Model(
+        [coarse_input, fine_input], outputs,
+        name="dual_resolution_channel_fusion_bilstm",
+    )
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+        loss="binary_crossentropy",
+        metrics=[tf.keras.metrics.AUC(curve="PR", name="pr_auc")],
+    )
+    return model
+
+
+def create_residual_dual_resolution_bilstm(
+    *, coarse_steps: int, fine_steps: int, n_channels: int,
+    features_per_channel: int, learning_rate: float = 0.001,
+) -> Any:
+    """Add a zero-initialized fine branch without replacing the v43 pathway."""
+    if fine_steps != coarse_steps * 2:
+        raise ValueError("Fine branch must have exactly twice the temporal steps.")
+
+    def channel_frontend(inputs: Any, steps: int, prefix: str) -> Any:
+        grouped = layers.Reshape(
+            (steps, n_channels, features_per_channel), name=f"{prefix}_group",
+        )(inputs)
+        presence = layers.Lambda(
+            lambda values: tf.cast(
+                tf.reduce_any(tf.abs(values) > 1e-6, axis=(1, 3)), tf.float32,
+            ), name=f"{prefix}_presence",
+        )(grouped)
+        mask = layers.Reshape((1, n_channels, 1), name=f"{prefix}_mask")(presence)
+        x = grouped
+        for block in (1, 2):
+            x = layers.Conv2D(
+                16, (3, 1), padding="same", activation="relu",
+                kernel_regularizer=regularizers.l2(1e-4),
+                name=f"{prefix}_temporal_{block}",
+            )(x)
+            x = layers.LayerNormalization(name=f"{prefix}_norm_{block}")(x)
+            x = layers.Multiply(name=f"{prefix}_mask_{block}")([x, mask])
+        return layers.Reshape((steps, n_channels * 16), name=f"{prefix}_flatten")(x)
+
+    coarse_input = layers.Input(
+        shape=(coarse_steps, n_channels * features_per_channel), name="coarse_4s",
+    )
+    fine_input = layers.Input(
+        shape=(fine_steps, n_channels * features_per_channel), name="fine_2s",
+    )
+    coarse = channel_frontend(coarse_input, coarse_steps, "coarse")
+    coarse = layers.Conv1D(64, 1, activation="relu", name="coarse_spatial_fusion")(coarse)
+    fine = channel_frontend(fine_input, fine_steps, "fine")
+    fine = layers.AveragePooling1D(2, name="align_fine_to_coarse")(fine)
+    fine = layers.Conv1D(
+        64, 1, padding="same", use_bias=False,
+        kernel_initializer="zeros", name="fine_residual_projection",
+    )(fine)
+    x = layers.Add(name="residual_resolution_fusion")([coarse, fine])
+    x = layers.Dropout(0.2)(x)
+    x = layers.Conv1D(64, 3, activation="relu", padding="same")(x)
+    x = layers.Bidirectional(layers.LSTM(48, return_sequences=True))(x)
+    x = layers.Dropout(0.25)(x)
+    x = layers.TimeDistributed(layers.Dense(32, activation="relu"))(x)
+    x = layers.Dropout(0.2)(x)
+    outputs = layers.TimeDistributed(
+        layers.Dense(1, activation="sigmoid"), name="ictal_probability",
+    )(x)
+    model = tf.keras.Model(
+        [coarse_input, fine_input], outputs,
+        name="residual_dual_resolution_channel_fusion_bilstm",
+    )
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+        loss="binary_crossentropy",
+        metrics=[tf.keras.metrics.AUC(curve="PR", name="pr_auc")],
+    )
+    return model
+
+
 def create_morphology_fusion_model(
     *,
     sequence_length: int,

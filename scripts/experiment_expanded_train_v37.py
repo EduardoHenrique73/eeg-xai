@@ -16,6 +16,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.ai_engine.feature_extractor import extrair_metadados_edf  # noqa: E402
+from app.ai_engine.multiscale_segmentation import (  # noqa: E402
+    create_late_channel_fusion_bilstm,
+)
 from app.ai_engine.sequence_segmentation import (  # noqa: E402
     agregar_predicoes_temporais,
     construir_alvos_temporais,
@@ -23,6 +26,7 @@ from app.ai_engine.sequence_segmentation import (  # noqa: E402
 )
 from app.config import get_settings  # noqa: E402
 from scripts.calibrate_sequence_cnn_lstm import (  # noqa: E402
+    avaliar_combo,
     intervalos_crise_reais,
     listar_runs,
     melhor_overlap_com_crise,
@@ -56,11 +60,45 @@ def summarize(runs: list[dict[str, Any]]) -> dict[str, float]:
     }
 
 
+def restore_missing_channel_zeros(
+    original: np.ndarray,
+    scaled: np.ndarray,
+    *,
+    n_channels: int,
+    features_per_channel: int,
+) -> np.ndarray:
+    """Keep absent channels distinguishable after feature standardization."""
+    expected = n_channels * features_per_channel
+    if original.shape != scaled.shape or original.shape[-1] != expected:
+        raise ValueError("Invalid per-channel feature tensor for missing-channel mask.")
+    original_grouped = original.reshape(
+        *original.shape[:-1], n_channels, features_per_channel,
+    )
+    scaled_grouped = np.array(scaled, copy=True).reshape(
+        *scaled.shape[:-1], n_channels, features_per_channel,
+    )
+    missing = ~np.any(np.abs(original_grouped) > 1e-12, axis=(1, 3))
+    scaled_grouped *= (~missing)[:, None, :, None]
+    return scaled_grouped.reshape(scaled.shape)
+
+
 def checkpoint_rank(
     metrics: dict[str, Any], *, constraint_satisfied: bool,
+    mode: str = "event_localization",
 ) -> tuple[float, ...]:
     """Rank epochs by event utility without trading away the FA/h constraint."""
+    if mode not in {"event_localization", "event_localization_edf"}:
+        raise ValueError(f"Unsupported checkpoint rank mode: {mode}")
     if constraint_satisfied:
+        if mode == "event_localization_edf":
+            return (
+                1.0,
+                float(metrics["event_recall"]),
+                float(metrics["localized_f1"]),
+                float(metrics["edf_f1"]),
+                float(metrics["event_precision"]),
+                -float(metrics["false_alarms_per_hour"]),
+            )
         return (
             1.0,
             float(metrics["event_recall"]),
@@ -179,6 +217,177 @@ def build_event_diagnostics(
     return diagnostics
 
 
+def _accepted_runs(
+    scores: np.ndarray,
+    meta: list[dict[str, Any]],
+    *,
+    threshold: float,
+    min_duration_seconds: float,
+    max_gap_seconds: float,
+) -> list[dict[str, Any]]:
+    runs: list[dict[str, Any]] = []
+    for arquivo in sorted({str(item["arquivo"]) for item in meta}):
+        indices = np.asarray(
+            [idx for idx, item in enumerate(meta) if item["arquivo"] == arquivo],
+            dtype=int,
+        )
+        runs.extend(
+            run for run in listar_runs(
+                scores,
+                meta,
+                indices,
+                threshold,
+                min_duration_seconds=min_duration_seconds,
+                max_gap_seconds=max_gap_seconds,
+            )
+            if float(run["duration_seconds"]) >= min_duration_seconds
+            and float(run["score_mean"]) >= threshold
+        )
+    return runs
+
+
+def evaluate_dual_path(
+    y_true: np.ndarray,
+    scores: np.ndarray,
+    meta: list[dict[str, Any]],
+    *,
+    sustained: dict[str, Any],
+    transient_threshold: float,
+    transient_min_duration_seconds: float,
+) -> dict[str, Any]:
+    """Evaluate the union of sustained and high-confidence transient runs."""
+    combined_scores, path_stats = build_dual_path_scores(
+        scores,
+        meta,
+        sustained=sustained,
+        transient_threshold=transient_threshold,
+        transient_min_duration_seconds=transient_min_duration_seconds,
+    )
+    result = avaliar_combo(
+        y_true,
+        combined_scores,
+        meta,
+        threshold=1e-7,
+        min_duration_seconds=0.0,
+        max_gap_seconds=0.0,
+        min_overlap_ratio=0.25,
+    )
+    result["dual_path"] = path_stats
+    return result
+
+
+def build_dual_path_scores(
+    scores: np.ndarray,
+    meta: list[dict[str, Any]],
+    *,
+    sustained: dict[str, Any],
+    transient_threshold: float,
+    transient_min_duration_seconds: float,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Return scores masked by runs accepted by either temporal path."""
+    sustained_runs = _accepted_runs(
+        scores,
+        meta,
+        threshold=float(sustained["threshold"]),
+        min_duration_seconds=float(sustained["min_duration_seconds"]),
+        max_gap_seconds=float(sustained["max_gap_seconds"]),
+    )
+    transient_runs = _accepted_runs(
+        scores,
+        meta,
+        threshold=transient_threshold,
+        min_duration_seconds=transient_min_duration_seconds,
+        max_gap_seconds=0.0,
+    )
+    accepted = np.zeros(len(scores), dtype=bool)
+    for run in sustained_runs + transient_runs:
+        accepted[np.asarray(run["indices"], dtype=int)] = True
+    combined_scores = np.where(
+        accepted,
+        np.maximum(np.asarray(scores, dtype=np.float32), 1e-6),
+        0.0,
+    )
+    return combined_scores, {
+        "sustained_threshold": float(sustained["threshold"]),
+        "sustained_min_duration_seconds": float(sustained["min_duration_seconds"]),
+        "sustained_max_gap_seconds": float(sustained["max_gap_seconds"]),
+        "transient_threshold": float(transient_threshold),
+        "transient_min_duration_seconds": float(transient_min_duration_seconds),
+        "transient_max_gap_seconds": 0.0,
+        "sustained_runs": len(sustained_runs),
+        "transient_runs": len(transient_runs),
+    }
+
+
+def calibrate_dual_path(
+    y_true: np.ndarray,
+    scores: np.ndarray,
+    meta: list[dict[str, Any]],
+    *,
+    sustained: dict[str, Any],
+    transient_thresholds: tuple[float, ...] = (0.7, 0.8, 0.9, 0.95),
+    transient_durations: tuple[float, ...] = (6.0, 8.0, 10.0),
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    results = [
+        evaluate_dual_path(
+            y_true,
+            scores,
+            meta,
+            sustained=sustained,
+            transient_threshold=threshold,
+            transient_min_duration_seconds=duration,
+        )
+        for threshold in transient_thresholds
+        for duration in transient_durations
+    ]
+    frontier: list[dict[str, Any]] = []
+    for cap in (0.5, 0.75, 1.0, 1.25, 1.5):
+        feasible = [
+            item for item in results
+            if float(item["false_alarms_per_hour"]) <= cap + 1e-12
+        ]
+        if not feasible:
+            frontier.append({"cap": cap, "constraint_satisfied": False})
+            continue
+        point = max(
+            feasible,
+            key=lambda item: (
+                float(item["event_sensitivity"]),
+                float(item["localized_metrics"]["f1"]),
+                float(item["event_precision"]),
+                -float(item["false_alarms_per_hour"]),
+                float(item["metrics"]["f1"]),
+            ),
+        )
+        frontier.append({
+            "cap": cap,
+            **_compact(point),
+            **point["dual_path"],
+        })
+    feasible_main = [
+        item for item in results
+        if float(item["false_alarms_per_hour"]) <= 0.75 + 1e-12
+    ]
+    pool = feasible_main or results
+    best = max(
+        pool,
+        key=lambda item: (
+            float(item["event_sensitivity"]),
+            float(item["localized_metrics"]["f1"]),
+            float(item["event_precision"]),
+            -float(item["false_alarms_per_hour"]),
+            float(item["metrics"]["f1"]),
+        ) if feasible_main else (
+            -float(item["false_alarms_per_hour"]),
+            float(item["event_sensitivity"]),
+            float(item["localized_metrics"]["f1"]),
+            float(item["event_precision"]),
+            float(item["metrics"]["f1"]),
+        ),
+    )
+    return best, frontier
+
+
 def create_event_checkpoint_callback(
     *,
     calibration_x: np.ndarray,
@@ -187,6 +396,7 @@ def create_event_checkpoint_callback(
     max_false_alarms_per_hour: float,
     patience: int,
     min_epochs: int,
+    rank_mode: str = "event_localization",
 ) -> Any:
     """Create a callback that restores the best event-level calibration epoch."""
     import tensorflow as tf
@@ -214,10 +424,15 @@ def create_event_checkpoint_callback(
                 meta_eval,
                 max_false_alarms_per_hour=max_false_alarms_per_hour,
             )
-            rank = checkpoint_rank(metrics, constraint_satisfied=feasible)
+            rank = checkpoint_rank(
+                metrics, constraint_satisfied=feasible, mode=rank_mode,
+            )
             record = {
                 "epoch": int(epoch + 1),
                 "constraint_satisfied": bool(feasible),
+                "learning_rate": float(
+                    tf.keras.backend.get_value(self.model.optimizer.learning_rate)
+                ),
                 **metrics,
             }
             self.trajectory.append(record)
@@ -268,10 +483,26 @@ def main() -> None:
     parser.add_argument("--checkpoint-fa-cap", type=float, default=0.5)
     parser.add_argument("--checkpoint-patience", type=int, default=5)
     parser.add_argument("--checkpoint-min-epochs", type=int, default=6)
+    parser.add_argument(
+        "--checkpoint-rank-mode",
+        choices=("event_localization", "event_localization_edf"),
+        default="event_localization",
+    )
+    parser.add_argument("--learning-rate", type=float, default=0.001)
+    parser.add_argument("--reduce-lr-on-plateau", action="store_true")
+    parser.add_argument("--reduce-lr-factor", type=float, default=0.5)
+    parser.add_argument("--reduce-lr-patience", type=int, default=2)
+    parser.add_argument("--min-learning-rate", type=float, default=0.00005)
     parser.add_argument("--short-event-max-duration-seconds", type=float)
     parser.add_argument("--short-event-weight", type=float, default=1.0)
     parser.add_argument(
         "--event-audit-caps", type=float, nargs="*", default=[0.5, 0.75],
+    )
+    parser.add_argument("--dual-path-calibration", action="store_true")
+    parser.add_argument("--dual-sustained-cap", type=float, default=0.75)
+    parser.add_argument(
+        "--architecture", choices=("baseline", "late_channel_fusion"),
+        default="baseline",
     )
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--seeds", type=int, nargs="+", default=[42, 43, 44])
@@ -299,6 +530,7 @@ def main() -> None:
     reference = list(
         extrair_metadados_edf(args.dataset_dir / "chb01_01.edf")["canais_eeg"]
     )
+    n_channels = len(reference)
     settings = get_settings()
     cache = SequenceDatasetCache(
         dataset_dir=args.dataset_dir, window_seconds=4, step_seconds=2,
@@ -336,6 +568,18 @@ def main() -> None:
     scaler = ajustar_scaler(x_train)
     train_scaled = aplicar_scaler(x_train, scaler)
     cal_scaled = aplicar_scaler(x_cal, scaler)
+    if train_scaled.shape[-1] % n_channels:
+        raise RuntimeError("Per-channel feature dimension is not divisible by channels.")
+    features_per_channel = train_scaled.shape[-1] // n_channels
+    if args.architecture == "late_channel_fusion":
+        train_scaled = restore_missing_channel_zeros(
+            x_train, train_scaled, n_channels=n_channels,
+            features_per_channel=features_per_channel,
+        )
+        cal_scaled = restore_missing_channel_zeros(
+            x_cal, cal_scaled, n_channels=n_channels,
+            features_per_channel=features_per_channel,
+        )
     payload: dict[str, Any] = {
         "experiment": args.experiment,
         "created_at": datetime.now().isoformat(timespec="seconds"),
@@ -352,9 +596,20 @@ def main() -> None:
         "checkpoint_false_alarms_per_hour_cap": args.checkpoint_fa_cap,
         "checkpoint_patience": args.checkpoint_patience,
         "checkpoint_min_epochs": args.checkpoint_min_epochs,
+        "checkpoint_rank_mode": args.checkpoint_rank_mode,
+        "learning_rate": args.learning_rate,
+        "reduce_lr_on_plateau": args.reduce_lr_on_plateau,
+        "reduce_lr_factor": args.reduce_lr_factor,
+        "reduce_lr_patience": args.reduce_lr_patience,
+        "min_learning_rate": args.min_learning_rate,
         "short_event_max_duration_seconds": args.short_event_max_duration_seconds,
         "short_event_weight": args.short_event_weight,
         "event_audit_caps": args.event_audit_caps,
+        "dual_path_calibration": args.dual_path_calibration,
+        "dual_sustained_cap": args.dual_sustained_cap,
+        "architecture": args.architecture,
+        "n_channels": n_channels,
+        "features_per_channel": features_per_channel,
         "seeds": args.seeds,
         "epochs_limit": args.epochs,
         "train_sequences": int(len(x_train)),
@@ -367,9 +622,16 @@ def main() -> None:
     for seed in args.seeds:
         tf.keras.backend.clear_session()
         tf.keras.utils.set_random_seed(seed)
-        model = criar_modelo_segmentacao(
-            8, train_scaled.shape[-1], loss_mode="binary_crossentropy",
-        )
+        if args.architecture == "late_channel_fusion":
+            model = create_late_channel_fusion_bilstm(
+                sequence_length=8, n_channels=n_channels,
+                features_per_channel=features_per_channel,
+                learning_rate=args.learning_rate,
+            )
+        else:
+            model = criar_modelo_segmentacao(
+                8, train_scaled.shape[-1], loss_mode="binary_crossentropy",
+            )
         event_checkpoint = None
         if args.checkpoint_monitor == "event_recall":
             event_checkpoint = create_event_checkpoint_callback(
@@ -379,8 +641,18 @@ def main() -> None:
                 max_false_alarms_per_hour=args.checkpoint_fa_cap,
                 patience=args.checkpoint_patience,
                 min_epochs=args.checkpoint_min_epochs,
+                rank_mode=args.checkpoint_rank_mode,
             )
             callbacks = [event_checkpoint]
+            if args.reduce_lr_on_plateau:
+                callbacks.append(tf.keras.callbacks.ReduceLROnPlateau(
+                    monitor="val_pr_auc", mode="max",
+                    factor=args.reduce_lr_factor,
+                    patience=args.reduce_lr_patience,
+                    min_lr=args.min_learning_rate,
+                    min_delta=0.001,
+                    verbose=0,
+                ))
         else:
             callbacks = [tf.keras.callbacks.EarlyStopping(
                 monitor="val_pr_auc", mode="max", patience=4,
@@ -411,6 +683,38 @@ def main() -> None:
                 event_diagnostics[str(cap)] = build_event_diagnostics(
                     yy, scores, meta_eval, point,
                 )
+        dual_best = None
+        dual_frontier = []
+        dual_event_diagnostics = []
+        if args.dual_path_calibration:
+            sustained = next(
+                (
+                    item for item in frontier
+                    if abs(float(item["cap"]) - args.dual_sustained_cap) < 1e-9
+                    and item.get("constraint_satisfied", True)
+                ),
+                None,
+            )
+            if sustained is None:
+                raise RuntimeError("No sustained operating point satisfies the requested cap.")
+            dual_result, dual_frontier = calibrate_dual_path(
+                yy, scores, meta_eval, sustained=sustained,
+            )
+            dual_best = {**_compact(dual_result), **dual_result["dual_path"]}
+            dual_scores, _ = build_dual_path_scores(
+                scores,
+                meta_eval,
+                sustained=sustained,
+                transient_threshold=float(
+                    dual_result["dual_path"]["transient_threshold"]
+                ),
+                transient_min_duration_seconds=float(
+                    dual_result["dual_path"]["transient_min_duration_seconds"]
+                ),
+            )
+            dual_event_diagnostics = build_event_diagnostics(
+                yy, dual_scores, meta_eval, dual_result,
+            )
         run = {
             "seed": seed,
             "parameters": int(model.count_params()),
@@ -430,6 +734,9 @@ def main() -> None:
             "calibration_best": _compact(best),
             "calibration_froc": frontier,
             "event_diagnostics_by_fa_cap": event_diagnostics,
+            "dual_path_best": dual_best,
+            "dual_path_froc": dual_frontier,
+            "dual_path_event_diagnostics": dual_event_diagnostics,
         }
         payload["runs"].append(run)
         payload["summary"] = summarize(payload["runs"])

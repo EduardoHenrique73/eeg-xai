@@ -58,3 +58,6 @@ frontend/dist/
 
 # Renderizacoes temporarias usadas apenas na inspecao visual do TCC
 docs/tcc/render_final/
+docs/tcc/render_revisao/
+.tcc-preview/
+~$*.docx

@@ -12,7 +12,8 @@ Arquivos de entrega:
 - Corrigidos titulo, chamada de figura, numeracao das 19 figuras, formulacao de proposta futura e posicao historica de recursos/cronograma no apendice.
 - Complementados os resultados v43 (cinco seeds e comparacao controlada), v53, v55 e v56, incluindo limites de generalizacao.
 - Explicitado que Bonn nao integra a avaliacao final com registros continuos do CHB-MIT.
-- Reconstruido o sumario com paginas correspondentes ao PDF local de 42 paginas.
+- Reconstruido o sumario com paginas correspondentes ao PDF local de 47 paginas.
+- Corrigida a renderizacao do PDF para repetir as margens a cada pagina; a versao anterior comprimira o conteudo ao perder a margem superior nas continuacoes. Corrigidos tambem a folha de rosto e o tamanho das referencias.
 - Todas as paginas do PDF foram renderizadas e inspecionadas em folhas de contato; nao ha pagina vazia na copia final.
 
 ## Conferencias externas ainda necessarias

@@ -47,10 +47,10 @@ async function main() {
       };
     }, data);
     await page.addStyleTag({ content: `
-      @page { size: A4; margin: 0; }
+      @page { size: A4; margin: 3cm 2cm 2cm 3cm; }
       html, body { margin: 0; padding: 0; background: white; }
       .docx-wrapper { padding: 0 !important; background: white !important; }
-      section.docx { margin: 0 !important; box-shadow: none !important; }
+      section.docx { width: 16cm !important; height: auto !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; }
       section.docx:not(:first-child) { break-before: page; }
       section.docx a, section.docx a * { color: black !important; text-decoration: none !important; }
     ` });

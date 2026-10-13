@@ -51,6 +51,11 @@ def main():
     for index in (19, 40):
         replace_text(paragraphs[index], title)
         paragraphs[index].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for run in paragraphs[index].runs:
+            run.font.bold = True
+    for index in (60, 61):
+        paragraphs[index].paragraph_format.left_indent = Cm(0)
+        paragraphs[index].paragraph_format.first_line_indent = Cm(0)
 
     replace_text(
         paragraphs[68],
@@ -92,7 +97,7 @@ def main():
     for paragraph in doc.paragraphs:
         if "Na Figura 14, a faixa" in paragraph.text:
             replace_text(paragraph, paragraph.text.replace("Figura 14", "Figura 15"))
-        if "Figura 2" in paragraph.text and "metodologia" in paragraph.text.lower():
+        if paragraph.text.startswith("O desenvolvimento foi organizado nas etapas apresentadas na Figura 2"):
             replace_text(paragraph, paragraph.text.replace("Figura 2", "Figura 1"))
         if "As telas finais substituem" in paragraph.text:
             replace_text(
@@ -266,6 +271,9 @@ def main():
             fmt.first_line_indent = Cm(0)
             fmt.line_spacing = 1.0
             fmt.space_after = Pt(6)
+            for run in paragraph.runs:
+                run.font.name = "Arial"
+                run.font.size = Pt(12)
         else:
             paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
             fmt.first_line_indent = Cm(1.25)

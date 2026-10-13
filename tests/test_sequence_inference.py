@@ -7,10 +7,12 @@ import numpy as np
 from app.config import Settings
 from app.ai_engine.sequence_inference import (
     _janelas_da_sequencia,
+    agregar_saida_temporal,
     agregar_trechos_suspeitos,
     classificar_resultado_sequencial,
     construir_sequencias,
     resolver_threshold_duracao,
+    resolver_parametros_operacao,
 )
 
 
@@ -108,6 +110,36 @@ def test_agregar_trechos_usa_pico_quando_nada_acima_do_threshold():
     assert trechos[0]["atingiu_duracao_minima"] is False
 
 
+def test_agregar_trechos_fecha_lacuna_calibrada():
+    scores = np.array([0.9, 0.92, 0.7, 0.91, 0.93])
+    meta = [{"start_seconds": float(i * 2), "end_seconds": float(i * 2 + 4)} for i in range(5)]
+
+    trechos = agregar_trechos_suspeitos(
+        scores, meta, threshold=0.8, min_duration_seconds=8.0,
+        max_gap_seconds=4.0, limite=5,
+    )
+
+    assert len(trechos) == 1
+    assert trechos[0]["start_seconds"] == 0.0
+    assert trechos[0]["end_seconds"] == 12.0
+    assert trechos[0]["atingiu_duracao_minima"] is True
+
+
+def test_agregar_saida_temporal_faz_media_das_janelas_sobrepostas():
+    raw = np.array([[[0.2], [0.4], [0.6]], [[0.8], [1.0], [0.3]]])
+    meta = [
+        {"context_start_seconds": 0.0},
+        {"context_start_seconds": 2.0},
+    ]
+
+    scores, temporal = agregar_saida_temporal(
+        raw, meta, sequence_length=3, window_seconds=4.0, step_seconds=2.0,
+    )
+
+    assert [item["start_seconds"] for item in temporal] == [0.0, 2.0, 4.0, 6.0]
+    assert np.allclose(scores, [0.2, 0.6, 0.8, 0.3])
+
+
 def test_resolver_threshold_prioriza_calibracao_alinhada():
     settings = Settings(ai_sequence_default_threshold=0.5, ai_sequence_default_min_duration_seconds=30.0)
     calibration = {
@@ -128,6 +160,19 @@ def test_resolver_threshold_usa_defaults_sem_calibracao():
 
     assert threshold == 0.7
     assert duracao == 45.0
+
+
+def test_resolver_parametros_inclui_gap_calibrado():
+    settings = Settings(ai_sequence_default_threshold=0.5, ai_sequence_default_min_duration_seconds=30.0)
+    calibration = {
+        "best_aligned": {
+            "threshold": 0.6,
+            "min_duration_seconds": 18.0,
+            "max_gap_seconds": 8.0,
+        },
+    }
+
+    assert resolver_parametros_operacao({}, calibration, settings) == (0.6, 18.0, 8.0)
 
 
 def test_classificacao_clinica_e_cautelosa():

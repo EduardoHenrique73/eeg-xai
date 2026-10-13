@@ -1,12 +1,30 @@
 import numpy as np
+import pytest
 
 from scripts.experiment_expanded_train_v37 import (
     build_dual_path_scores,
     build_event_diagnostics,
     checkpoint_rank,
+    create_event_checkpoint_callback,
     evaluate_dual_path,
     restore_missing_channel_zeros,
+    selecionar_hard_negatives,
 )
+
+
+def test_event_checkpoint_rejects_invalid_evaluation_interval():
+    with pytest.raises(ValueError, match="at least 1"):
+        create_event_checkpoint_callback(
+            calibration_x=np.zeros((1, 1, 1), dtype=np.float32),
+            calibration_y=np.zeros((1, 1, 1), dtype=np.float32),
+            calibration_temporal_meta=[[{
+                "arquivo": "a.edf", "start_seconds": 0.0, "end_seconds": 1.0,
+            }]],
+            max_false_alarms_per_hour=0.75,
+            patience=1,
+            min_epochs=1,
+            evaluate_every_epochs=0,
+        )
 
 
 def _metrics(*, recall: float, fa_h: float, localized_f1: float = 0.7):
@@ -142,3 +160,35 @@ def test_restore_missing_channel_zeros_after_scaling():
 
     np.testing.assert_array_equal(restored[..., :2], 4.0)
     np.testing.assert_array_equal(restored[..., 2:], 0.0)
+
+
+def test_hard_negative_selection_excludes_ictal_and_repeated_alarm():
+    scores = np.asarray([
+        [[0.95], [0.92]],
+        [[0.94], [0.91]],
+        [[0.99], [0.98]],
+        [[0.90], [0.89]],
+    ])
+    targets = np.asarray([
+        [[0.0], [0.0]],
+        [[0.0], [0.0]],
+        [[1.0], [1.0]],
+        [[0.0], [0.0]],
+    ])
+    metas = [
+        {"context_start_seconds": 0.0, "context_end_seconds": 16.0},
+        {"context_start_seconds": 4.0, "context_end_seconds": 20.0},
+        {"context_start_seconds": 100.0, "context_end_seconds": 116.0},
+        {"context_start_seconds": 200.0, "context_end_seconds": 216.0},
+    ]
+
+    selected = selecionar_hard_negatives(
+        scores,
+        targets,
+        metas,
+        threshold=0.8,
+        limit=3,
+        min_separation_seconds=30.0,
+    )
+
+    assert selected == [0, 3]

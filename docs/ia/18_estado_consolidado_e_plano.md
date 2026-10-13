@@ -417,8 +417,13 @@ Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
 - auditoria v46: suporta multirresolucao, nao substituicao global;
 - experimento v47: promissor, mas ainda sem avaliacao FROC completa;
 - experimento v48 residual: rejeitado por instabilidade entre seeds;
-- proximo experimento aprovado: v47 no treino/calibracao completos, com
-  pos-processamento fixo e sem acesso aos pacientes reservados;
+- experimento v49: ganho pequeno, confirmou sinal complementar;
+- experimento v50: diversidade dirigida elevou a multirresolucao para 12/20;
+- experimento v51: checkpoint reduziu FA/h para 0,497;
+- experimento v53: 12,33/20, F1 localizado 77,9%, F1 EDF 92,5% e 0,602 FA/h;
+- v53 e promissora, mas nao supera a referencia historica v43;
+- proximo experimento aprovado: classificar erros persistentes em score baixo
+  versus fragmentacao e minerar hard negatives da calibracao/treino;
 - gargalo principal: eventos invisiveis ao primeiro estagio e transientes
   normais indistinguiveis por threshold/duracao.
 
@@ -448,3 +453,5 @@ Somente depois do P0, investigar os eventos de `chb16_17` com score baixo:
 - `22_auditoria_v45_crises_curtas.md`: similaridade e expansao com crises curtas.
 - `23_auditoria_v46_resolucao_temporal.md`: comparacao 4 s/2 s contra 2 s/1 s.
 - `24_resultados_v47_v48_multirresolucao.md`: prototipo de duas resolucoes.
+- `25_resultados_v49_v53_progressao_controlada.md`: validacao completa,
+  diversidade, checkpoint e expansao morfologica.

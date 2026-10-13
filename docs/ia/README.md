@@ -33,6 +33,7 @@ Arquivos principais:
 - [22_auditoria_v45_crises_curtas.md](22_auditoria_v45_crises_curtas.md): lacuna de crises curtas, novos EDFs e resultado da v45.
 - [23_auditoria_v46_resolucao_temporal.md](23_auditoria_v46_resolucao_temporal.md): cobertura e separabilidade com janelas de 2 s/1 s.
 - [24_resultados_v47_v48_multirresolucao.md](24_resultados_v47_v48_multirresolucao.md): fusao 4 s + 2 s, correcao do pareamento e decisao das v47/v48.
+- [25_resultados_v49_v53_progressao_controlada.md](25_resultados_v49_v53_progressao_controlada.md): validacao FROC completa, diversidade de pacientes, checkpoint por evento e expansao morfologica.
 
 Resumo executivo:
 
@@ -72,3 +73,28 @@ medio dos eventos 2/3/4 passou de 0,317/0,543/0,837 para
 0,666/0,719/0,988. O percentil 99 normal, porem, subiu de 0,948 para 0,991.
 Ela e promissora, mas nao foi promovida. A v48 residual foi rejeitada por
 instabilidade. O proximo passo e medir a v47 em toda a calibracao com FROC.
+
+A progressao v49-v53 confirmou que dados diversos e multirresolucao funcionam
+melhor em conjunto. A v53 alcancou 12,33/20 eventos, F1 localizado de 77,9%,
+F1 EDF de 92,5% e 0,602 FA/h. Ainda nao supera a v43 historica em eventos e
+localizacao; permanece experimental e nao foi integrada ao produto.
+
+O pacote final reproduzivel da v43 seed 42 e sua integracao no produto estao
+documentados em `26_modelo_final_v43_seed42.md`.
+
+A avaliacao congelada da v43 no reservado historico e a analise da queda de
+generalizacao estao em `27_avaliacao_congelada_v43_reservado_historico.md`.
+
+Os experimentos v55/v56 com hard-negative mining no primeiro estagio estao em
+`28_resultados_v55_v56_hard_negatives.md`.
+
+O texto consolidado para fechamento, resultados e apresentacao do TCC esta em
+`29_fechamento_tcc.md`.
+
+O roteiro para transformar o projeto de TCC I no texto final do TCC II,
+incluindo a delimitacao correta entre Bonn e CHB-MIT, esta em
+`30_alinhamento_textual_tcc_ii.md`.
+
+As observacoes dos tres PDFs revisados pelos orientadores, a matriz de resposta
+e os trechos academicos corrigidos estao em
+`31_correcoes_dos_orientadores.md`.

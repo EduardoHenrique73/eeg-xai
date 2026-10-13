@@ -33,6 +33,11 @@ from app.ai_engine.sequence_segmentation import (  # noqa: E402
 from app.config import get_settings  # noqa: E402
 from scripts.experiment_channel_mask_v32 import load_sequences  # noqa: E402
 from scripts.experiment_expanded_train_v37 import restore_missing_channel_zeros  # noqa: E402
+from scripts.experiment_expanded_train_v37 import (  # noqa: E402
+    build_event_diagnostics,
+    create_event_checkpoint_callback,
+)
+from scripts.experiment_multiscale_v31 import _compact, _froc  # noqa: E402
 from scripts.train_sequence_cnn_lstm import (  # noqa: E402
     ajustar_scaler,
     aplicar_scaler,
@@ -104,6 +109,33 @@ def load_paired_training(
     return np.concatenate(coarse_parts), np.concatenate(fine_parts), paired_metas
 
 
+def load_paired_evaluation(
+    coarse_cache: SequenceDatasetCache,
+    fine_cache: SequenceDatasetCache,
+    files: list[str],
+) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
+    """Load complete EDF timelines and align both resolutions."""
+    coarse_parts: list[np.ndarray] = []
+    fine_parts: list[np.ndarray] = []
+    paired_metas: list[dict[str, Any]] = []
+    for file in files:
+        coarse, _, coarse_meta = coarse_cache.carregar_arquivo(
+            file, max_normal_windows=None, max_seizure_windows=None,
+        )
+        fine, _, fine_meta = fine_cache.carregar_arquivo(
+            file, max_normal_windows=None, max_seizure_windows=None,
+        )
+        coarse_indices, fine_indices = pair_resolutions(coarse_meta, fine_meta)
+        if len(coarse_indices) != len(coarse_meta):
+            raise RuntimeError(f"Incomplete fine-resolution timeline for {file}.")
+        coarse_parts.append(coarse[coarse_indices])
+        fine_parts.append(fine[fine_indices])
+        paired_metas.extend(coarse_meta[index] for index in coarse_indices)
+        coarse_cache._cache.pop((file, None, None), None)
+        fine_cache._cache.pop((file, None, None), None)
+    return np.concatenate(coarse_parts), np.concatenate(fine_parts), paired_metas
+
+
 def summarize_event_scores(
     scores: np.ndarray,
     metas: list[dict[str, Any]],
@@ -169,9 +201,18 @@ def main() -> None:
         default=ROOT / "dataset_amostra/manifests/v45_short_seizures_train.txt",
     )
     parser.add_argument("--target-file", default="chb16_17.edf")
+    parser.add_argument(
+        "--all-calibration", action="store_true",
+        help="Evaluate every EDF from the fixed calibration patients and compute FROC.",
+    )
     parser.add_argument("--training-files", nargs="*", default=DEFAULT_TRAINING_FILES)
     parser.add_argument("--seeds", type=int, nargs="+", default=[42, 43, 44])
     parser.add_argument("--epochs", type=int, default=16)
+    parser.add_argument("--event-checkpoint", action="store_true")
+    parser.add_argument("--checkpoint-fa-cap", type=float, default=0.75)
+    parser.add_argument("--checkpoint-patience", type=int, default=5)
+    parser.add_argument("--checkpoint-min-epochs", type=int, default=6)
+    parser.add_argument("--checkpoint-every-epochs", type=int, default=4)
     parser.add_argument(
         "--variants", nargs="+",
         choices=[
@@ -208,6 +249,7 @@ def main() -> None:
         raise RuntimeError(f"Training files outside isolated split: {unknown}")
     if args.target_file not in calibration_files:
         raise RuntimeError("Target EDF must belong exclusively to calibration.")
+    evaluation_files = calibration_files if args.all_calibration else [args.target_file]
 
     channels = list(extrair_metadados_edf(args.dataset_dir / "chb01_01.edf")["canais_eeg"])
     coarse_cache = make_cache(args.dataset_dir, channels, window=4, step=2, length=8)
@@ -216,19 +258,11 @@ def main() -> None:
     coarse_train, fine_train, coarse_train_meta = load_paired_training(
         coarse_cache, fine_cache, args.training_files,
     )
-    coarse_target, _, coarse_target_meta = load_sequences(
-        coarse_cache, [args.target_file], sampled=False,
+    coarse_target, fine_target, coarse_target_meta = load_paired_evaluation(
+        coarse_cache, fine_cache, evaluation_files,
     )
-    fine_target, _, fine_target_meta = load_sequences(
-        fine_cache, [args.target_file], sampled=False,
-    )
-
-    target_coarse_idx, target_fine_idx = pair_resolutions(coarse_target_meta, fine_target_meta)
-    if not len(coarse_train) or not len(target_coarse_idx):
+    if not len(coarse_train) or not len(coarse_target):
         raise RuntimeError("No aligned multiresolution sequences were found.")
-    coarse_target = coarse_target[target_coarse_idx]
-    fine_target = fine_target[target_fine_idx]
-    coarse_target_meta = [coarse_target_meta[index] for index in target_coarse_idx]
 
     y_train, temporal_train = construir_alvos_temporais(
         coarse_train_meta, coarse_cache.intervalos_por_arquivo,
@@ -276,15 +310,20 @@ def main() -> None:
         "manifest": str(args.manifest.resolve()),
         "training_files": args.training_files,
         "target_file": args.target_file,
+        "evaluation_files": evaluation_files,
+        "all_calibration": args.all_calibration,
         "calibration_patients": calibration_patients,
         "reserved_test_files_not_loaded": test_files,
         "test_accessed": False,
         "exploratory_target_used": True,
         "promotion_allowed": False,
         "paired_train_sequences": int(len(coarse_train)),
-        "paired_target_sequences": int(len(target_coarse_idx)),
+        "paired_target_sequences": int(len(coarse_target)),
         "seeds": args.seeds,
         "variants": args.variants,
+        "event_checkpoint": args.event_checkpoint,
+        "checkpoint_fa_cap": args.checkpoint_fa_cap,
+        "checkpoint_every_epochs": args.checkpoint_every_epochs,
         "runs": [],
     }
     intervals = coarse_cache.intervalos_por_arquivo[args.target_file]
@@ -314,19 +353,56 @@ def main() -> None:
                 )
                 train_input = [coarse_train_scaled, fine_train_scaled]
                 target_input = [coarse_target_scaled, fine_target_scaled]
+            event_checkpoint = None
+            callbacks = []
+            validation_data = None
+            if args.event_checkpoint:
+                event_checkpoint = create_event_checkpoint_callback(
+                    calibration_x=target_input,
+                    calibration_y=y_target,
+                    calibration_temporal_meta=temporal_target,
+                    max_false_alarms_per_hour=args.checkpoint_fa_cap,
+                    patience=args.checkpoint_patience,
+                    min_epochs=args.checkpoint_min_epochs,
+                    rank_mode="event_localization_edf",
+                    evaluate_every_epochs=args.checkpoint_every_epochs,
+                )
+                callbacks.append(event_checkpoint)
+                validation_data = (target_input, y_target)
             history = model.fit(
                 train_input, y_train, sample_weight=weights,
                 epochs=args.epochs, batch_size=32, verbose=0, shuffle=True,
+                validation_data=validation_data, callbacks=callbacks,
             )
             raw_scores = model.predict(target_input, verbose=0)
-            _, scores, metas = agregar_predicoes_temporais(
+            labels, scores, metas = agregar_predicoes_temporais(
                 raw_scores, y_target, temporal_target,
             )
-            seed_result[variant] = {
+            variant_result: dict[str, Any] = {
                 "epochs": len(history.history["loss"]),
                 "final_train_loss": float(history.history["loss"][-1]),
-                "raw_target_scores": summarize_event_scores(scores, metas, intervals),
+                "checkpoint_best_epoch": (
+                    event_checkpoint.best_epoch if event_checkpoint is not None else None
+                ),
+                "checkpoint_best_metrics": (
+                    event_checkpoint.best_metrics if event_checkpoint is not None else None
+                ),
             }
+            if args.all_calibration:
+                best, frontier, feasible = _froc(labels, scores, metas)
+                variant_result.update({
+                    "calibration_constraint_satisfied": feasible,
+                    "calibration_best": _compact(best),
+                    "calibration_froc": frontier,
+                    "event_diagnostics": build_event_diagnostics(
+                        labels, scores, metas, best,
+                    ),
+                })
+            else:
+                variant_result["raw_target_scores"] = summarize_event_scores(
+                    scores, metas, intervals,
+                )
+            seed_result[variant] = variant_result
         payload["runs"].append(seed_result)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

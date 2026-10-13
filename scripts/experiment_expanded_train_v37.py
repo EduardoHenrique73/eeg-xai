@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime
 import json
 from pathlib import Path
+import pickle
 import sys
 from typing import Any
 
@@ -25,6 +26,7 @@ from app.ai_engine.sequence_segmentation import (  # noqa: E402
     pesos_temporais,
 )
 from app.config import get_settings  # noqa: E402
+from app.ai_engine.sequence_inference import carregar_recursos_sequenciais  # noqa: E402
 from scripts.calibrate_sequence_cnn_lstm import (  # noqa: E402
     avaliar_combo,
     intervalos_crise_reais,
@@ -80,6 +82,114 @@ def restore_missing_channel_zeros(
     missing = ~np.any(np.abs(original_grouped) > 1e-12, axis=(1, 3))
     scaled_grouped *= (~missing)[:, None, :, None]
     return scaled_grouped.reshape(scaled.shape)
+
+
+def selecionar_hard_negatives(
+    scores: np.ndarray,
+    alvos_temporais: np.ndarray,
+    metas: list[dict[str, Any]],
+    *,
+    threshold: float,
+    limit: int,
+    min_separation_seconds: float,
+) -> list[int]:
+    """Seleciona falsos candidatos normais diversos, sem repetir o mesmo alarme."""
+    score_seq = np.max(np.asarray(scores).reshape(len(metas), -1), axis=1)
+    labels = np.max(np.asarray(alvos_temporais).reshape(len(metas), -1), axis=1)
+    candidatos = [
+        idx for idx in np.argsort(score_seq)[::-1]
+        if labels[int(idx)] == 0 and score_seq[int(idx)] >= threshold
+    ]
+    escolhidos: list[int] = []
+    centros: list[float] = []
+    for idx_raw in candidatos:
+        idx = int(idx_raw)
+        centro = (
+            float(metas[idx]["context_start_seconds"])
+            + float(metas[idx]["context_end_seconds"])
+        ) / 2.0
+        if any(abs(centro - anterior) < min_separation_seconds for anterior in centros):
+            continue
+        escolhidos.append(idx)
+        centros.append(centro)
+        if len(escolhidos) >= limit:
+            break
+    return escolhidos
+
+
+def minerar_hard_negatives_treino(
+    cache: SequenceDatasetCache,
+    train_files: list[str],
+    *,
+    recursos: Any,
+    n_channels: int,
+    features_per_channel: int,
+    threshold: float,
+    max_per_file: int,
+    max_per_patient: int,
+    min_separation_seconds: float,
+) -> tuple[np.ndarray, list[dict[str, Any]], dict[str, Any]]:
+    """Minera apenas janelas normais de treino que a v43 considera suspeitas."""
+    x_parts: list[np.ndarray] = []
+    metas_escolhidas: list[dict[str, Any]] = []
+    por_paciente: dict[str, int] = {}
+    por_arquivo: dict[str, int] = {}
+    for arquivo in train_files:
+        paciente = arquivo.split("_")[0].removesuffix("a").removesuffix("b")
+        restante = max_per_patient - por_paciente.get(paciente, 0)
+        if restante <= 0:
+            continue
+        x_full, _, meta_full = cache.carregar_arquivo(
+            arquivo,
+            max_normal_windows=None,
+            max_seizure_windows=None,
+        )
+        y_full, _ = construir_alvos_temporais(
+            meta_full,
+            cache.intervalos_por_arquivo,
+            sequence_length=cache.sequence_length,
+            window_seconds=cache.window_seconds,
+            step_seconds=cache.step_seconds,
+            min_ictal_overlap_ratio=cache.min_window_ictal_overlap_ratio,
+        )
+        scaled = aplicar_scaler(x_full, recursos.scaler)
+        scaled = restore_missing_channel_zeros(
+            x_full,
+            scaled,
+            n_channels=n_channels,
+            features_per_channel=features_per_channel,
+        )
+        scores = np.asarray(recursos.model.predict(scaled, batch_size=128, verbose=0))
+        selecionados = selecionar_hard_negatives(
+            scores,
+            y_full,
+            meta_full,
+            threshold=threshold,
+            limit=min(max_per_file, restante),
+            min_separation_seconds=min_separation_seconds,
+        )
+        if not selecionados:
+            continue
+        x_parts.append(x_full[selecionados])
+        for idx in selecionados:
+            metas_escolhidas.append(
+                {
+                    **meta_full[idx],
+                    "hard_negative": True,
+                    "hard_negative_source_score": float(
+                        np.max(scores[idx])
+                    ),
+                }
+            )
+        por_arquivo[arquivo] = len(selecionados)
+        por_paciente[paciente] = por_paciente.get(paciente, 0) + len(selecionados)
+    if not x_parts:
+        raise RuntimeError("Nenhum hard negative de treino atingiu os criterios.")
+    return np.vstack(x_parts), metas_escolhidas, {
+        "total": len(metas_escolhidas),
+        "by_file": por_arquivo,
+        "by_patient": por_paciente,
+    }
 
 
 def checkpoint_rank(
@@ -390,16 +500,20 @@ def calibrate_dual_path(
 
 def create_event_checkpoint_callback(
     *,
-    calibration_x: np.ndarray,
+    calibration_x: Any,
     calibration_y: np.ndarray,
     calibration_temporal_meta: list[dict[str, Any]],
     max_false_alarms_per_hour: float,
     patience: int,
     min_epochs: int,
     rank_mode: str = "event_localization",
+    evaluate_every_epochs: int = 1,
 ) -> Any:
     """Create a callback that restores the best event-level calibration epoch."""
     import tensorflow as tf
+
+    if evaluate_every_epochs < 1:
+        raise ValueError("evaluate_every_epochs must be at least 1.")
 
     class EventCheckpoint(tf.keras.callbacks.Callback):
         def __init__(self) -> None:
@@ -412,6 +526,8 @@ def create_event_checkpoint_callback(
             self.trajectory: list[dict[str, Any]] = []
 
         def on_epoch_end(self, epoch: int, logs: dict[str, Any] | None = None) -> None:
+            if (epoch + 1) % evaluate_every_epochs != 0:
+                return
             raw_scores = np.asarray(
                 self.model.predict(calibration_x, batch_size=128, verbose=0)
             )
@@ -506,7 +622,20 @@ def main() -> None:
     )
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--seeds", type=int, nargs="+", default=[42, 43, 44])
+    parser.add_argument(
+        "--model-output", type=Path,
+        help="Salva modelo, scaler, metadata e calibracao; exige uma unica seed.",
+    )
+    parser.add_argument("--mine-hard-negatives", action="store_true")
+    parser.add_argument("--hard-negative-threshold", type=float, default=0.8)
+    parser.add_argument("--hard-negatives-per-file", type=int, default=8)
+    parser.add_argument("--hard-negatives-per-patient", type=int, default=40)
+    parser.add_argument("--hard-negative-min-separation-seconds", type=float, default=30.0)
+    parser.add_argument("--hard-negative-weight", type=float, default=1.5)
     args = parser.parse_args()
+
+    if args.model_output is not None and len(args.seeds) != 1:
+        parser.error("--model-output exige exatamente uma seed em --seeds.")
 
     import tensorflow as tf
 
@@ -554,6 +683,38 @@ def main() -> None:
         meta_cal, cache.intervalos_por_arquivo, sequence_length=8,
         window_seconds=4, step_seconds=2, min_ictal_overlap_ratio=0.5,
     )
+    hard_negative_audit: dict[str, Any] | None = None
+    if args.mine_hard_negatives:
+        recursos_mineracao = carregar_recursos_sequenciais(settings)
+        if recursos_mineracao is None:
+            raise RuntimeError("Modelo ativo necessario para minerar hard negatives.")
+        features_per_channel_mineracao = x_train.shape[-1] // n_channels
+        x_hard, meta_hard, hard_negative_audit = minerar_hard_negatives_treino(
+            cache,
+            train_files,
+            recursos=recursos_mineracao,
+            n_channels=n_channels,
+            features_per_channel=features_per_channel_mineracao,
+            threshold=args.hard_negative_threshold,
+            max_per_file=args.hard_negatives_per_file,
+            max_per_patient=args.hard_negatives_per_patient,
+            min_separation_seconds=args.hard_negative_min_separation_seconds,
+        )
+        x_train = np.concatenate([x_train, x_hard], axis=0)
+        meta_train.extend(meta_hard)
+        y_hard, temporal_hard = construir_alvos_temporais(
+            meta_hard,
+            cache.intervalos_por_arquivo,
+            sequence_length=8,
+            window_seconds=4,
+            step_seconds=2,
+            min_ictal_overlap_ratio=0.5,
+        )
+        y_train = np.concatenate([y_train, y_hard], axis=0)
+        temporal_train.extend(temporal_hard)
+        y_train_seq = np.concatenate(
+            [y_train_seq, np.zeros(len(x_hard), dtype=y_train_seq.dtype)]
+        )
     unique_y, _, _ = agregar_predicoes_temporais(
         np.zeros_like(y_train), y_train, temporal_train,
     )
@@ -565,6 +726,11 @@ def main() -> None:
         short_event_max_duration_seconds=args.short_event_max_duration_seconds,
         short_event_weight=args.short_event_weight,
     )
+    if args.mine_hard_negatives:
+        hard_mask = np.asarray(
+            [bool(meta.get("hard_negative")) for meta in meta_train], dtype=bool,
+        )
+        weights[hard_mask] *= args.hard_negative_weight
     scaler = ajustar_scaler(x_train)
     train_scaled = aplicar_scaler(x_train, scaler)
     cal_scaled = aplicar_scaler(x_cal, scaler)
@@ -604,6 +770,15 @@ def main() -> None:
         "min_learning_rate": args.min_learning_rate,
         "short_event_max_duration_seconds": args.short_event_max_duration_seconds,
         "short_event_weight": args.short_event_weight,
+        "hard_negative_mining": {
+            "enabled": args.mine_hard_negatives,
+            "threshold": args.hard_negative_threshold,
+            "max_per_file": args.hard_negatives_per_file,
+            "max_per_patient": args.hard_negatives_per_patient,
+            "min_separation_seconds": args.hard_negative_min_separation_seconds,
+            "weight": args.hard_negative_weight,
+            "audit": hard_negative_audit,
+        },
         "event_audit_caps": args.event_audit_caps,
         "dual_path_calibration": args.dual_path_calibration,
         "dual_sustained_cap": args.dual_sustained_cap,
@@ -739,6 +914,85 @@ def main() -> None:
             "dual_path_event_diagnostics": dual_event_diagnostics,
         }
         payload["runs"].append(run)
+        if args.model_output is not None:
+            ponto_operacional = next(
+                (
+                    item for item in frontier
+                    if abs(float(item["cap"]) - args.checkpoint_fa_cap) < 1e-9
+                    and item.get("constraint_satisfied", True)
+                ),
+                None,
+            )
+            if ponto_operacional is None:
+                raise RuntimeError(
+                    "Nenhum ponto operacional respeita o teto de FA/h solicitado."
+                )
+            ponto_compacto = {
+                key: value for key, value in ponto_operacional.items()
+                if key not in {"cap", "constraint_satisfied"}
+            }
+            args.model_output.parent.mkdir(parents=True, exist_ok=True)
+            model.save(args.model_output)
+            scaler_path = args.model_output.with_name(
+                f"{args.model_output.stem}_scaler.pkl"
+            )
+            metadata_path = args.model_output.with_name(
+                f"{args.model_output.stem}_metadata.json"
+            )
+            calibration_path = args.model_output.with_name(
+                f"{args.model_output.stem}_calibration.json"
+            )
+            with scaler_path.open("wb") as arquivo:
+                pickle.dump(scaler, arquivo)
+            metadata = {
+                "model_type": "sequence_cnn_lstm",
+                "architecture": args.architecture,
+                "feature_mode": "time_frequency_per_channel",
+                "feature_normalization": "per_edf_robust",
+                "sequence_length": 8,
+                "sequence_stride": 2,
+                "sequence_target_mode": "center",
+                "window_seconds": 4,
+                "step_seconds": 2,
+                "min_window_ictal_overlap_ratio": 0.5,
+                "n_features": int(train_scaled.shape[-1]),
+                "n_channels": n_channels,
+                "features_per_channel": features_per_channel,
+                "canais_referencia": reference,
+                "output_mode": "temporal_segmentation",
+                "seed": seed,
+                "checkpoint_best_epoch": (
+                    event_checkpoint.best_epoch if event_checkpoint is not None else None
+                ),
+                "training_manifest": str(args.manifest.resolve()),
+                "reserved_test_patients": sorted(reserved),
+                "test_accessed": False,
+            }
+            calibration = {
+                "source": "calibration_patients_only",
+                "calibration_patients": cal_patients,
+                "false_alarms_per_hour_cap": args.checkpoint_fa_cap,
+                "best": ponto_compacto,
+                "best_aligned": ponto_compacto,
+                "seed": seed,
+                "checkpoint_best_epoch": (
+                    event_checkpoint.best_epoch if event_checkpoint is not None else None
+                ),
+                "reserved_test_patients": sorted(reserved),
+                "test_accessed": False,
+            }
+            metadata_path.write_text(
+                json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            calibration_path.write_text(
+                json.dumps(calibration, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            run["saved_artifacts"] = {
+                "model_path": str(args.model_output.resolve()),
+                "scaler_path": str(scaler_path.resolve()),
+                "metadata_path": str(metadata_path.resolve()),
+                "calibration_path": str(calibration_path.resolve()),
+            }
         payload["summary"] = summarize(payload["runs"])
         args.output.write_text(
             json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8",

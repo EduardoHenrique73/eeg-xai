@@ -13,21 +13,23 @@ O projeto ja possui:
 - Leitura de EDF real com MNE-Python.
 - Visualizacao multicanal de sinais EEG com downsampling e trechos suspeitos.
 - Selecao de canais EEG para analise.
-- Extracao de 19 features por dinamica simbolica, estatisticas e entropia de Shannon.
-- Inferencia com modelo CNN-LSTM Keras.
+- Extracao tempo-frequencia por canal, estatisticas, entropia de Shannon e dinamica simbolica.
+- Inferencia temporal com CNN-BiLSTM e fusao tardia de 23 canais.
 - Gradient SHAP do modelo sequencial salvo em `storage/shap`.
 - Emissao de laudo medico final.
 - Configuracoes medicas de threshold, montagem e exibicao SHAP.
 - Isolamento de pacientes, exames e estatisticas por medico autenticado.
 - Testes automatizados com pytest.
 
-Pontos ainda pendentes para aderencia completa ao TCC:
+Pontos cientificos ainda pendentes:
 
-- Zoom/pan real no grafico EEG.
-- Persistencia automatica de metadados extraidos do EDF, como taxa de amostragem e canais.
-- Validacao final agrupada por paciente em um conjunto de teste ainda intocado.
-- Calibracao em EDFs completos com sensibilidade por evento e falsos alarmes por hora.
-- Estudo formal de usabilidade e desempenho para concluir a avaliacao do TCC.
+- validacao externa em pacientes nunca consultados durante o desenvolvimento;
+- estudo formal de usabilidade com profissionais da area;
+- validacao clinica, que esta fora do escopo dos resultados atuais.
+
+Todos os 24 pacientes CHB-MIT disponiveis localmente ja foram usados em treino,
+calibracao ou desenvolvimento historico. Por isso, `chb09/chb15/chb18` nao sao
+descritos como teste final intocado.
 
 ## Stack
 
@@ -94,6 +96,24 @@ DATABASE_URL=sqlite+aiosqlite:///./eeg_xai_dev.db
 .venv\Scripts\python.exe -m pytest -q
 ```
 
+## Modelo Experimental Ativo
+
+O ambiente local usa a v43 seed 42:
+
+- features `time_frequency_per_channel`;
+- 23 canais, com identidade espacial preservada ate a fusao tardia;
+- CNN-BiLSTM com probabilidade ictal por passo temporal;
+- janelas de 4 s, passo de 2 s e sequencias de 8 passos;
+- threshold 0,60, duracao minima 18 s e gap closing de 8 s;
+- checkpoint escolhido na calibracao por evento sob limite de FA/h.
+
+Na calibracao, o artefato reproduziu F1 EDF de 95,7%, F1 localizado de 90,9%,
+15/20 eventos e 0,55 FA/h. No desenvolvimento historico interpaciente, caiu
+para F1 EDF de 82,4%, 4/9 eventos e 2,08 FA/h. Essa diferenca e documentada e
+impede qualquer alegacao de validacao clinica.
+
+Consulte `docs/ia/29_fechamento_tcc.md` para metodologia, resultados e limites.
+
 ## Pipeline Cientifico Inicial
 
 O projeto inclui uma primeira versao simples de data augmentation por janelamento temporal e k-fold sobre as 19 features do EEG.
@@ -146,10 +166,8 @@ npm run dev
 
 ## Observacao Sobre o Modelo
 
-O arquivo em `modelos/cnn_lstm_hybrid.keras` deve ser substituido por um modelo treinado e validado para uso cientifico. Em ambiente de desenvolvimento, o pipeline pode criar um modelo dummy se o artefato estiver ausente; esse comportamento serve apenas para testes tecnicos e nao deve ser apresentado como modelo clinicamente validado.
-
-O fluxo sequencial CNN-LSTM integrado tambem deve ser tratado como apoio
-experimental. A aplicacao ja suporta analise multicanal, localizacao de trechos,
-Gradient SHAP e configuracao por `.env`, mas nenhum artefato atual possui
-validacao clinica. Consulte `docs/ia/03_experimentos_e_metricas.md` e
-`docs/ia/05_proximos_passos.md` antes de trocar o modelo ativo.
+O fluxo sequencial e um sistema de apoio experimental, nao um dispositivo de
+diagnostico. O fallback/dummy existe somente para testes tecnicos. O pacote da
+v43 nao e versionado diretamente porque `.keras` e `.pkl` estao no `.gitignore`;
+use `scripts/verify_release_artifacts.py` para conferir os arquivos locais e o
+manifesto SHA-256 antes da demonstracao.

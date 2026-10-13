@@ -1,0 +1,29 @@
+{
+  "model": "v43_final_seed42",
+  "architecture": "late_channel_fusion",
+  "seed": 42,
+  "checkpoint_best_epoch": 14,
+  "operating_point": {
+    "threshold": 0.6,
+    "min_duration_seconds": 18.0,
+    "max_gap_seconds": 8.0
+  },
+  "files": {
+    "v43_final_seed42.keras": {
+      "size_bytes": 422536,
+      "sha256": "7aa86c97ba50226bd24214e57027977ef1f451a5b7e0eaecd81c25e76863ada4"
+    },
+    "v43_final_seed42_scaler.pkl": {
+      "size_bytes": 8742,
+      "sha256": "e4d1e1d2aa5630ae1b68578698c20b88f5a4eff892992d9ea7ebc6d6dda44ab7"
+    },
+    "v43_final_seed42_metadata.json": {
+      "size_bytes": 1109,
+      "sha256": "9246f5b8abfa1e83deebe6f3b6f2619125062d03bb086f0886620dac7f81edb6"
+    },
+    "v43_final_seed42_calibration.json": {
+      "size_bytes": 1421,
+      "sha256": "1f67bd517ed51dc78c0360bfcd054b550d54746ccdea5791e6cfbf9a06f7ebe3"
+    }
+  }
+}

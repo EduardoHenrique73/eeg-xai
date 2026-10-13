@@ -8,6 +8,19 @@ import tensorflow as tf
 from tensorflow.keras import layers, regularizers
 
 
+@tf.keras.utils.register_keras_serializable(package="eeg_xai")
+class ObservedChannels(layers.Layer):
+    """Calcula a mascara de canais presentes sem Lambda nao serializavel."""
+
+    def call(self, values: Any) -> Any:
+        return tf.cast(
+            tf.reduce_any(tf.abs(values) > 1e-6, axis=(1, 3)), tf.float32,
+        )
+
+    def compute_output_shape(self, input_shape: Any) -> tuple[Any, Any]:
+        return input_shape[0], input_shape[2]
+
+
 def temporal_loss(mode: str, weight: float = 0.1) -> Any:
     """Return per-timestep losses so Keras can apply the training-only sample weights."""
     if mode not in {"bce", "boundary", "tversky", "continuity"}:
@@ -132,12 +145,7 @@ def create_late_channel_fusion_bilstm(
         (sequence_length, n_channels, features_per_channel),
         name="group_by_channel",
     )(inputs)
-    presence = layers.Lambda(
-        lambda values: tf.cast(
-            tf.reduce_any(tf.abs(values) > 1e-6, axis=(1, 3)), tf.float32,
-        ),
-        name="observed_channels",
-    )(grouped)
+    presence = ObservedChannels(name="observed_channels")(grouped)
     presence_mask = layers.Reshape((1, n_channels, 1), name="channel_mask")(presence)
 
     # Kernels span time and features, but never the channel axis.

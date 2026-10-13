@@ -301,6 +301,7 @@ def _detalhes_sequenciais(resultado: dict[str, Any]) -> dict[str, Any]:
         "canais_destaque": [],
         "threshold": resultado.get("threshold"),
         "min_duration_seconds": resultado.get("min_duration_seconds"),
+        "max_gap_seconds": resultado.get("max_gap_seconds"),
         "max_suspicious_coverage": resultado.get("max_suspicious_coverage"),
         "n_janelas_analisadas": resultado.get("n_janelas_analisadas"),
         "n_sequences_analisadas": resultado.get("n_sequences_analisadas"),

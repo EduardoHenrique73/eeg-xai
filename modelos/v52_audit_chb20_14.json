@@ -1,0 +1,402 @@
+{
+  "experiment": "v45_invisible_event_representation_audit",
+  "created_at": "2026-10-09T09:30:15",
+  "manifest": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\dataset_amostra\\manifests\\v38_expanded_train.txt",
+  "target_file": "chb20_14.edf",
+  "target_patient": "chb16",
+  "window_seconds": 4,
+  "step_seconds": 2,
+  "sequence_length": 8,
+  "context_span_seconds": 18,
+  "calibration_patients": [
+    "chb16",
+    "chb19",
+    "chb20",
+    "chb24"
+  ],
+  "training_files": 77,
+  "training_file_names": [
+    "chb01_01.edf",
+    "chb01_03.edf",
+    "chb01_04.edf",
+    "chb01_15.edf",
+    "chb02_01.edf",
+    "chb02_16.edf",
+    "chb02_16+.edf",
+    "chb02_19.edf",
+    "chb03_01.edf",
+    "chb03_02.edf",
+    "chb03_05.edf",
+    "chb03_34.edf",
+    "chb04_01.edf",
+    "chb04_02.edf",
+    "chb04_05.edf",
+    "chb04_08.edf",
+    "chb04_28.edf",
+    "chb05_01.edf",
+    "chb05_06.edf",
+    "chb05_13.edf",
+    "chb05_17.edf",
+    "chb06_01.edf",
+    "chb06_02.edf",
+    "chb07_01.edf",
+    "chb07_12.edf",
+    "chb07_13.edf",
+    "chb07_19.edf",
+    "chb08_02.edf",
+    "chb08_03.edf",
+    "chb08_05.edf",
+    "chb08_13.edf",
+    "chb08_21.edf",
+    "chb10_01.edf",
+    "chb10_12.edf",
+    "chb10_20.edf",
+    "chb10_27.edf",
+    "chb11_01.edf",
+    "chb11_02.edf",
+    "chb11_82.edf",
+    "chb11_92.edf",
+    "chb12_06.edf",
+    "chb12_08.edf",
+    "chb12_19.edf",
+    "chb12_27.edf",
+    "chb13_02.edf",
+    "chb13_19.edf",
+    "chb13_21.edf",
+    "chb13_22.edf",
+    "chb13_40.edf",
+    "chb13_47.edf",
+    "chb13_55.edf",
+    "chb13_58.edf",
+    "chb13_59.edf",
+    "chb13_60.edf",
+    "chb13_62.edf",
+    "chb14_01.edf",
+    "chb14_03.edf",
+    "chb14_04.edf",
+    "chb14_06.edf",
+    "chb14_11.edf",
+    "chb14_17.edf",
+    "chb14_18.edf",
+    "chb14_27.edf",
+    "chb17a_03.edf",
+    "chb17a_04.edf",
+    "chb17a_05.edf",
+    "chb21_01.edf",
+    "chb21_02.edf",
+    "chb21_19.edf",
+    "chb21_20.edf",
+    "chb21_22.edf",
+    "chb22_01.edf",
+    "chb22_20.edf",
+    "chb22_25.edf",
+    "chb22_38.edf",
+    "chb23_06.edf",
+    "chb23_07.edf"
+  ],
+  "training_events_with_windows": 72,
+  "training_event_duration_counts": {
+    "le_10_seconds": 1,
+    "le_20_seconds": 15,
+    "gt_20_seconds": 57
+  },
+  "reference_channels": [
+    "FP1-F7",
+    "F7-T7",
+    "T7-P7",
+    "P7-O1",
+    "FP1-F3",
+    "F3-C3",
+    "C3-P3",
+    "P3-O1",
+    "FP2-F4",
+    "F4-C4",
+    "C4-P4",
+    "P4-O2",
+    "FP2-F8",
+    "F8-T8",
+    "T8-P8-0",
+    "P8-O2",
+    "FZ-CZ",
+    "CZ-PZ",
+    "P7-T7",
+    "T7-FT9",
+    "FT9-FT10",
+    "FT10-T8",
+    "T8-P8-1"
+  ],
+  "feature_names": [
+    "potencia_delta",
+    "potencia_theta",
+    "potencia_alpha",
+    "potencia_beta",
+    "potencia_gamma",
+    "potencia_relativa_delta",
+    "potencia_relativa_theta",
+    "potencia_relativa_alpha",
+    "potencia_relativa_beta",
+    "potencia_relativa_gamma",
+    "frequencia_dominante",
+    "centroide_espectral",
+    "entropia_espectral",
+    "razao_theta_alpha",
+    "razao_beta_alpha"
+  ],
+  "target_events": [
+    {
+      "event": 1,
+      "start_seconds": 1971.0,
+      "end_seconds": 2009.0,
+      "duration_seconds": 38.0,
+      "windows": 9,
+      "top_channels": [
+        {
+          "channel": "P7-T7",
+          "strength": 4.207962989807129
+        },
+        {
+          "channel": "T7-P7",
+          "strength": 4.207962989807129
+        },
+        {
+          "channel": "T7-FT9",
+          "strength": 3.8551559448242188
+        },
+        {
+          "channel": "F7-T7",
+          "strength": 3.7263364791870117
+        },
+        {
+          "channel": "C3-P3",
+          "strength": 3.014801502227783
+        }
+      ],
+      "top_features": [
+        {
+          "feature": "potencia_gamma",
+          "strength": 8.441085815429688
+        },
+        {
+          "feature": "potencia_beta",
+          "strength": 7.243927001953125
+        },
+        {
+          "feature": "potencia_relativa_gamma",
+          "strength": 3.2754313945770264
+        },
+        {
+          "feature": "potencia_alpha",
+          "strength": 2.883993148803711
+        },
+        {
+          "feature": "potencia_delta",
+          "strength": 2.418656349182129
+        }
+      ],
+      "channel_concentration_top3": 0.2328377664089203,
+      "local_normal_windows": 62,
+      "local_normal_rms_distance": 3.812009334564209,
+      "local_normal_cosine_similarity": -0.04501957050741155,
+      "nearest_training_events": [
+        {
+          "file": "chb04_28.edf",
+          "event": 1,
+          "start_seconds": 1679.0,
+          "end_seconds": 1781.0,
+          "duration_seconds": 102.0,
+          "windows": 16,
+          "cosine_similarity": 0.7542787873534613
+        },
+        {
+          "file": "chb03_34.edf",
+          "event": 1,
+          "start_seconds": 1982.0,
+          "end_seconds": 2029.0,
+          "duration_seconds": 47.0,
+          "windows": 12,
+          "cosine_similarity": 0.7503129763721427
+        },
+        {
+          "file": "chb04_28.edf",
+          "event": 2,
+          "start_seconds": 3782.0,
+          "end_seconds": 3898.0,
+          "duration_seconds": 116.0,
+          "windows": 16,
+          "cosine_similarity": 0.7389431351999862
+        },
+        {
+          "file": "chb23_06.edf",
+          "event": 1,
+          "start_seconds": 3962.0,
+          "end_seconds": 4075.0,
+          "duration_seconds": 113.0,
+          "windows": 29,
+          "cosine_similarity": 0.738260572413158
+        },
+        {
+          "file": "chb03_01.edf",
+          "event": 1,
+          "start_seconds": 362.0,
+          "end_seconds": 414.0,
+          "duration_seconds": 52.0,
+          "windows": 14,
+          "cosine_similarity": 0.7319182974491479
+        },
+        {
+          "file": "chb05_13.edf",
+          "event": 1,
+          "start_seconds": 1086.0,
+          "end_seconds": 1196.0,
+          "duration_seconds": 110.0,
+          "windows": 28,
+          "cosine_similarity": 0.7251467113931567
+        },
+        {
+          "file": "chb07_19.edf",
+          "event": 1,
+          "start_seconds": 13688.0,
+          "end_seconds": 13831.0,
+          "duration_seconds": 143.0,
+          "windows": 32,
+          "cosine_similarity": 0.7200792064071235
+        },
+        {
+          "file": "chb07_13.edf",
+          "event": 1,
+          "start_seconds": 3285.0,
+          "end_seconds": 3381.0,
+          "duration_seconds": 96.0,
+          "windows": 24,
+          "cosine_similarity": 0.6983536088264948
+        },
+        {
+          "file": "chb01_03.edf",
+          "event": 1,
+          "start_seconds": 2996.0,
+          "end_seconds": 3036.0,
+          "duration_seconds": 40.0,
+          "windows": 10,
+          "cosine_similarity": 0.68972899765842
+        },
+        {
+          "file": "chb22_25.edf",
+          "event": 1,
+          "start_seconds": 3139.0,
+          "end_seconds": 3213.0,
+          "duration_seconds": 74.0,
+          "windows": 18,
+          "cosine_similarity": 0.6739117715006882
+        }
+      ],
+      "nearest_short_training_events": [
+        {
+          "file": "chb14_06.edf",
+          "event": 1,
+          "start_seconds": 1911.0,
+          "end_seconds": 1925.0,
+          "duration_seconds": 14.0,
+          "windows": 3,
+          "cosine_similarity": 0.5741454615428059
+        },
+        {
+          "file": "chb13_55.edf",
+          "event": 1,
+          "start_seconds": 458.0,
+          "end_seconds": 478.0,
+          "duration_seconds": 20.0,
+          "windows": 6,
+          "cosine_similarity": 0.5531036672851178
+        },
+        {
+          "file": "chb02_19.edf",
+          "event": 1,
+          "start_seconds": 3369.0,
+          "end_seconds": 3378.0,
+          "duration_seconds": 9.0,
+          "windows": 3,
+          "cosine_similarity": 0.435222007304828
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 1,
+          "start_seconds": 1426.0,
+          "end_seconds": 1439.0,
+          "duration_seconds": 13.0,
+          "windows": 4,
+          "cosine_similarity": 0.4116500695470566
+        },
+        {
+          "file": "chb14_03.edf",
+          "event": 1,
+          "start_seconds": 1986.0,
+          "end_seconds": 2000.0,
+          "duration_seconds": 14.0,
+          "windows": 4,
+          "cosine_similarity": 0.40922847489101866
+        },
+        {
+          "file": "chb14_27.edf",
+          "event": 1,
+          "start_seconds": 2833.0,
+          "end_seconds": 2849.0,
+          "duration_seconds": 16.0,
+          "windows": 4,
+          "cosine_similarity": 0.4053230383728127
+        },
+        {
+          "file": "chb12_08.edf",
+          "event": 3,
+          "start_seconds": 1957.0,
+          "end_seconds": 1977.0,
+          "duration_seconds": 20.0,
+          "windows": 5,
+          "cosine_similarity": 0.3952042866734703
+        },
+        {
+          "file": "chb14_04.edf",
+          "event": 1,
+          "start_seconds": 1372.0,
+          "end_seconds": 1392.0,
+          "duration_seconds": 20.0,
+          "windows": 5,
+          "cosine_similarity": 0.3810317270801388
+        },
+        {
+          "file": "chb14_17.edf",
+          "event": 1,
+          "start_seconds": 3239.0,
+          "end_seconds": 3259.0,
+          "duration_seconds": 20.0,
+          "windows": 5,
+          "cosine_similarity": 0.3409461593582063
+        },
+        {
+          "file": "chb06_01.edf",
+          "event": 2,
+          "start_seconds": 7461.0,
+          "end_seconds": 7476.0,
+          "duration_seconds": 15.0,
+          "windows": 4,
+          "cosine_similarity": 0.2753682205863497
+        }
+      ],
+      "similar_training_events_ge_0_8": 0
+    }
+  ],
+  "reserved_test_files_not_loaded": [
+    "chb09_06.edf",
+    "chb09_19.edf",
+    "chb15_01.edf",
+    "chb15_06.edf",
+    "chb15_10.edf",
+    "chb15_17.edf",
+    "chb15_20.edf",
+    "chb15_31.edf",
+    "chb18_01.edf",
+    "chb18_02.edf",
+    "chb18_29.edf",
+    "chb18_30.edf"
+  ],
+  "test_accessed": false
+}

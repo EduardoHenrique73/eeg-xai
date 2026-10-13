@@ -83,8 +83,12 @@ def _carregar_recursos_cached(
     calibration_path: str | None,
 ) -> RecursosSequenciais:
     import tensorflow as tf
+    from app.ai_engine.multiscale_segmentation import ObservedChannels
 
-    model = tf.keras.models.load_model(model_path)
+    model = tf.keras.models.load_model(
+        model_path,
+        custom_objects={"ObservedChannels": ObservedChannels},
+    )
 
     with Path(scaler_path).open("rb") as arquivo:
         scaler = pickle.load(arquivo)
@@ -161,6 +165,50 @@ def resolver_threshold_duracao(
                 min_duration = float(escolhido["min_duration_seconds"])
 
     return threshold, min_duration
+
+
+def resolver_parametros_operacao(
+    metadata: dict[str, Any],
+    calibration: dict[str, Any] | None,
+    settings: Settings,
+) -> tuple[float, float, float]:
+    """Resolve threshold, duracao minima e fechamento de lacunas calibrados."""
+    threshold, min_duration = resolver_threshold_duracao(metadata, calibration, settings)
+    max_gap = 0.0
+    if calibration:
+        escolhido = calibration.get("best_aligned") or calibration.get("best")
+        if isinstance(escolhido, dict) and escolhido.get("max_gap_seconds") is not None:
+            max_gap = max(0.0, float(escolhido["max_gap_seconds"]))
+    return threshold, min_duration, max_gap
+
+
+def agregar_saida_temporal(
+    raw_scores: np.ndarray,
+    meta_sequencias: list[dict[str, Any]],
+    *,
+    sequence_length: int,
+    window_seconds: float,
+    step_seconds: float,
+) -> tuple[np.ndarray, list[dict[str, float]]]:
+    """Reconstroi a linha temporal de uma saida por passo, usando media nas sobreposicoes."""
+    scores = np.asarray(raw_scores, dtype=np.float32)
+    if scores.ndim == 3 and scores.shape[-1] == 1:
+        scores = scores[..., 0]
+    if scores.ndim != 2 or scores.shape != (len(meta_sequencias), sequence_length):
+        raise ValueError("Saida temporal incompatível com as sequencias de entrada.")
+
+    acumulado: dict[tuple[float, float], list[float]] = {}
+    for seq_idx, meta in enumerate(meta_sequencias):
+        inicio_contexto = float(meta["context_start_seconds"])
+        for passo in range(sequence_length):
+            inicio = inicio_contexto + passo * step_seconds
+            fim = inicio + window_seconds
+            acumulado.setdefault((inicio, fim), []).append(float(scores[seq_idx, passo]))
+    chaves = sorted(acumulado)
+    return (
+        np.asarray([np.mean(acumulado[chave]) for chave in chaves], dtype=np.float32),
+        [{"start_seconds": inicio, "end_seconds": fim} for inicio, fim in chaves],
+    )
 
 
 def construir_sequencias(
@@ -278,10 +326,28 @@ def agregar_trechos_suspeitos(
     *,
     threshold: float,
     min_duration_seconds: float,
+    max_gap_seconds: float = 0.0,
     limite: int,
 ) -> list[dict[str, Any]]:
-    """Agrupa sequencias contiguas com score >= threshold em trechos."""
+    """Agrupa scores suspeitos e fecha lacunas temporais calibradas entre runs."""
     acima = scores >= threshold
+    if max_gap_seconds > 0 and len(acima) >= 3:
+        acima = np.asarray(acima, dtype=bool).copy()
+        cursor = 1
+        while cursor < len(acima) - 1:
+            if acima[cursor] or not acima[cursor - 1]:
+                cursor += 1
+                continue
+            fim_lacuna = cursor
+            while fim_lacuna < len(acima) and not acima[fim_lacuna]:
+                fim_lacuna += 1
+            if fim_lacuna < len(acima):
+                duracao_lacuna = float(meta[fim_lacuna - 1]["end_seconds"]) - float(
+                    meta[cursor]["start_seconds"]
+                )
+                if duracao_lacuna <= max_gap_seconds:
+                    acima[cursor:fim_lacuna] = True
+            cursor = max(fim_lacuna, cursor + 1)
     segmentos: list[dict[str, Any]] = []
     inicio_run: int | None = None
 
@@ -404,10 +470,39 @@ def analisar_exame_sequencial(
         raise ValueError("Nao foi possivel montar sequencias para inferencia.")
 
     x_scaled = _aplicar_scaler(x_seq, recursos.scaler)
-    scores = np.asarray(recursos.model.predict(x_scaled, verbose=0)).reshape(-1)
+    if str(metadata.get("architecture")) == "late_channel_fusion":
+        n_channels = int(metadata.get("n_channels") or 0)
+        features_per_channel = int(metadata.get("features_per_channel") or 0)
+        if n_channels > 0 and features_per_channel > 0:
+            esperado = n_channels * features_per_channel
+            if x_seq.shape[-1] != esperado:
+                raise ValueError("Dimensao de features incompativel com a fusao tardia.")
+            original = x_seq.reshape(
+                x_seq.shape[0], x_seq.shape[1], n_channels, features_per_channel
+            )
+            escalado = x_scaled.reshape(
+                x_scaled.shape[0], x_scaled.shape[1], n_channels, features_per_channel
+            )
+            ausentes = ~np.any(np.abs(original) > 1e-12, axis=(1, 3))
+            escalado *= (~ausentes)[:, None, :, None]
+            x_scaled = escalado.reshape(x_scaled.shape)
+    raw_scores = np.asarray(recursos.model.predict(x_scaled, verbose=0))
+    if raw_scores.ndim >= 2 and raw_scores.shape[0] == len(meta_seq) and raw_scores.size != len(meta_seq):
+        scores, meta_scores = agregar_saida_temporal(
+            raw_scores,
+            meta_seq,
+            sequence_length=sequence_length,
+            window_seconds=window_seconds,
+            step_seconds=step_seconds,
+        )
+        indice_sequencia_xai = int(np.argmax(np.max(raw_scores.reshape(len(meta_seq), -1), axis=1)))
+    else:
+        scores = raw_scores.reshape(-1)
+        meta_scores = meta_seq
+        indice_sequencia_xai = int(np.argmax(scores))
     scores = np.clip(scores, 0.0, 1.0)
 
-    threshold, min_duration = resolver_threshold_duracao(
+    threshold, min_duration, max_gap = resolver_parametros_operacao(
         metadata, recursos.calibration, settings
     )
     if threshold_override is not None:
@@ -415,16 +510,17 @@ def analisar_exame_sequencial(
 
     trechos = agregar_trechos_suspeitos(
         scores,
-        meta_seq,
+        meta_scores,
         threshold=threshold,
         min_duration_seconds=min_duration,
+        max_gap_seconds=max_gap,
         limite=int(settings.ai_sequence_top_segments_limit),
     )
     trecho_principal = trechos[0] if trechos else None
     duracao_analisada = float(
         max(
             0.0,
-            float(meta_seq[-1]["end_seconds"]) - float(meta_seq[0]["start_seconds"]),
+            float(meta_scores[-1]["end_seconds"]) - float(meta_scores[0]["start_seconds"]),
         )
     )
     cobertura_excessiva = False
@@ -441,8 +537,8 @@ def analisar_exame_sequencial(
 
     indice_pico = int(np.argmax(scores))
     janela_pico = {
-        "start_seconds": float(meta_seq[indice_pico]["start_seconds"]),
-        "end_seconds": float(meta_seq[indice_pico]["end_seconds"]),
+        "start_seconds": float(meta_scores[indice_pico]["start_seconds"]),
+        "end_seconds": float(meta_scores[indice_pico]["end_seconds"]),
         "score": float(scores[indice_pico]),
     }
 
@@ -467,7 +563,7 @@ def analisar_exame_sequencial(
 
     janelas_xai = _janelas_da_sequencia(
         janelas,
-        indice_pico,
+        indice_sequencia_xai,
         sequence_length=sequence_length,
         sequence_stride=sequence_stride,
     )
@@ -478,6 +574,7 @@ def analisar_exame_sequencial(
         "classificacao_clinica": classificacao,
         "threshold": float(threshold),
         "min_duration_seconds": float(min_duration),
+        "max_gap_seconds": float(max_gap),
         "max_suspicious_coverage": float(settings.ai_sequence_max_suspicious_coverage),
         "feature_mode": feature_mode,
         "feature_normalization": feature_normalization,
@@ -487,7 +584,7 @@ def analisar_exame_sequencial(
         "cobertura_excessiva": cobertura_excessiva,
         "resultado_conclusivo": resultado_conclusivo,
         "resultado_positivo_conclusivo": resultado_positivo_conclusivo,
-        "n_sequences_analisadas": int(scores.shape[0]),
+        "n_sequences_analisadas": int(x_seq.shape[0]),
         "n_janelas_analisadas": int(len(janelas)),
         "score_agregacao": "continuous_suspicious_sequence",
         "janela_pico": janela_pico,

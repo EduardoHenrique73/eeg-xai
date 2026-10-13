@@ -49,6 +49,7 @@ interface IaLaudoPanelProps {
   modelType?: string | null
   nSequencesAnalisadas?: number | null
   minDurationSeconds?: number | null
+  maxGapSeconds?: number | null
   decisionThreshold?: number | null
   xaiMethod?: string | null
   laudoTextoInicial?: string | null
@@ -85,6 +86,7 @@ export function IaLaudoPanel({
   modelType,
   nSequencesAnalisadas,
   minDurationSeconds,
+  maxGapSeconds,
   decisionThreshold,
   xaiMethod,
   laudoTextoInicial,
@@ -266,6 +268,14 @@ export function IaLaudoPanel({
                       duração mínima:{' '}
                       <span className="font-medium text-clinical-700">
                         {minDurationSeconds.toFixed(0)}s
+                      </span>
+                    </span>
+                  )}
+                  {maxGapSeconds != null && maxGapSeconds > 0 && (
+                    <span>
+                      união de intervalos:{' '}
+                      <span className="font-medium text-clinical-700">
+                        até {maxGapSeconds.toFixed(0)}s
                       </span>
                     </span>
                   )}

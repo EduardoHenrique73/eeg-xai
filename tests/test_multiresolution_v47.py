@@ -4,6 +4,7 @@ import numpy as np
 
 from scripts.experiment_multiresolution_v47 import (
     load_paired_training,
+    load_paired_evaluation,
     pair_resolutions,
     summarize_event_scores,
 )
@@ -73,3 +74,20 @@ def test_paired_training_uses_full_fine_context_for_coarse_sample() -> None:
     assert paired_coarse[:, 0, 0].tolist() == [1.0, 2.0]
     assert paired_fine[:, 0, 0].tolist() == [10.0, 20.0]
     assert metas == coarse_meta
+
+
+def test_paired_evaluation_keeps_complete_coarse_timeline() -> None:
+    metas = [
+        {"arquivo": "a.edf", "context_start_seconds": 0.0},
+        {"arquivo": "a.edf", "context_start_seconds": 2.0},
+    ]
+    coarse = np.asarray([[[1.0]], [[2.0]]])
+    fine = np.asarray([[[10.0]], [[20.0]]])
+    coarse_cache = _FakeCache({("a.edf", None): (coarse, np.zeros(2), metas)})
+    fine_cache = _FakeCache({("a.edf", None): (fine, np.zeros(2), metas)})
+
+    paired_coarse, paired_fine, paired_meta = load_paired_evaluation(
+        coarse_cache, fine_cache, ["a.edf"],
+    )
+
+    assert len(paired_coarse) == len(paired_fine) == len(paired_meta) == 2

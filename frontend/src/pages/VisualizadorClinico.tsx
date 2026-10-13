@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, Clock3, FileHeart } from 'lucide-react'
 
 import { obterSinaisExame, uploadExame } from '../api/exames'
@@ -27,7 +27,10 @@ const SEM_TRECHOS: TrechoSuspeito[] = []
 export function VisualizadorClinico() {
   const { medico } = useAuth()
   const { pacienteId } = useParams<{ pacienteId: string }>()
+  const [searchParams] = useSearchParams()
   const pacienteIdNum = Number(pacienteId)
+  const exameIdUrl = Number(searchParams.get('exameId'))
+  const exameInicialCarregadoRef = useRef<number | null>(null)
 
   const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [carregandoPaciente, setCarregandoPaciente] = useState(true)
@@ -54,6 +57,14 @@ export function VisualizadorClinico() {
   } = useDiagnosticoPolling()
 
   const exameId = exameIdUpload ?? exameIdAnalise
+
+  useEffect(() => {
+    if (!Number.isInteger(exameIdUrl) || exameIdUrl <= 0) return
+    if (exameInicialCarregadoRef.current === exameIdUrl) return
+    exameInicialCarregadoRef.current = exameIdUrl
+    setExameIdUpload(exameIdUrl)
+    retomarPolling(exameIdUrl)
+  }, [exameIdUrl, retomarPolling])
 
   useEffect(() => {
     if (!Number.isFinite(pacienteIdNum) || pacienteIdNum <= 0) {
@@ -301,6 +312,7 @@ export function VisualizadorClinico() {
               modelType={concluido?.model_type}
               nSequencesAnalisadas={concluido?.n_sequences_analisadas}
               minDurationSeconds={concluido?.min_duration_seconds}
+              maxGapSeconds={concluido?.max_gap_seconds}
               decisionThreshold={concluido?.threshold}
               xaiMethod={concluido?.xai_method}
               laudoTextoInicial={diagnostico?.laudo_texto}

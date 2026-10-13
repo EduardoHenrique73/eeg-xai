@@ -82,6 +82,7 @@ class DiagnosticoConcluido(DiagnosticoExameBase):
     top_trechos_suspeitos: list[dict[str, float | int | bool]] = Field(default_factory=list)
     threshold: float | None = None
     min_duration_seconds: float | None = None
+    max_gap_seconds: float | None = None
     max_suspicious_coverage: float | None = None
     score_agregacao: str | None = None
     xai_method: str | None = None

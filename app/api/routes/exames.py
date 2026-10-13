@@ -160,6 +160,7 @@ async def obter_diagnostico_exame(
         top_trechos_suspeitos=list(detalhes.get("top_trechos_suspeitos", [])),
         threshold=detalhes.get("threshold"),
         min_duration_seconds=detalhes.get("min_duration_seconds"),
+        max_gap_seconds=detalhes.get("max_gap_seconds"),
         max_suspicious_coverage=detalhes.get("max_suspicious_coverage"),
         score_agregacao=detalhes.get("score_agregacao"),
         xai_method=detalhes.get("xai_method"),

@@ -118,6 +118,7 @@ export interface DiagnosticoConcluido extends DiagnosticoExameBase {
   top_trechos_suspeitos: TrechoSuspeito[]
   threshold?: number | null
   min_duration_seconds?: number | null
+  max_gap_seconds?: number | null
   max_suspicious_coverage?: number | null
   score_agregacao?: string | null
   xai_method?: string | null

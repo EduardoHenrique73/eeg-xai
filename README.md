@@ -76,6 +76,10 @@ Regra do projeto: sinais brutos e imagens ficam no disco; o banco guarda metadad
 
 ## Setup
 
+Para transferir a instalacao atual completa (modelo, EDFs, banco e laudos) para
+outro PC Windows, veja `docs/TRANSFERIR_PARA_OUTRO_PC.md`. O Git sozinho nao
+inclui esses dados locais.
+
 ```powershell
 cd C:\Users\Foco\Documents\DEV\eeg-xai
 python -m venv .venv

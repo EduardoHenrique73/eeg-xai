@@ -411,13 +411,13 @@ def classificar_resultado_sequencial(
     if cobertura_excessiva:
         return (
             "Resultado indeterminado: o modelo marcou uma area extensa demais "
-            "do exame como suspeita (revisao medica necessaria)"
+            "do exame como suspeita (revisão médica necessária)"
         )
     if trecho_principal and trecho_principal.get("atingiu_duracao_minima"):
-        return "Padrao sugestivo de atividade epileptiforme (revisao medica necessaria)"
+        return "Padrão sugestivo de atividade epileptiforme (revisão médica necessária)"
     if score_geral >= threshold:
-        return "Atividade suspeita pontual sem persistencia (requer revisao)"
-    return "Sem padrao sugestivo de crise nas janelas analisadas"
+        return "Atividade suspeita pontual sem persistência (requer revisão)"
+    return "Sem padrão sugestivo de crise nas janelas analisadas"
 
 
 def analisar_exame_sequencial(

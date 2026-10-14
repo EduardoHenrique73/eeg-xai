@@ -3,6 +3,7 @@ import { atualizarPerfilMedico, obterPerfilMedico } from '../api/auth'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import type { MedicoConfigUpdate } from '../types/auth'
+import { mensagemErroApi, somenteNome } from '../utils/form'
 
 const CANAIS_COMUNS = [
   'FP1-F7',
@@ -52,7 +53,7 @@ export function Configuracoes() {
         setForm(formInicial(dados))
       })
       .catch(() => {
-        if (!cancelado) toastErro('Nao foi possivel carregar as configuracoes.')
+        if (!cancelado) toastErro('Não foi possível carregar as configurações.')
       })
       .finally(() => {
         if (!cancelado) setCarregando(false)
@@ -99,9 +100,9 @@ export function Configuracoes() {
       })
       atualizarMedico(atualizado)
       setForm(formInicial(atualizado))
-      sucesso('Configuracoes salvas com sucesso.')
-    } catch {
-      toastErro('Nao foi possivel salvar as configuracoes.')
+      sucesso('Configurações salvas com sucesso.')
+    } catch (erro) {
+      toastErro(mensagemErroApi(erro, 'Não foi possível salvar as configurações.'))
     } finally {
       setSalvando(false)
     }
@@ -110,9 +111,9 @@ export function Configuracoes() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-7 md:px-8">
       <header className="mb-6">
-        <h2 className="text-2xl font-bold text-clinical-900">Configuracoes</h2>
+        <h2 className="text-2xl font-bold text-clinical-900">Configurações</h2>
         <p className="mt-1 text-sm text-clinical-500">
-          Perfil medico, preferencias de analise e exibicao da explicabilidade.
+          Perfil médico, preferências de análise e exibição da explicabilidade.
         </p>
       </header>
 
@@ -134,7 +135,9 @@ export function Configuracoes() {
                   <input
                     required
                     value={form.nome}
-                    onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                    onChange={(e) => setForm({ ...form, nome: somenteNome(e.target.value) })}
+                    minLength={2}
+                    maxLength={200}
                     className="mt-1 w-full rounded-lg border border-clinical-200 px-3 py-2.5 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                 </label>
@@ -144,7 +147,12 @@ export function Configuracoes() {
                   <input
                     required
                     value={form.crm}
-                    onChange={(e) => setForm({ ...form, crm: e.target.value })}
+                    onChange={(e) => setForm({
+                      ...form,
+                      crm: e.target.value.toUpperCase().replace(/[^A-Z0-9/-]/g, '').slice(0, 20),
+                    })}
+                    placeholder="123456-SP"
+                    autoComplete="off"
                     className="mt-1 w-full rounded-lg border border-clinical-200 px-3 py-2.5 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                 </label>
@@ -166,10 +174,10 @@ export function Configuracoes() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
-                    Montagem Padrao
+                    Montagem Padrão
                   </h3>
                   <p className="mt-1 text-sm text-clinical-500">
-                    Canais preferenciais usados como referencia para novas analises.
+                    Canais preferenciais usados como referência para novas análises.
                   </p>
                 </div>
                 <span className="rounded-full bg-clinical-100 px-3 py-1 text-xs font-semibold text-clinical-700">
@@ -224,7 +232,7 @@ export function Configuracoes() {
 
               <label className="mt-5 block text-sm">
                 <span className="flex items-center justify-between gap-3 font-medium text-clinical-700">
-                  Threshold de confianca
+                  Limiar de confiança (modelo legado)
                   <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent-dark">
                     {thresholdPercentual}%
                   </span>
@@ -243,6 +251,9 @@ export function Configuracoes() {
                   }
                   className="mt-3 w-full accent-accent"
                 />
+                <span className="mt-2 block text-xs text-clinical-500">
+                  O modelo sequencial v43 usa o limiar científico do arquivo de calibração.
+                </span>
               </label>
 
               <label className="mt-5 flex items-start gap-3 rounded-lg border border-clinical-200 bg-clinical-50 p-3 text-sm">
@@ -255,7 +266,7 @@ export function Configuracoes() {
                 <span>
                   <span className="block font-medium text-clinical-800">Exibir mapas SHAP</span>
                   <span className="mt-1 block text-xs text-clinical-500">
-                    Quando desligado, o diagnostico mostra score e classificacao sem a imagem XAI.
+                    Quando desligado, o resultado mostra score e classificação sem a imagem XAI.
                   </span>
                 </span>
               </label>
@@ -266,7 +277,7 @@ export function Configuracoes() {
               disabled={salvando}
               className="w-full rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-dark disabled:opacity-60"
             >
-              {salvando ? 'Salvando...' : 'Salvar Configuracoes'}
+              {salvando ? 'Salvando...' : 'Salvar configurações'}
             </button>
           </aside>
         </form>

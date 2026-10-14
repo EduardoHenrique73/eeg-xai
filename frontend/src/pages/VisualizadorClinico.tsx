@@ -44,6 +44,7 @@ export function VisualizadorClinico() {
   const [canaisEeg, setCanaisEeg] = useState<string[]>([])
   const [canaisSelecionados, setCanaisSelecionados] = useState<string[]>([])
   const [carregandoCanais, setCarregandoCanais] = useState(false)
+  const [trechoSelecionadoIndice, setTrechoSelecionadoIndice] = useState(0)
 
   const {
     diagnostico,
@@ -57,6 +58,10 @@ export function VisualizadorClinico() {
   } = useDiagnosticoPolling()
 
   const exameId = exameIdUpload ?? exameIdAnalise
+
+  useEffect(() => {
+    setTrechoSelecionadoIndice(0)
+  }, [exameId])
 
   useEffect(() => {
     if (!Number.isInteger(exameIdUrl) || exameIdUrl <= 0) return
@@ -258,11 +263,12 @@ export function VisualizadorClinico() {
         <ClinicalLayout
           left={
             <>
-              <PacienteCard paciente={paciente} />
+              <PacienteCard paciente={paciente} compacto={Boolean(exameId)} />
               <EdfDropzone
                 selectedFile={arquivoEdf}
                 onFileSelected={handleArquivoSelecionado}
                 disabled={enviandoArquivo || analiseEmAndamento}
+                compacto={Boolean(exameId)}
               />
               {enviandoArquivo && (
                 <p className="text-center text-xs font-medium text-accent-dark animate-pulse">
@@ -279,6 +285,8 @@ export function VisualizadorClinico() {
               canaisSelecionados={canaisSelecionados}
               trechoSuspeito={concluido?.trecho_suspeito}
               topTrechosSuspeitos={concluido?.top_trechos_suspeitos ?? SEM_TRECHOS}
+              trechoEmFoco={concluido?.top_trechos_suspeitos?.[trechoSelecionadoIndice] ?? concluido?.trecho_suspeito}
+              onSelecionarTrecho={setTrechoSelecionadoIndice}
               placeholder={placeholderGrafico}
             />
           }
@@ -295,7 +303,11 @@ export function VisualizadorClinico() {
               solicitarDesabilitado={!exameIdUpload || Boolean(concluido)}
               score={concluido?.resultado_score}
               classificacao={concluido?.classificacao_clinica}
-              threshold={concluido?.threshold_confianca ?? medico?.threshold_confianca}
+              threshold={
+                concluido?.model_type === 'sequence_cnn_lstm'
+                  ? concluido?.threshold
+                  : concluido?.threshold_confianca ?? medico?.threshold_confianca
+              }
               featureMode={concluido?.feature_mode}
               canaisProcessados={concluido?.canais_processados ?? []}
               canaisOmitidos={concluido?.canais_omitidos ?? []}
@@ -309,6 +321,8 @@ export function VisualizadorClinico() {
               janelasTop={concluido?.janelas_top ?? []}
               trechoSuspeito={concluido?.trecho_suspeito}
               topTrechosSuspeitos={concluido?.top_trechos_suspeitos ?? SEM_TRECHOS}
+              trechoSelecionadoIndice={trechoSelecionadoIndice}
+              onSelecionarTrecho={setTrechoSelecionadoIndice}
               modelType={concluido?.model_type}
               nSequencesAnalisadas={concluido?.n_sequences_analisadas}
               minDurationSeconds={concluido?.min_duration_seconds}

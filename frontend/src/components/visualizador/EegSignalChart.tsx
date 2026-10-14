@@ -1,7 +1,6 @@
-import { memo, useEffect, useMemo, useState } from 'react'
-import { Eye, EyeOff, Maximize2, Minus, Plus, RotateCcw, X } from 'lucide-react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Maximize2, Minimize2, Minus, Plus, RotateCcw, X } from 'lucide-react'
 import {
-  Brush,
   CartesianGrid,
   Line,
   LineChart,
@@ -21,7 +20,17 @@ interface EegSignalChartProps {
   canaisSelecionados?: string[]
   trechoSuspeito?: TrechoSuspeito | null
   topTrechosSuspeitos?: TrechoSuspeito[]
+  trechoEmFoco?: TrechoSuspeito | null
+  onSelecionarTrecho?: (indice: number) => void
   placeholder?: string
+}
+
+type Intervalo = { start_seconds: number; end_seconds: number }
+
+function limitarIntervalo(centro: number, largura: number, duracao: number): Intervalo {
+  const tamanho = Math.min(Math.max(largura, 8), 120, duracao)
+  const inicio = Math.max(0, Math.min(centro - tamanho / 2, duracao - tamanho))
+  return { start_seconds: inicio, end_seconds: inicio + tamanho }
 }
 
 export const EegSignalChart = memo(function EegSignalChart({
@@ -31,23 +40,87 @@ export const EegSignalChart = memo(function EegSignalChart({
   canaisSelecionados = [],
   trechoSuspeito,
   topTrechosSuspeitos = [],
+  trechoEmFoco,
+  onSelecionarTrecho,
   placeholder = 'Aguardando importacao do exame...',
 }: EegSignalChartProps) {
   const [sinais, setSinais] = useState<SinaisExameResponse | undefined>(undefined)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [shapExpandido, setShapExpandido] = useState(false)
+  const [graficoExpandido, setGraficoExpandido] = useState(false)
+  const botaoExpandirRef = useRef<HTMLButtonElement>(null)
   const [shapVisivel, setShapVisivel] = useState(true)
   const [detalharShap, setDetalharShap] = useState(false)
   const [escalaVertical, setEscalaVertical] = useState(1)
-  const intervaloDetalhe = useMemo(() => {
-    if (!detalharShap || !shapOverlay?.cells.length) return undefined
+  const [intervalo, setIntervalo] = useState<Intervalo | null>(null)
+  const [duracaoTotal, setDuracaoTotal] = useState(0)
+  const inicioVisivel = intervalo?.start_seconds
+  const fimVisivel = intervalo?.end_seconds
+
+  useEffect(() => {
+    setIntervalo(null)
+    setDuracaoTotal(0)
+    setEscalaVertical(1)
+    setDetalharShap(false)
+    setGraficoExpandido(false)
+  }, [exameId])
+
+  const focar = (inicio: number, fim: number) => {
+    if (!duracaoTotal) return
+    const largura = Math.min(120, Math.max(30, fim - inicio + 20))
+    setIntervalo(limitarIntervalo((inicio + fim) / 2, largura, duracaoTotal))
+    setDetalharShap(false)
+  }
+
+  useEffect(() => {
+    if (!trechoEmFoco || !duracaoTotal) return
+    focar(trechoEmFoco.start_seconds, trechoEmFoco.end_seconds)
+  }, [trechoEmFoco, duracaoTotal])
+
+  const focarShap = () => {
+    if (!shapOverlay?.cells.length || !duracaoTotal) return
     const inicio = Math.min(...shapOverlay.cells.map((celula) => celula.start_seconds))
     const fim = Math.max(...shapOverlay.cells.map((celula) => celula.end_seconds))
-    return { start_seconds: Math.max(0, inicio - 8), end_seconds: fim + 8 }
-  }, [detalharShap, shapOverlay])
-  const detalheInicio = intervaloDetalhe?.start_seconds
-  const detalheFim = intervaloDetalhe?.end_seconds
+    focar(inicio, fim)
+    setDetalharShap(true)
+  }
+
+  const ajustarZoom = (fator: number) => {
+    if (!duracaoTotal) return
+    const atual = intervalo ?? { start_seconds: 0, end_seconds: duracaoTotal }
+    const largura = atual.end_seconds - atual.start_seconds
+    setIntervalo(limitarIntervalo((atual.start_seconds + atual.end_seconds) / 2, largura * fator, duracaoTotal))
+    setDetalharShap(false)
+  }
+
+  const deslocar = (direcao: number) => {
+    if (!intervalo) return
+    const largura = intervalo.end_seconds - intervalo.start_seconds
+    setIntervalo(limitarIntervalo((intervalo.start_seconds + intervalo.end_seconds) / 2 + direcao * largura * 0.75, largura, duracaoTotal))
+    setDetalharShap(false)
+  }
+
+  useEffect(() => {
+    if (!graficoExpandido) return
+    const overflowAnterior = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    botaoExpandirRef.current?.focus()
+    const aoPressionarTecla = (evento: KeyboardEvent) => {
+      if (evento.key === 'Escape') {
+        if (shapExpandido) setShapExpandido(false)
+        else setGraficoExpandido(false)
+      } else if (evento.key === 'ArrowLeft' || evento.key === 'ArrowRight') {
+        evento.preventDefault()
+        deslocar(evento.key === 'ArrowLeft' ? -1 : 1)
+      }
+    }
+    window.addEventListener('keydown', aoPressionarTecla)
+    return () => {
+      document.body.style.overflow = overflowAnterior
+      window.removeEventListener('keydown', aoPressionarTecla)
+    }
+  }, [graficoExpandido, intervalo, duracaoTotal, shapExpandido])
 
   useEffect(() => {
     if (exameId == null) {
@@ -56,6 +129,8 @@ export const EegSignalChart = memo(function EegSignalChart({
       setErro(null)
       setEscalaVertical(1)
       setDetalharShap(false)
+      setIntervalo(null)
+      setDuracaoTotal(0)
       return
     }
 
@@ -63,16 +138,20 @@ export const EegSignalChart = memo(function EegSignalChart({
     setCarregando(true)
     setErro(null)
     setSinais(undefined)
-    setEscalaVertical(1)
 
     obterSinaisExame(
       exameId,
-      detalheInicio == null || detalheFim == null
+      inicioVisivel == null || fimVisivel == null
         ? undefined
-        : { start_seconds: detalheInicio, end_seconds: detalheFim },
+        : { start_seconds: inicioVisivel, end_seconds: fimVisivel },
     )
       .then((resposta) => {
-        if (!cancelado) setSinais(resposta)
+        if (!cancelado) {
+          setSinais(resposta)
+          if (inicioVisivel == null) {
+            setDuracaoTotal(resposta.pontos.at(-1)?.tempo ?? 0)
+          }
+        }
       })
       .catch(() => {
         if (!cancelado) {
@@ -86,7 +165,27 @@ export const EegSignalChart = memo(function EegSignalChart({
     return () => {
       cancelado = true
     }
-  }, [exameId, detalheInicio, detalheFim])
+  }, [exameId, inicioVisivel, fimVisivel])
+
+  const marcadores = useMemo(() => {
+    const candidatos = topTrechosSuspeitos.length ? topTrechosSuspeitos : trechoSuspeito ? [trechoSuspeito] : []
+    return candidatos.filter((trecho) => trecho.end_seconds > trecho.start_seconds)
+  }, [topTrechosSuspeitos, trechoSuspeito])
+  const faixasMarcadores = useMemo(() => {
+    const faixas = Array.from({ length: 3 }, () => -Infinity)
+    const atribuidas = new Map<number, number>()
+    marcadores
+      .map((trecho, indice) => ({ indice, centro: (trecho.start_seconds + trecho.end_seconds) / 2 }))
+      .sort((a, b) => a.centro - b.centro)
+      .forEach(({ indice, centro }) => {
+        const posicao = duracaoTotal ? centro / duracaoTotal : 0
+        const faixa = faixas.findIndex((ultima) => posicao - ultima >= 0.04)
+        const escolhida = faixa < 0 ? faixas.indexOf(Math.min(...faixas)) : faixa
+        faixas[escolhida] = posicao
+        atribuidas.set(indice, escolhida)
+      })
+    return atribuidas
+  }, [marcadores, duracaoTotal])
 
   const seriesVisiveis = useMemo(() => {
     if (!sinais) return []
@@ -117,12 +216,12 @@ export const EegSignalChart = memo(function EegSignalChart({
   }, [seriesVisiveis, escalaVertical])
 
   const dadosExibidos = useMemo(() => {
-    if (detalharShap || dadosGrafico.length <= 600) return dadosGrafico
+    if (intervalo || dadosGrafico.length <= 600) return dadosGrafico
     const ultimo = dadosGrafico.length - 1
     return Array.from({ length: 600 }, (_, indice) =>
       dadosGrafico[Math.round((indice * ultimo) / 599)],
     )
-  }, [dadosGrafico, detalharShap])
+  }, [dadosGrafico, intervalo])
 
   const possuiSerie = dadosExibidos.length > 0
   const dominioY: [number, number] = [-2, Math.max(2, (seriesVisiveis.length - 1) * 4 + 2)]
@@ -131,39 +230,46 @@ export const EegSignalChart = memo(function EegSignalChart({
   const celulasShap = (shapVisivel ? shapOverlay?.cells : undefined)?.filter((celula) =>
     indicesCanais.has(celula.canal) && celula.intensity > 0,
   ) ?? []
-  const focoShap = useMemo(() => {
-    if (!shapVisivel || !shapOverlay?.cells.length || dadosExibidos.length < 2) return null
-    const inicio = Math.min(...shapOverlay.cells.map((celula) => celula.start_seconds))
-    const fim = Math.max(...shapOverlay.cells.map((celula) => celula.end_seconds))
-    const margem = Math.max(4, fim - inicio)
-    const primeiro = dadosExibidos.findIndex((ponto) => ponto.tempo >= inicio - margem)
-    const ultimo = dadosExibidos.findIndex((ponto) => ponto.tempo >= fim + margem)
-    return {
-      startIndex: Math.max(0, primeiro),
-      endIndex: ultimo < 0 ? dadosExibidos.length - 1 : ultimo,
-    }
-  }, [shapVisivel, shapOverlay, dadosExibidos])
-
   const mensagem = carregando
     ? 'Carregando ondas cerebrais...'
     : erro ?? placeholder
 
   return (
-    <section className="flex h-full min-h-[530px] flex-col overflow-hidden rounded-md border border-clinical-200 bg-white shadow-clinical">
+    <>
+    {graficoExpandido && <div className="fixed inset-0 z-40 bg-slate-950/70" aria-hidden="true" onClick={() => setGraficoExpandido(false)} />}
+    <section
+      className={graficoExpandido
+        ? 'fixed inset-2 z-50 flex flex-col overflow-hidden rounded-md border border-clinical-200 bg-white shadow-2xl md:inset-4'
+        : 'flex h-full min-h-[530px] flex-col overflow-hidden rounded-md border border-clinical-200 bg-white shadow-clinical'}
+      role={graficoExpandido ? 'dialog' : undefined}
+      aria-modal={graficoExpandido ? true : undefined}
+      aria-label={graficoExpandido ? 'Traçado EEG ampliado' : undefined}
+    >
       <header className="shrink-0 border-b border-clinical-200 bg-white px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold text-clinical-900">Traçado EEG</h2>
             <p className="mt-0.5 text-xs text-clinical-500">
-              {possuiSerie ? `${seriesVisiveis.length} ${seriesVisiveis.length === 1 ? 'canal' : 'canais'} · ${detalharShap ? 'recorte detalhado' : 'visão geral amostrada'} · tempo em segundos` : carregando ? 'Carregando sinal' : 'Aguardando sinal'}
+              {possuiSerie ? `${seriesVisiveis.length} ${seriesVisiveis.length === 1 ? 'canal' : 'canais'} · ${intervalo ? `${intervalo.start_seconds.toFixed(0)}–${intervalo.end_seconds.toFixed(0)} s` : 'exame completo'} · tempo em segundos` : carregando ? 'Carregando sinal' : 'Aguardando sinal'}
             </p>
           </div>
-          {possuiSerie && (
+          {(possuiSerie || graficoExpandido) && (
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                ref={botaoExpandirRef}
+                type="button"
+                onClick={() => setGraficoExpandido((atual) => !atual)}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-clinical-200 text-clinical-700 hover:bg-clinical-50"
+                title={graficoExpandido ? 'Fechar visualização ampliada' : 'Ampliar traçado EEG'}
+                aria-label={graficoExpandido ? 'Fechar visualização ampliada' : 'Ampliar traçado EEG'}
+              >
+                {graficoExpandido ? <Minimize2 size={16} aria-hidden="true" /> : <Maximize2 size={16} aria-hidden="true" />}
+              </button>
+              {possuiSerie && <>
               {shapOverlay?.cells.length ? (
                 <div className="flex overflow-hidden rounded-md border border-clinical-200" role="group" aria-label="Área do traçado">
-                  <button type="button" onClick={() => setDetalharShap(false)} className={`px-2.5 py-1.5 text-xs font-medium ${!detalharShap ? 'bg-accent-light text-accent-dark' : 'text-clinical-700 hover:bg-clinical-50'}`}>Exame</button>
-                  <button type="button" onClick={() => setDetalharShap(true)} className={`border-l border-clinical-200 px-2.5 py-1.5 text-xs font-medium ${detalharShap ? 'bg-accent-light text-accent-dark' : 'text-clinical-700 hover:bg-clinical-50'}`}>Trecho SHAP</button>
+                  <button type="button" onClick={() => { setIntervalo(null); setDetalharShap(false) }} className={`px-2.5 py-1.5 text-xs font-medium ${!intervalo ? 'bg-accent-light text-accent-dark' : 'text-clinical-700 hover:bg-clinical-50'}`}>Exame</button>
+                  <button type="button" onClick={focarShap} className={`border-l border-clinical-200 px-2.5 py-1.5 text-xs font-medium ${detalharShap ? 'bg-accent-light text-accent-dark' : 'text-clinical-700 hover:bg-clinical-50'}`}>Trecho SHAP</button>
                 </div>
               ) : null}
               {shapOverlay?.cells.length ? (
@@ -183,12 +289,21 @@ export const EegSignalChart = memo(function EegSignalChart({
                   <Maximize2 size={15} aria-hidden="true" />
                 </button>
               )}
+              <div className="flex items-center gap-1 border-l border-clinical-200 pl-2" role="group" aria-label="Navegação temporal">
+                <span className="mr-1 text-xs font-medium text-clinical-500">Tempo</span>
+                <button type="button" onClick={() => deslocar(-1)} disabled={!intervalo || carregando} className="flex h-8 w-8 items-center justify-center rounded-md text-clinical-700 hover:bg-clinical-50 disabled:opacity-40" aria-label="Voltar no tempo" title="Voltar no tempo"><ChevronLeft size={16} aria-hidden="true" /></button>
+                <button type="button" onClick={() => ajustarZoom(0.5)} disabled={!duracaoTotal || carregando} className="flex h-8 w-8 items-center justify-center rounded-md text-clinical-700 hover:bg-clinical-50 disabled:opacity-40" aria-label="Aproximar no tempo" title="Aproximar no tempo"><Plus size={16} aria-hidden="true" /></button>
+                <button type="button" onClick={() => ajustarZoom(2)} disabled={!intervalo || carregando} className="flex h-8 w-8 items-center justify-center rounded-md text-clinical-700 hover:bg-clinical-50 disabled:opacity-40" aria-label="Afastar no tempo" title="Afastar no tempo"><Minus size={16} aria-hidden="true" /></button>
+                <button type="button" onClick={() => deslocar(1)} disabled={!intervalo || carregando} className="flex h-8 w-8 items-center justify-center rounded-md text-clinical-700 hover:bg-clinical-50 disabled:opacity-40" aria-label="Avançar no tempo" title="Avançar no tempo"><ChevronRight size={16} aria-hidden="true" /></button>
+              </div>
               <div className="flex items-center gap-1 border-l border-clinical-200 pl-2">
+                <span className="mr-1 text-xs font-medium text-clinical-500">Amplitude</span>
                 <button type="button" onClick={() => setEscalaVertical((v) => Math.max(0.5, Number((v - 0.5).toFixed(1))))} className="flex h-8 w-8 items-center justify-center rounded-md text-clinical-700 hover:bg-clinical-50" aria-label="Reduzir escala vertical" title="Reduzir escala vertical"><Minus size={15} aria-hidden="true" /></button>
                 <span className="w-10 text-center text-xs tabular-nums text-clinical-700">{escalaVertical.toFixed(1)}×</span>
                 <button type="button" onClick={() => setEscalaVertical((v) => Math.min(5, Number((v + 0.5).toFixed(1))))} className="flex h-8 w-8 items-center justify-center rounded-md text-clinical-700 hover:bg-clinical-50" aria-label="Aumentar escala vertical" title="Aumentar escala vertical"><Plus size={15} aria-hidden="true" /></button>
                 <button type="button" onClick={() => setEscalaVertical(1)} className="flex h-8 w-8 items-center justify-center rounded-md text-clinical-700 hover:bg-clinical-50" aria-label="Restaurar escala vertical" title="Restaurar escala vertical"><RotateCcw size={14} aria-hidden="true" /></button>
               </div>
+              </>}
             </div>
           )}
         </div>
@@ -201,9 +316,48 @@ export const EegSignalChart = memo(function EegSignalChart({
             {celulasShap.length > 0 && <p className="mt-1">Atribuição por janela de features e canal; não por amostra bruta.</p>}
           </div>
         )}
+        {possuiSerie && duracaoTotal > 0 && (
+          <div className="mt-3 border-t border-clinical-100 pt-3">
+            <div className="relative h-16">
+              <button
+                type="button"
+                className="absolute inset-x-0 top-6 h-4 rounded-sm bg-clinical-100 hover:bg-clinical-200"
+                aria-label="Ir para posição no exame"
+                title="Ir para posição no exame"
+                onClick={(evento) => {
+                  const caixa = evento.currentTarget.getBoundingClientRect()
+                  const centro = ((evento.clientX - caixa.left) / caixa.width) * duracaoTotal
+                  setIntervalo(limitarIntervalo(centro, intervalo ? intervalo.end_seconds - intervalo.start_seconds : 60, duracaoTotal))
+                  setDetalharShap(false)
+                }}
+              />
+              {intervalo && (
+                <div
+                  className="pointer-events-none absolute top-6 h-4 rounded-sm border border-accent bg-accent/15"
+                  style={{ left: `${intervalo.start_seconds / duracaoTotal * 100}%`, width: `${(intervalo.end_seconds - intervalo.start_seconds) / duracaoTotal * 100}%` }}
+                />
+              )}
+              {marcadores.map((trecho, indice) => (
+                <button
+                  key={`${trecho.start_seconds}-${trecho.end_seconds}-${indice}`}
+                  type="button"
+                  onClick={() => {
+                    onSelecionarTrecho?.(indice)
+                    focar(trecho.start_seconds, trecho.end_seconds)
+                  }}
+                  className="absolute z-10 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+                  style={{ left: `${Math.max(3, Math.min(97, ((trecho.start_seconds + trecho.end_seconds) / 2 / duracaoTotal) * 100))}%`, top: `${(faixasMarcadores.get(indice) ?? 0) * 20 + 2}px` }}
+                  title={`Candidato ${indice + 1}: ${trecho.start_seconds.toFixed(0)}–${trecho.end_seconds.toFixed(0)} s`}
+                  aria-label={`Ir ao candidato ${indice + 1}, de ${trecho.start_seconds.toFixed(0)} a ${trecho.end_seconds.toFixed(0)} segundos`}
+                ><span className={`h-3 w-3 rounded-full border-2 border-white shadow-sm ${indice === 0 ? 'bg-amber-600' : 'bg-amber-400'}`} /></button>
+              ))}
+            </div>
+            <div className="flex justify-between text-[11px] tabular-nums text-clinical-500"><span>0 s</span><span>{duracaoTotal.toFixed(0)} s</span></div>
+          </div>
+        )}
       </header>
 
-      <div className="min-h-[400px] flex-1 p-3 md:p-4">
+      <div className={graficoExpandido ? 'min-h-0 flex-1 overflow-y-auto p-3 md:p-4' : 'min-h-[400px] flex-1 p-3 md:p-4'}>
         {!possuiSerie ? (
           <div className="flex h-full min-h-[380px] items-center justify-center bg-clinical-50">
             <p
@@ -217,6 +371,7 @@ export const EegSignalChart = memo(function EegSignalChart({
             </p>
           </div>
         ) : (
+          <div style={{ height: `${Math.max(graficoExpandido ? 650 : 440, seriesVisiveis.length * (graficoExpandido ? 36 : 27))}px` }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={dadosExibidos} margin={{ top: 8, right: 16, left: 24, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e4ebf3" />
@@ -302,18 +457,9 @@ export const EegSignalChart = memo(function EegSignalChart({
                   isAnimationActive={false}
                 />
               ))}
-              <Brush
-                key={`${exameId}-${shapVisivel}-${detalharShap}-${shapOverlay?.cells[0]?.start_seconds ?? 'all'}`}
-                dataKey="tempo"
-                height={24}
-                travellerWidth={8}
-                stroke="#1d5fc1"
-                tickFormatter={(value) => `${Number(value).toFixed(0)}s`}
-                startIndex={focoShap?.startIndex ?? 0}
-                endIndex={focoShap?.endIndex ?? dadosExibidos.length - 1}
-              />
             </LineChart>
           </ResponsiveContainer>
+          </div>
         )}
       </div>
 
@@ -354,5 +500,6 @@ export const EegSignalChart = memo(function EegSignalChart({
         </div>
       )}
     </section>
+    </>
   )
 })

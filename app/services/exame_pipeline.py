@@ -321,7 +321,6 @@ async def _processar_exame_sequencial(
     recursos: RecursosSequenciais,
     settings: Settings,
     canais_selecionados: list[str] | None,
-    threshold_override: float | None,
     gerar_shap: bool,
 ) -> None:
     """Fluxo do modelo sequencial global com trechos e Gradient SHAP."""
@@ -332,7 +331,9 @@ async def _processar_exame_sequencial(
         recursos=recursos,
         settings=settings,
         canais_selecionados=canais_selecionados,
-        threshold_override=threshold_override,
+        # O ponto operacional sequencial e parte do artefato cientifico
+        # congelado. Preferencias do usuario nao podem substituir a calibracao.
+        threshold_override=None,
     )
 
     score = float(resultado["score_geral"])
@@ -383,7 +384,6 @@ async def processar_exame_ia(
     extrair_features: FeatureExtractorFn | None = None,
     inferir: InferenciaFn | None = None,
     gerar_shap: ShapFn | None = None,
-    threshold_override: float | None = None,
     gerar_shap_sequencial: bool = True,
 ) -> None:
     """
@@ -422,7 +422,6 @@ async def processar_exame_ia(
                         recursos=recursos,
                         settings=settings,
                         canais_selecionados=canais_selecionados,
-                        threshold_override=threshold_override,
                         gerar_shap=gerar_shap_sequencial,
                     )
                     return

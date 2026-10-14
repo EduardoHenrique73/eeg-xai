@@ -8,6 +8,7 @@ legado para alimentar a rede CNN-LSTM hibrida.
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Any
 
 import mne
@@ -135,7 +136,7 @@ MAX_DURATION_SECONDS: float | None = None
 
 def _canal_eeg_valido(nome: str) -> bool:
     nome_limpo = nome.strip()
-    return bool(nome_limpo) and nome_limpo != "-" and not nome_limpo.startswith("--")
+    return bool(nome_limpo) and not nome_limpo.startswith("--") and not re.fullmatch(r"\.?-\d*|\.", nome_limpo)
 
 
 def selecionar_canais_eeg_validos(

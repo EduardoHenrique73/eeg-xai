@@ -20,6 +20,7 @@ interface ToastContextValue {
   sucesso: (mensagem: string) => void
   erro: (mensagem: string) => void
   info: (mensagem: string) => void
+  remover: (id: string) => void
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
@@ -38,12 +39,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }, DURACAO_MS)
   }, [])
 
+  const remover = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id))
+  }, [])
+
   const sucesso = useCallback((m: string) => adicionar('sucesso', m), [adicionar])
   const erro = useCallback((m: string) => adicionar('erro', m), [adicionar])
   const info = useCallback((m: string) => adicionar('info', m), [adicionar])
 
   return (
-    <ToastContext.Provider value={{ toasts, sucesso, erro, info }}>
+    <ToastContext.Provider value={{ toasts, sucesso, erro, info, remover }}>
       {children}
     </ToastContext.Provider>
   )

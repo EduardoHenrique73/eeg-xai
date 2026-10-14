@@ -1,0 +1,720 @@
+{
+  "experiment": "v43_threshold_060_vs_090_posthoc",
+  "created_at": "2026-10-14T17:26:32",
+  "parameters_were_tuned_on_this_evaluation": false,
+  "inference_reused_for_both_thresholds": true,
+  "model": {
+    "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\v43_final_seed42.keras",
+    "sha256": "7aa86c97ba50226bd24214e57027977ef1f451a5b7e0eaecd81c25e76863ada4"
+  },
+  "scaler": {
+    "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\v43_final_seed42_scaler.pkl",
+    "sha256": "e4d1e1d2aa5630ae1b68578698c20b88f5a4eff892992d9ea7ebc6d6dda44ab7"
+  },
+  "fixed_parameters": {
+    "min_duration_seconds": 18.0,
+    "max_gap_seconds": 8.0,
+    "thresholds": [
+      0.6,
+      0.9
+    ]
+  },
+  "files": [
+    {
+      "name": "chb15_01.edf",
+      "status": "avaliacao_historica_reservada",
+      "events": 0,
+      "sha256": "a9dcf971a7eb03230f577660e9ab2aee9a7d4a970e186753377a6064e24bfb13"
+    },
+    {
+      "name": "chb18_01.edf",
+      "status": "avaliacao_historica_reservada",
+      "events": 0,
+      "sha256": "bf2c85d1c803fb70e1d891dd9c3e7ea062d02c80f4c1bce9285660fea31fa033"
+    },
+    {
+      "name": "chb18_36.edf",
+      "status": "edf_inedito_paciente_historico",
+      "events": 1,
+      "sha256": "85c694cdc83b5d195c3d912648a38171df329011c953d004e35e37f1eb47548a"
+    },
+    {
+      "name": "chb24_07.edf",
+      "status": "edf_inedito_paciente_de_calibracao",
+      "events": 1,
+      "sha256": "34b2a22233d55413d8879f896f3dcd1c156c4b586e8f02b976afa4c5b77c09eb"
+    }
+  ],
+  "results": {
+    "0.60": {
+      "edf": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "localized": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "true_positives": 1,
+      "false_positives": 1,
+      "false_negatives": 1,
+      "true_negatives": 1,
+      "events_detected": 1,
+      "events_total": 2,
+      "event_precision": 0.05263157894736842,
+      "event_recall": 0.5,
+      "event_f1": 0.09523809523809525,
+      "false_alarm_events": 18,
+      "false_alarms_per_hour": 4.520719966513185,
+      "main_segments_correct": 1,
+      "main_segments_without_overlap": 0,
+      "temporal": {
+        "mean_iou_detected": 0.8571428571428571,
+        "mean_absolute_onset_error_seconds": 0.0,
+        "mean_absolute_offset_error_seconds": 8.0,
+        "mean_latency_seconds": 0.0
+      },
+      "event_details": [
+        {
+          "arquivo": "chb18_36.edf",
+          "evento": 1,
+          "real_start_seconds": 462.0,
+          "real_end_seconds": 510.0,
+          "real_duration_seconds": 48.0,
+          "detectado": true,
+          "overlap_seconds": 48.0,
+          "overlap_ratio": 1.0,
+          "temporal_iou": 0.8571428571428571,
+          "predicted_start_seconds": 462.0,
+          "predicted_end_seconds": 518.0,
+          "predicted_duration_seconds": 56.0,
+          "onset_error_seconds": 0.0,
+          "offset_error_seconds": 8.0,
+          "latency_seconds": 0.0,
+          "score_max": 0.9991905093193054,
+          "score_mean": 0.9398559927940369
+        },
+        {
+          "arquivo": "chb24_07.edf",
+          "evento": 1,
+          "real_start_seconds": 36.0,
+          "real_end_seconds": 62.0,
+          "real_duration_seconds": 26.0,
+          "detectado": false,
+          "overlap_seconds": 0.0,
+          "overlap_ratio": 0.0,
+          "temporal_iou": 0.0,
+          "predicted_start_seconds": null,
+          "predicted_end_seconds": null,
+          "predicted_duration_seconds": null,
+          "onset_error_seconds": null,
+          "offset_error_seconds": null,
+          "latency_seconds": null,
+          "score_max": null,
+          "score_mean": null
+        }
+      ]
+    },
+    "0.90": {
+      "edf": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "localized": {
+        "accuracy": 0.5,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "true_positives": 1,
+      "false_positives": 1,
+      "false_negatives": 1,
+      "true_negatives": 1,
+      "events_detected": 1,
+      "events_total": 2,
+      "event_precision": 0.125,
+      "event_recall": 0.5,
+      "event_f1": 0.2,
+      "false_alarm_events": 7,
+      "false_alarms_per_hour": 1.7580577647551276,
+      "main_segments_correct": 1,
+      "main_segments_without_overlap": 0,
+      "temporal": {
+        "mean_iou_detected": 0.92,
+        "mean_absolute_onset_error_seconds": 2.0,
+        "mean_absolute_offset_error_seconds": 2.0,
+        "mean_latency_seconds": 2.0
+      },
+      "event_details": [
+        {
+          "arquivo": "chb18_36.edf",
+          "evento": 1,
+          "real_start_seconds": 462.0,
+          "real_end_seconds": 510.0,
+          "real_duration_seconds": 48.0,
+          "detectado": true,
+          "overlap_seconds": 46.0,
+          "overlap_ratio": 0.9583333333333334,
+          "temporal_iou": 0.92,
+          "predicted_start_seconds": 464.0,
+          "predicted_end_seconds": 512.0,
+          "predicted_duration_seconds": 48.0,
+          "onset_error_seconds": 2.0,
+          "offset_error_seconds": 2.0,
+          "latency_seconds": 2.0,
+          "score_max": 0.9991905093193054,
+          "score_mean": 0.9646466374397278
+        },
+        {
+          "arquivo": "chb24_07.edf",
+          "evento": 1,
+          "real_start_seconds": 36.0,
+          "real_end_seconds": 62.0,
+          "real_duration_seconds": 26.0,
+          "detectado": false,
+          "overlap_seconds": 0.0,
+          "overlap_ratio": 0.0,
+          "temporal_iou": 0.0,
+          "predicted_start_seconds": null,
+          "predicted_end_seconds": null,
+          "predicted_duration_seconds": null,
+          "onset_error_seconds": null,
+          "offset_error_seconds": null,
+          "latency_seconds": null,
+          "score_max": null,
+          "score_mean": null
+        }
+      ]
+    }
+  },
+  "per_file": {
+    "chb15_01.edf": {
+      "label": 0,
+      "0.60": {
+        "pred": 1,
+        "events_detected": 0,
+        "false_alarms": 10,
+        "main_segment": {
+          "start_seconds": 240.0,
+          "end_seconds": 284.0,
+          "duration_seconds": 44.0,
+          "n_sequences": 21,
+          "score_mean": 0.8438616394996643,
+          "score_max": 0.9994343519210815,
+          "threshold": 0.6,
+          "coverage_ratio": 0.012215435868961688,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 0.0,
+          "overlap_crise_real_ratio": 0.0
+        },
+        "top_segments": [
+          {
+            "start_seconds": 240.0,
+            "end_seconds": 284.0,
+            "duration_seconds": 44.0,
+            "n_sequences": 21,
+            "score_mean": 0.8438616394996643,
+            "score_max": 0.9994343519210815,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 472.0,
+            "end_seconds": 504.0,
+            "duration_seconds": 32.0,
+            "n_sequences": 15,
+            "score_mean": 0.9127923250198364,
+            "score_max": 0.995591938495636,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 1690.0,
+            "end_seconds": 1718.0,
+            "duration_seconds": 28.0,
+            "n_sequences": 13,
+            "score_mean": 0.9175313115119934,
+            "score_max": 0.9995224475860596,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 200.0,
+            "end_seconds": 234.0,
+            "duration_seconds": 34.0,
+            "n_sequences": 16,
+            "score_mean": 0.8341913819313049,
+            "score_max": 0.9546958208084106,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 292.0,
+            "end_seconds": 322.0,
+            "duration_seconds": 30.0,
+            "n_sequences": 14,
+            "score_mean": 0.7203047871589661,
+            "score_max": 0.9784989953041077,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          }
+        ]
+      },
+      "0.90": {
+        "pred": 1,
+        "events_detected": 0,
+        "false_alarms": 3,
+        "main_segment": {
+          "start_seconds": 248.0,
+          "end_seconds": 270.0,
+          "duration_seconds": 22.0,
+          "n_sequences": 10,
+          "score_mean": 0.9928089380264282,
+          "score_max": 0.9994343519210815,
+          "threshold": 0.9,
+          "coverage_ratio": 0.006107717934480844,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 0.0,
+          "overlap_crise_real_ratio": 0.0
+        },
+        "top_segments": [
+          {
+            "start_seconds": 248.0,
+            "end_seconds": 270.0,
+            "duration_seconds": 22.0,
+            "n_sequences": 10,
+            "score_mean": 0.9928089380264282,
+            "score_max": 0.9994343519210815,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 1692.0,
+            "end_seconds": 1714.0,
+            "duration_seconds": 22.0,
+            "n_sequences": 10,
+            "score_mean": 0.9573987126350403,
+            "score_max": 0.9995224475860596,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 476.0,
+            "end_seconds": 502.0,
+            "duration_seconds": 26.0,
+            "n_sequences": 12,
+            "score_mean": 0.9555678367614746,
+            "score_max": 0.995591938495636,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 3526.0,
+            "end_seconds": 3542.0,
+            "duration_seconds": 16.0,
+            "n_sequences": 7,
+            "score_mean": 0.94609135389328,
+            "score_max": 0.9959157705307007,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 3592.0,
+            "end_seconds": 3602.0,
+            "duration_seconds": 10.0,
+            "n_sequences": 4,
+            "score_mean": 0.9952301383018494,
+            "score_max": 0.9982009530067444,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          }
+        ]
+      },
+      "fragmentation": {
+        "0.60": 10,
+        "0.90": 3
+      }
+    },
+    "chb18_01.edf": {
+      "label": 0,
+      "0.60": {
+        "pred": 0,
+        "events_detected": 0,
+        "false_alarms": 0,
+        "main_segment": {
+          "start_seconds": 3368.0,
+          "end_seconds": 3372.0,
+          "duration_seconds": 4.0,
+          "n_sequences": 1,
+          "score_mean": 0.43074265122413635,
+          "score_max": 0.43074265122413635,
+          "threshold": 0.6,
+          "coverage_ratio": 0.00110803324099723,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 0.0,
+          "overlap_crise_real_ratio": 0.0
+        },
+        "top_segments": []
+      },
+      "0.90": {
+        "pred": 0,
+        "events_detected": 0,
+        "false_alarms": 0,
+        "main_segment": {
+          "start_seconds": 3368.0,
+          "end_seconds": 3372.0,
+          "duration_seconds": 4.0,
+          "n_sequences": 1,
+          "score_mean": 0.43074265122413635,
+          "score_max": 0.43074265122413635,
+          "threshold": 0.9,
+          "coverage_ratio": 0.00110803324099723,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 0.0,
+          "overlap_crise_real_ratio": 0.0
+        },
+        "top_segments": []
+      },
+      "fragmentation": {
+        "0.60": 0,
+        "0.90": 0
+      }
+    },
+    "chb18_36.edf": {
+      "label": 1,
+      "0.60": {
+        "pred": 1,
+        "events_detected": 1,
+        "false_alarms": 8,
+        "main_segment": {
+          "start_seconds": 462.0,
+          "end_seconds": 518.0,
+          "duration_seconds": 56.0,
+          "n_sequences": 27,
+          "score_mean": 0.9398559927940369,
+          "score_max": 0.9991905093193054,
+          "threshold": 0.6,
+          "coverage_ratio": 0.01556420233463035,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 48.0,
+          "overlap_crise_real_ratio": 1.0
+        },
+        "top_segments": [
+          {
+            "start_seconds": 462.0,
+            "end_seconds": 518.0,
+            "duration_seconds": 56.0,
+            "n_sequences": 27,
+            "score_mean": 0.9398559927940369,
+            "score_max": 0.9991905093193054,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 48.0,
+            "overlap_crise_real_ratio": 1.0
+          },
+          {
+            "start_seconds": 528.0,
+            "end_seconds": 588.0,
+            "duration_seconds": 60.0,
+            "n_sequences": 29,
+            "score_mean": 0.9076525568962097,
+            "score_max": 0.9998761415481567,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 1016.0,
+            "end_seconds": 1058.0,
+            "duration_seconds": 42.0,
+            "n_sequences": 20,
+            "score_mean": 0.9187854528427124,
+            "score_max": 0.9946466684341431,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 678.0,
+            "end_seconds": 722.0,
+            "duration_seconds": 44.0,
+            "n_sequences": 21,
+            "score_mean": 0.8896381855010986,
+            "score_max": 0.9999278783798218,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 616.0,
+            "end_seconds": 642.0,
+            "duration_seconds": 26.0,
+            "n_sequences": 12,
+            "score_mean": 0.9225183129310608,
+            "score_max": 0.9999403357505798,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          }
+        ]
+      },
+      "0.90": {
+        "pred": 1,
+        "events_detected": 1,
+        "false_alarms": 4,
+        "main_segment": {
+          "start_seconds": 464.0,
+          "end_seconds": 512.0,
+          "duration_seconds": 48.0,
+          "n_sequences": 23,
+          "score_mean": 0.9646466374397278,
+          "score_max": 0.9991905093193054,
+          "threshold": 0.9,
+          "coverage_ratio": 0.013340744858254585,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 46.0,
+          "overlap_crise_real_ratio": 0.9583333333333334
+        },
+        "top_segments": [
+          {
+            "start_seconds": 464.0,
+            "end_seconds": 512.0,
+            "duration_seconds": 48.0,
+            "n_sequences": 23,
+            "score_mean": 0.9646466374397278,
+            "score_max": 0.9991905093193054,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 46.0,
+            "overlap_crise_real_ratio": 0.9583333333333334
+          },
+          {
+            "start_seconds": 1020.0,
+            "end_seconds": 1054.0,
+            "duration_seconds": 34.0,
+            "n_sequences": 16,
+            "score_mean": 0.9649490118026733,
+            "score_max": 0.9946466684341431,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 696.0,
+            "end_seconds": 722.0,
+            "duration_seconds": 26.0,
+            "n_sequences": 12,
+            "score_mean": 0.9891543984413147,
+            "score_max": 0.9999278783798218,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 556.0,
+            "end_seconds": 582.0,
+            "duration_seconds": 26.0,
+            "n_sequences": 12,
+            "score_mean": 0.9838059544563293,
+            "score_max": 0.9998761415481567,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 618.0,
+            "end_seconds": 638.0,
+            "duration_seconds": 20.0,
+            "n_sequences": 9,
+            "score_mean": 0.9923993349075317,
+            "score_max": 0.9999403357505798,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          }
+        ]
+      },
+      "fragmentation": {
+        "0.60": 9,
+        "0.90": 5
+      }
+    },
+    "chb24_07.edf": {
+      "label": 1,
+      "0.60": {
+        "pred": 0,
+        "events_detected": 0,
+        "false_alarms": 0,
+        "main_segment": {
+          "start_seconds": 40.0,
+          "end_seconds": 56.0,
+          "duration_seconds": 16.0,
+          "n_sequences": 7,
+          "score_mean": 0.9511579871177673,
+          "score_max": 0.9998958110809326,
+          "threshold": 0.6,
+          "coverage_ratio": 0.0044469149527515284,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 16.0,
+          "overlap_crise_real_ratio": 0.6153846153846154
+        },
+        "top_segments": [
+          {
+            "start_seconds": 40.0,
+            "end_seconds": 56.0,
+            "duration_seconds": 16.0,
+            "n_sequences": 7,
+            "score_mean": 0.9511579871177673,
+            "score_max": 0.9998958110809326,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 16.0,
+            "overlap_crise_real_ratio": 0.6153846153846154
+          },
+          {
+            "start_seconds": 1024.0,
+            "end_seconds": 1034.0,
+            "duration_seconds": 10.0,
+            "n_sequences": 4,
+            "score_mean": 0.9402105212211609,
+            "score_max": 0.9771521091461182,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 1620.0,
+            "end_seconds": 1632.0,
+            "duration_seconds": 12.0,
+            "n_sequences": 5,
+            "score_mean": 0.8313649892807007,
+            "score_max": 0.9843866229057312,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 2398.0,
+            "end_seconds": 2406.0,
+            "duration_seconds": 8.0,
+            "n_sequences": 3,
+            "score_mean": 0.8306897282600403,
+            "score_max": 0.971551775932312,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 1424.0,
+            "end_seconds": 1432.0,
+            "duration_seconds": 8.0,
+            "n_sequences": 3,
+            "score_mean": 0.7569336891174316,
+            "score_max": 0.8763951659202576,
+            "threshold": 0.6,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          }
+        ]
+      },
+      "0.90": {
+        "pred": 0,
+        "events_detected": 0,
+        "false_alarms": 0,
+        "main_segment": {
+          "start_seconds": 40.0,
+          "end_seconds": 54.0,
+          "duration_seconds": 14.0,
+          "n_sequences": 6,
+          "score_mean": 0.9917249083518982,
+          "score_max": 0.9998958110809326,
+          "threshold": 0.9,
+          "coverage_ratio": 0.0038910505836575876,
+          "max_suspicious_coverage": 0.7,
+          "cobertura_excessiva": false,
+          "overlap_crise_real_seconds": 14.0,
+          "overlap_crise_real_ratio": 0.5384615384615384
+        },
+        "top_segments": [
+          {
+            "start_seconds": 40.0,
+            "end_seconds": 54.0,
+            "duration_seconds": 14.0,
+            "n_sequences": 6,
+            "score_mean": 0.9917249083518982,
+            "score_max": 0.9998958110809326,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 14.0,
+            "overlap_crise_real_ratio": 0.5384615384615384
+          },
+          {
+            "start_seconds": 1026.0,
+            "end_seconds": 1034.0,
+            "duration_seconds": 8.0,
+            "n_sequences": 3,
+            "score_mean": 0.9583014845848083,
+            "score_max": 0.9771521091461182,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 1624.0,
+            "end_seconds": 1630.0,
+            "duration_seconds": 6.0,
+            "n_sequences": 2,
+            "score_mean": 0.9649944305419922,
+            "score_max": 0.9843866229057312,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          },
+          {
+            "start_seconds": 2400.0,
+            "end_seconds": 2404.0,
+            "duration_seconds": 4.0,
+            "n_sequences": 1,
+            "score_mean": 0.971551775932312,
+            "score_max": 0.971551775932312,
+            "threshold": 0.9,
+            "overlap_crise_real_seconds": 0.0,
+            "overlap_crise_real_ratio": 0.0
+          }
+        ]
+      },
+      "fragmentation": {
+        "0.60": 0,
+        "0.90": 0
+      }
+    }
+  },
+  "conclusion": {
+    "best_sensitivity": "empate (60% e 90%)",
+    "best_event_precision": "90%",
+    "best_localization": "90%",
+    "best_sample_balance": "90%",
+    "scientific_default": "60%",
+    "promote_90_percent": false,
+    "reason": "90% reduziu FA/h sem perda adicional de eventos nesta amostra, mas quatro EDFs de pacientes já consultados/calibrados não sustentam substituir o ponto validado."
+  }
+}

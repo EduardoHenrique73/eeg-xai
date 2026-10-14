@@ -323,7 +323,6 @@ async def solicitar_analise_ia(
         processar_exame_ia,
         exame_id,
         canais_selecionados=canais,
-        threshold_override=usuario.threshold_confianca,
         gerar_shap_sequencial=usuario.exibir_shap,
     )
 

@@ -143,8 +143,10 @@ async def test_processar_exame_usa_fluxo_sequencial_quando_habilitado(
             with patch(
                 "app.services.exame_pipeline.analisar_exame_sequencial",
                 return_value=resultado_fake,
-            ):
+            ) as mock_analisar:
                 await processar_exame_ia(exame_com_arquivo.id)
+
+    assert mock_analisar.call_args.kwargs["threshold_override"] is None
 
     async with session_factory() as session:
         result = await session.execute(

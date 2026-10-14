@@ -5,6 +5,7 @@ interface EdfDropzoneProps {
   onFileSelected: (file: File) => void
   selectedFile?: File | null
   disabled?: boolean
+  compacto?: boolean
 }
 
 function isEdfFile(file: File): boolean {
@@ -15,6 +16,7 @@ export function EdfDropzone({
   onFileSelected,
   selectedFile,
   disabled = false,
+  compacto = false,
 }: EdfDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -46,10 +48,12 @@ export function EdfDropzone({
   )
 
   return (
-    <section className="min-w-0 rounded-md border border-clinical-200 bg-white p-4 shadow-clinical xl:flex-1 2xl:flex-none">
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-clinical-500">
-        Upload de Exame EEG
-      </h3>
+    <section className={`min-w-0 rounded-md border border-clinical-200 bg-white shadow-clinical xl:flex-1 2xl:flex-none ${compacto ? 'p-3' : 'p-4'}`}>
+      {!compacto && (
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-clinical-500">
+          Upload de Exame EEG
+        </h3>
+      )}
 
       <div
         role="button"
@@ -68,7 +72,9 @@ export function EdfDropzone({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={[
-          'flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-4 py-6 text-center transition-colors xl:min-h-28 xl:py-3 2xl:min-h-40 2xl:py-6',
+          compacto
+            ? 'flex cursor-pointer items-center gap-3 rounded-md border border-dashed px-3 py-2 text-left transition-colors'
+            : 'flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-4 py-6 text-center transition-colors xl:min-h-28 xl:py-3 2xl:min-h-40 2xl:py-6',
           disabled
             ? 'cursor-not-allowed border-clinical-200 bg-clinical-50 opacity-60'
             : isDragging
@@ -76,17 +82,19 @@ export function EdfDropzone({
               : 'border-clinical-300 bg-clinical-50 hover:border-accent hover:bg-white',
         ].join(' ')}
       >
-        <FileUp size={30} strokeWidth={1.6} className="mb-3 text-accent xl:mb-1 2xl:mb-3" aria-hidden="true" />
+        <FileUp size={compacto ? 20 : 30} strokeWidth={1.6} className={compacto ? 'shrink-0 text-accent' : 'mb-3 text-accent xl:mb-1 2xl:mb-3'} aria-hidden="true" />
 
-        <p className="text-sm font-medium text-clinical-800">
-          Arraste o arquivo .edf ou clique para selecionar
-        </p>
-        <p className="mt-1 text-xs text-clinical-500">
-          Formato aceito: European Data Format (.edf)
-        </p>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-clinical-800">
+            {compacto ? 'Carregar outro exame EDF' : 'Arraste o arquivo .edf ou clique para selecionar'}
+          </p>
+          <p className="mt-0.5 text-xs text-clinical-500">
+            {compacto ? 'Substitui o exame exibido na tela' : 'Formato aceito: European Data Format (.edf)'}
+          </p>
+        </div>
 
         {selectedFile && (
-          <p className="mt-3 rounded-md bg-white px-3 py-1 font-mono text-xs text-clinical-700 shadow-sm">
+          <p className={`${compacto ? 'ml-auto truncate' : 'mt-3'} rounded-md bg-white px-3 py-1 font-mono text-xs text-clinical-700 shadow-sm`}>
             {selectedFile.name}
           </p>
         )}

@@ -5,8 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import mne
 
-from app.ai_engine.feature_extractor import carregar_sinais_edf
+from app.ai_engine.feature_extractor import carregar_sinais_edf, selecionar_canais_eeg_validos
 
 MAX_PONTOS_VISUALIZACAO = 1500
 
@@ -40,18 +41,31 @@ def extrair_sinais_para_visualizacao(
         ):
             raise ValueError("Recorte temporal deve ter inicio >= 0 e duracao de ate 120 segundos.")
 
-    sinais, taxa_hz, canais_eeg = carregar_sinais_edf(
-        arquivo_path,
-        max_duration_seconds=max_duration_seconds,
-        canais_selecionados=canais_selecionados,
-    )
-    # MNE retorna Volts (SI); converter para µV para exibição clínica
-    indice_inicio = int(np.floor(start_seconds * taxa_hz)) if start_seconds is not None else 0
-    indice_fim = int(np.ceil(end_seconds * taxa_hz)) if end_seconds is not None else sinais.shape[1]
-    indice_fim = min(indice_fim, sinais.shape[1])
+    if start_seconds is not None and end_seconds is not None:
+        raw = mne.io.read_raw_edf(Path(arquivo_path), preload=False, verbose=False)
+        canais_eeg = selecionar_canais_eeg_validos(raw, canais_selecionados)
+        raw.pick(canais_eeg)
+        taxa_hz = float(raw.info["sfreq"])
+        limite = raw.n_times
+        if max_duration_seconds is not None and max_duration_seconds > 0:
+            limite = min(limite, int(max_duration_seconds * taxa_hz))
+        indice_inicio = int(np.floor(start_seconds * taxa_hz))
+        indice_fim = min(int(np.ceil(end_seconds * taxa_hz)), limite)
+        if indice_fim - indice_inicio < 2:
+            raise ValueError("Recorte temporal fora do exame ou curto demais.")
+        sinais = np.asarray(raw.get_data(start=indice_inicio, stop=indice_fim), dtype=float)
+    else:
+        sinais, taxa_hz, canais_eeg = carregar_sinais_edf(
+            arquivo_path,
+            max_duration_seconds=max_duration_seconds,
+            canais_selecionados=canais_selecionados,
+        )
+        indice_inicio = 0
+        indice_fim = sinais.shape[1]
     if indice_fim - indice_inicio < 2:
         raise ValueError("Recorte temporal fora do exame ou curto demais.")
-    sinais_uv = sinais[:, indice_inicio:indice_fim] * 1e6
+    # MNE retorna Volts (SI); converter para µV para exibição clínica.
+    sinais_uv = sinais * 1e6
     n_original = int(sinais_uv.shape[1])
 
     if n_original > max_pontos:

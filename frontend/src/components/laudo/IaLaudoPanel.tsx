@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CheckCircle2, LoaderCircle } from 'lucide-react'
+import { CheckCircle2, Eye, LoaderCircle } from 'lucide-react'
 import { salvarLaudo } from '../../api/exames'
 import type { TrechoSuspeito } from '../../types/api'
 import { useToast } from '../../contexts/ToastContext'
@@ -46,6 +46,8 @@ interface IaLaudoPanelProps {
   }>
   trechoSuspeito?: TrechoSuspeito | null
   topTrechosSuspeitos?: TrechoSuspeito[]
+  trechoSelecionadoIndice?: number
+  onSelecionarTrecho?: (indice: number) => void
   modelType?: string | null
   nSequencesAnalisadas?: number | null
   minDurationSeconds?: number | null
@@ -83,6 +85,8 @@ export function IaLaudoPanel({
   janelasTop = [],
   trechoSuspeito,
   topTrechosSuspeitos = [],
+  trechoSelecionadoIndice = 0,
+  onSelecionarTrecho,
   modelType,
   nSequencesAnalisadas,
   minDurationSeconds,
@@ -99,12 +103,14 @@ export function IaLaudoPanel({
   const [salvandoLaudo, setSalvandoLaudo] = useState(false)
   const [erroLaudo, setErroLaudo] = useState<string | null>(null)
   const [aba, setAba] = useState<'analise' | 'laudo'>('analise')
+  const [mostrarTodosTrechos, setMostrarTodosTrechos] = useState(false)
 
   useEffect(() => {
     setParecer(laudoTextoInicial ?? '')
     setLaudoSalvo(statusExameInicial === 'concluido')
     setErroLaudo(null)
     setAba('analise')
+    setMostrarTodosTrechos(false)
   }, [exameId, laudoTextoInicial, statusExameInicial])
 
   const handleEmitirLaudo = useCallback(async () => {
@@ -134,6 +140,7 @@ export function IaLaudoPanel({
     : analiseEmAndamento
       ? 'processando'
       : 'idle'
+  const trechoEmDestaque = topTrechosSuspeitos[trechoSelecionadoIndice] ?? trechoSuspeito
 
   const semCanaisSelecionados = canaisSelecionados.length === 0
   const botaoDesabilitado =
@@ -162,15 +169,15 @@ export function IaLaudoPanel({
 
       {aba === 'analise' ? <>
 
-      <CanalSelector
+      {!analiseConcluida && <CanalSelector
         canais={canaisEeg}
         selecionados={canaisSelecionados}
         onChange={onCanaisChange}
-        disabled={analiseEmAndamento || analiseConcluida || laudoSalvo}
+        disabled={analiseEmAndamento || laudoSalvo}
         carregando={carregandoCanais}
-      />
+      />}
 
-      <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
+      {!analiseConcluida && <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
           Motor de IA
         </h3>
@@ -209,26 +216,25 @@ export function IaLaudoPanel({
             {erroLaudo ?? erro}
           </p>
         )}
-      </section>
+      </section>}
 
       <ScoreConfianca
         score={score}
         classificacao={classificacao}
         threshold={threshold}
         status={scoreStatus}
+        scoreMedioTrecho={trechoEmDestaque?.score_medio}
+        resultadoPositivoConclusivo={resultadoPositivoConclusivo}
+        resultadoConclusivo={resultadoConclusivo}
+        indiceTrecho={trechoSelecionadoIndice}
       />
 
       {analiseConcluida && (
         <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
-            Interpretação por canais
+            Resultado temporal
           </h3>
           <div className="mt-3 space-y-3 text-sm text-clinical-700">
-            <p>
-              <span className="font-medium text-clinical-800">Modo:</span>{' '}
-              {featureMode === 'per_channel' ? 'Análise por canal' : 'Análise agregada'}
-            </p>
-
             {modelType === 'sequence_cnn_lstm' && (
               <div className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-accent-dark">
@@ -248,87 +254,10 @@ export function IaLaudoPanel({
                     Positivo conclusivo pelo critério automático; exige revisão médica do trecho destacado.
                   </p>
                 )}
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-clinical-600">
-                  {nSequencesAnalisadas != null && (
-                    <span>
-                      sequências analisadas:{' '}
-                      <span className="font-medium text-clinical-700">{nSequencesAnalisadas}</span>
-                    </span>
-                  )}
-                  {decisionThreshold != null && (
-                    <span>
-                      threshold de decisão:{' '}
-                      <span className="font-medium text-clinical-700">
-                        {formatarPercentual(decisionThreshold) ?? '-'}
-                      </span>
-                    </span>
-                  )}
-                  {minDurationSeconds != null && (
-                    <span>
-                      duração mínima:{' '}
-                      <span className="font-medium text-clinical-700">
-                        {minDurationSeconds.toFixed(0)}s
-                      </span>
-                    </span>
-                  )}
-                  {maxGapSeconds != null && maxGapSeconds > 0 && (
-                    <span>
-                      união de intervalos:{' '}
-                      <span className="font-medium text-clinical-700">
-                        até {maxGapSeconds.toFixed(0)}s
-                      </span>
-                    </span>
-                  )}
-                  {xaiMethod && (
-                    <span>
-                      explicabilidade:{' '}
-                      <span className="font-medium text-clinical-700">
-                        {xaiMethod === 'gradient_shap' ? 'Gradient SHAP' : xaiMethod}
-                      </span>
-                    </span>
-                  )}
-                </div>
               </div>
             )}
 
-            {nJanelasAnalisadas != null && nJanelasAnalisadas > 0 && (
-              <div className="rounded-md bg-clinical-50 px-3 py-2">
-                <p>
-                  <span className="font-medium text-clinical-800">Janelas analisadas:</span>{' '}
-                  {nJanelasAnalisadas}
-                </p>
-                {janelaPico && (
-                  <p className="mt-1 text-xs text-clinical-600">
-                    Score calculado a partir da janela mais suspeita:{' '}
-                    {formatarTempo(janelaPico.start_seconds)} a {formatarTempo(janelaPico.end_seconds)}
-                    {janelaPico.score != null ? ` (${formatarPercentual(janelaPico.score)})` : ''}.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {janelasTop.length > 0 && (
-              <div>
-                <p className="font-medium text-clinical-800">Janelas com maior score</p>
-                <div className="mt-2 space-y-2">
-                  {janelasTop.slice(0, 3).map((janela) => (
-                    <div
-                      key={`${janela.start_seconds}-${janela.end_seconds}`}
-                      className="flex items-center justify-between gap-3 rounded-md bg-clinical-50 px-3 py-2 text-xs"
-                    >
-                      <span className="font-medium text-clinical-700">
-                        {formatarTempo(janela.start_seconds)} - {formatarTempo(janela.end_seconds)}
-                      </span>
-                      <span className="text-clinical-600">
-                        score {formatarPercentual(janela.score) ?? '-'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {trechoSuspeito && (
+            {trechoSuspeito && topTrechosSuspeitos.length <= 1 && (
               <div className="rounded-md bg-clinical-50 px-3 py-2">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -392,19 +321,30 @@ export function IaLaudoPanel({
 
             {topTrechosSuspeitos.length > 1 && (
               <div>
-                <p className="font-medium text-clinical-800">Top trechos suspeitos</p>
+                <p className="font-semibold text-clinical-900">Candidatos temporais para revisão</p>
                 <p className="mt-1 text-xs text-clinical-500">
-                  Trechos contínuos ordenados por duração e score médio.
+                  Selecione um candidato para destacá-lo no gráfico. A lista é ordenada pela regra temporal da IA e não confirma diagnóstico.
                 </p>
                 <div className="mt-2 space-y-2">
-                  {topTrechosSuspeitos.map((trecho, indice) => (
-                    <div
+                  {(mostrarTodosTrechos ? topTrechosSuspeitos : topTrechosSuspeitos.slice(0, 3)).map((trecho, indice) => {
+                    const selecionado = indice === trechoSelecionadoIndice
+                    return (
+                    <button
+                      type="button"
                       key={`${trecho.start_seconds}-${trecho.end_seconds}-${indice}`}
-                      className="rounded-md bg-clinical-50 px-3 py-2 text-xs"
+                      onClick={() => onSelecionarTrecho?.(indice)}
+                      aria-pressed={selecionado}
+                      className={[
+                        'w-full rounded-md border px-3 py-2 text-left text-xs transition',
+                        selecionado
+                          ? 'border-accent bg-accent-light shadow-sm ring-1 ring-accent/20'
+                          : 'border-clinical-200 bg-white hover:border-accent/60 hover:bg-clinical-50',
+                      ].join(' ')}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span className="font-medium text-clinical-700">
-                          {indice + 1}. {formatarTempo(trecho.start_seconds)} - {formatarTempo(trecho.end_seconds)}
+                        <span className="flex items-center gap-2 font-semibold text-clinical-800">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] text-white">{indice + 1}</span>
+                          {formatarTempo(trecho.start_seconds)} - {formatarTempo(trecho.end_seconds)}
                         </span>
                         <span
                           className={[
@@ -418,6 +358,9 @@ export function IaLaudoPanel({
                         </span>
                       </div>
                       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-clinical-600">
+                        <span className="font-medium text-accent-dark">
+                          {indice === 0 ? 'principal da IA' : 'candidato secundário'}
+                        </span>
                         <span>
                           score médio:{' '}
                           <span className="font-medium text-clinical-700">
@@ -431,16 +374,32 @@ export function IaLaudoPanel({
                           </span>
                         </span>
                       </div>
-                    </div>
-                  ))}
+                      {selecionado && (
+                        <span className="mt-2 inline-flex items-center gap-1 font-semibold text-accent-dark">
+                          <Eye size={13} aria-hidden="true" /> Em destaque no gráfico
+                        </span>
+                      )}
+                    </button>
+                  )})}
                 </div>
+                {topTrechosSuspeitos.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setMostrarTodosTrechos((atual) => !atual)}
+                    className="mt-2 w-full rounded-md border border-clinical-200 px-3 py-2 text-xs font-semibold text-accent transition hover:bg-accent-light"
+                  >
+                    {mostrarTodosTrechos ? 'Mostrar somente os 3 principais' : `Ver mais ${topTrechosSuspeitos.length - 3} candidatos`}
+                  </button>
+                )}
               </div>
             )}
 
             {canaisProcessados.length > 0 && (
-              <div>
-                <p className="font-medium text-clinical-800">Canais incluídos na análise</p>
-                <div className="mt-2 flex flex-wrap gap-2">
+              <details className="rounded-md border border-clinical-200 bg-white">
+                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-clinical-700">
+                  {canaisProcessados.length} canais incluídos na análise
+                </summary>
+                <div className="flex flex-wrap gap-2 border-t border-clinical-100 p-3">
                   {canaisProcessados.map((canal) => (
                     <span
                       key={canal}
@@ -450,8 +409,27 @@ export function IaLaudoPanel({
                     </span>
                   ))}
                 </div>
-              </div>
+              </details>
             )}
+
+            <details className="rounded-md border border-clinical-200 bg-white">
+              <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-clinical-700">
+                Detalhes do processamento
+              </summary>
+              <div className="space-y-3 border-t border-clinical-100 p-3 text-xs text-clinical-600">
+                <p><span className="font-medium text-clinical-800">Modo:</span> {featureMode === 'per_channel' ? 'Análise por canal' : 'Análise agregada'}</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  {nSequencesAnalisadas != null && <span>Sequências: <strong>{nSequencesAnalisadas}</strong></span>}
+                  {nJanelasAnalisadas != null && <span>Janelas: <strong>{nJanelasAnalisadas}</strong></span>}
+                  {decisionThreshold != null && <span>Limiar: <strong>{formatarPercentual(decisionThreshold)}</strong></span>}
+                  {minDurationSeconds != null && <span>Duração mínima: <strong>{minDurationSeconds.toFixed(0)}s</strong></span>}
+                  {maxGapSeconds != null && maxGapSeconds > 0 && <span>União: <strong>até {maxGapSeconds.toFixed(0)}s</strong></span>}
+                  {xaiMethod && <span>Explicabilidade: <strong>{xaiMethod === 'gradient_shap' ? 'Gradient SHAP' : xaiMethod}</strong></span>}
+                </div>
+                {janelaPico && <p>Maior janela isolada: <strong>{formatarTempo(janelaPico.start_seconds)} a {formatarTempo(janelaPico.end_seconds)} ({formatarPercentual(janelaPico.score)})</strong>.</p>}
+                {janelasTop.length > 0 && <p>As {janelasTop.length} janelas de maior score permanecem registradas no resultado da análise.</p>}
+              </div>
+            </details>
 
             {canaisDestaque.length > 0 && (
               <div>

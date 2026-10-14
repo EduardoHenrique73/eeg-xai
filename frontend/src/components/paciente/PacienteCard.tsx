@@ -1,7 +1,9 @@
 import type { Paciente } from '../../types/api'
+import { formatarCpf, formatarTelefone } from '../../utils/form'
 
 interface PacienteCardProps {
   paciente: Paciente
+  compacto?: boolean
 }
 
 function formatarData(iso: string): string {
@@ -9,7 +11,25 @@ function formatarData(iso: string): string {
   return `${dia}/${mes}/${ano}`
 }
 
-export function PacienteCard({ paciente }: PacienteCardProps) {
+export function PacienteCard({ paciente, compacto = false }: PacienteCardProps) {
+  if (compacto) {
+    return (
+      <section className="min-w-0 rounded-md border border-clinical-200 bg-white px-4 py-3 shadow-clinical xl:flex-1 2xl:flex-none">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase text-clinical-500">Paciente</p>
+            <h2 className="truncate text-sm font-semibold text-clinical-900">{paciente.nome}</h2>
+          </div>
+          <div className="flex flex-wrap gap-x-4 text-xs text-clinical-600">
+            <span>#{paciente.id}</span>
+            <span>{formatarData(paciente.data_nascimento)}</span>
+            {paciente.cpf && <span className="font-mono">{formatarCpf(paciente.cpf)}</span>}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="min-w-0 rounded-md border border-clinical-200 bg-white p-4 shadow-clinical xl:flex-[1.2] 2xl:flex-none">
       <header className="mb-4 border-b border-clinical-100 pb-3 xl:mb-2 xl:pb-2 2xl:mb-4 2xl:pb-3">
@@ -39,13 +59,13 @@ export function PacienteCard({ paciente }: PacienteCardProps) {
         {paciente.cpf && (
           <div className="flex justify-between gap-4">
             <dt className="text-clinical-500">CPF</dt>
-            <dd className="font-mono text-clinical-800">{paciente.cpf}</dd>
+            <dd className="font-mono text-clinical-800">{formatarCpf(paciente.cpf)}</dd>
           </div>
         )}
         {paciente.telefone && (
           <div className="flex justify-between gap-4">
             <dt className="text-clinical-500">Telefone</dt>
-            <dd className="font-medium text-clinical-800">{paciente.telefone}</dd>
+            <dd className="font-medium text-clinical-800">{formatarTelefone(paciente.telefone)}</dd>
           </div>
         )}
       </dl>

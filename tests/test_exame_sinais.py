@@ -76,9 +76,27 @@ def test_extrair_sinais_converte_volts_para_microvolts(monkeypatch) -> None:
 def test_recorte_temporal_mantem_tempo_absoluto_e_mais_pontos(monkeypatch) -> None:
     taxa = 10.0
     sinal = np.arange(1000, dtype=float) * 1e-6
+    class RawFalso:
+        info = {"sfreq": taxa}
+        n_times = len(sinal)
+        ch_names = ["A"]
+
+        def pick(self, canais):
+            assert canais == ["A"]
+
+        def get_data(self, *, start, stop):
+            assert (start, stop) == (200, 240)
+            return sinal[start:stop].reshape(1, -1)
+
+    def ler_edf(_path, *, preload, verbose):
+        assert preload is False
+        assert verbose is False
+        return RawFalso()
+
+    monkeypatch.setattr("app.services.exame_sinais.mne.io.read_raw_edf", ler_edf)
     monkeypatch.setattr(
-        "app.services.exame_sinais.carregar_sinais_edf",
-        lambda *_args, **_kwargs: (sinal.reshape(1, -1), taxa, ["A"]),
+        "app.services.exame_sinais.selecionar_canais_eeg_validos",
+        lambda _raw, _canais: ["A"],
     )
 
     resultado = extrair_sinais_para_visualizacao(

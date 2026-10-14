@@ -3,6 +3,20 @@ interface ScoreConfiancaProps {
   classificacao?: string | null
   threshold?: number | null
   status?: 'idle' | 'processando' | 'concluido'
+  scoreMedioTrecho?: number | null
+  resultadoPositivoConclusivo?: boolean
+  resultadoConclusivo?: boolean
+  indiceTrecho?: number
+}
+
+function formatarClassificacao(texto: string): string {
+  return texto
+    .replace(/Padrao/g, 'Padrão')
+    .replace(/padrao/g, 'padrão')
+    .replace(/revisao/g, 'revisão')
+    .replace(/medica/g, 'médica')
+    .replace(/persistencia/g, 'persistência')
+    .replace(/necessaria/g, 'necessária')
 }
 
 export function ScoreConfianca({
@@ -10,15 +24,20 @@ export function ScoreConfianca({
   classificacao,
   threshold = 0.5,
   status = 'idle',
+  scoreMedioTrecho,
+  resultadoPositivoConclusivo = false,
+  resultadoConclusivo = true,
+  indiceTrecho = 0,
 }: ScoreConfiancaProps) {
-  const percentual = score != null ? Math.round(score * 100) : null
+  const scoreExibido = scoreMedioTrecho ?? score
+  const percentual = scoreExibido != null ? scoreExibido * 100 : null
   const limiar = threshold ?? 0.5
-  const barraCor = score != null && score >= limiar ? 'bg-alert-crisis' : 'bg-accent'
+  const barraCor = resultadoPositivoConclusivo ? 'bg-alert-crisis' : 'bg-accent'
 
   return (
     <section className="rounded-md border border-clinical-200 bg-white p-4 shadow-clinical">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-clinical-500">
-        Score de Suspeita
+        {scoreMedioTrecho != null ? 'Score do candidato em destaque' : 'Score de suspeita'}
       </h3>
 
       {status === 'idle' && (
@@ -42,36 +61,51 @@ export function ScoreConfianca({
         <div className="mt-4">
           <div className="flex items-end justify-between gap-2">
             <p className="text-4xl font-bold tabular-nums text-clinical-900">
-              {percentual}
+              {percentual.toFixed(2)}
               <span className="text-xl font-semibold text-clinical-500">%</span>
             </p>
             {classificacao && (
-              <span
-                className={[
-                  'rounded-full px-3 py-1 text-xs font-semibold',
-                  score != null && score >= limiar
-                    ? 'bg-red-50 text-alert-crisis'
-                    : 'bg-accent-light text-accent-dark',
-                ].join(' ')}
-              >
-                {classificacao}
-              </span>
+              <div className="max-w-[65%] text-right">
+                <span className="block text-[10px] font-semibold uppercase text-clinical-500">Conclusão global da IA</span>
+                <span
+                  className={[
+                    'mt-1 inline-block rounded-md px-2.5 py-1 text-xs font-semibold',
+                    resultadoPositivoConclusivo
+                      ? 'bg-red-50 text-alert-crisis'
+                      : 'bg-accent-light text-accent-dark',
+                  ].join(' ')}
+                >
+                  {formatarClassificacao(classificacao).replace(/\s*\([^)]*\)\s*$/, '')}
+                </span>
+                {resultadoPositivoConclusivo && (
+                  <span className="mt-1 block text-[10px] font-medium text-clinical-500">
+                    Revisão médica necessária
+                  </span>
+                )}
+              </div>
             )}
           </div>
 
           <div className="mt-4 h-3 overflow-hidden rounded-full bg-clinical-100">
             <div
               className={`h-full rounded-full transition-all ${barraCor}`}
-              style={{ width: `${percentual}%` }}
+              style={{ width: `${Math.min(100, Math.max(0, percentual))}%` }}
             />
           </div>
 
           <p className="mt-2 text-xs text-clinical-500">
-            Score de apoio do modelo para atividade compatível com crise epiléptica; não é diagnóstico.
+            {scoreMedioTrecho != null
+              ? `Score médio do candidato ${indiceTrecho + 1} em destaque; não representa certeza diagnóstica.`
+              : 'Maior score produzido pelo modelo; não representa certeza diagnóstica.'}
           </p>
           <p className="mt-1 text-xs text-clinical-500">
-            Limiar configurado: {Math.round(limiar * 100)}%.
+            Limiar de decisão usado: {Math.round(limiar * 100)}%.
           </p>
+          {!resultadoConclusivo && (
+            <p className="mt-2 rounded-md bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-800">
+              Resultado inconclusivo pelas regras temporais. Revise os trechos e o traçado antes de interpretar.
+            </p>
+          )}
         </div>
       )}
     </section>

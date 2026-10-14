@@ -199,6 +199,6 @@ def test_classificacao_clinica_e_cautelosa():
         score_geral=0.9, trecho_principal={"atingiu_duracao_minima": False}, threshold=0.8
     )
 
-    assert "Sem padrao" in classificar_resultado_sequencial(
+    assert "Sem padrão" in classificar_resultado_sequencial(
         score_geral=0.3, trecho_principal=None, threshold=0.8
     )

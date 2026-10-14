@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useToast } from '../../contexts/ToastContext'
 
 const CONFIG = {
@@ -31,27 +32,35 @@ const CONFIG = {
 }
 
 export function ToastContainer() {
-  const { toasts } = useToast()
+  const { toasts, remover } = useToast()
 
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed bottom-6 right-6 z-[9999] flex flex-col gap-3"
+      className="pointer-events-none fixed inset-x-4 bottom-4 z-[9999] flex flex-col items-end gap-3 sm:inset-x-auto sm:bottom-6 sm:right-6"
     >
       {toasts.map((toast) => {
         const c = CONFIG[toast.tipo]
         return (
           <div
             key={toast.id}
-            role="status"
+            role={toast.tipo === 'erro' ? 'alert' : 'status'}
             className={[
-              'pointer-events-auto flex max-w-sm items-start gap-3 rounded-xl border px-4 py-3',
+              'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border px-4 py-3',
               'shadow-lg animate-toast-in',
               c.bg,
             ].join(' ')}
           >
             {c.icon}
-            <p className={`text-sm font-medium leading-snug ${c.text}`}>{toast.mensagem}</p>
+            <p className={`min-w-0 flex-1 text-sm font-medium leading-snug ${c.text}`}>{toast.mensagem}</p>
+            <button
+              type="button"
+              onClick={() => remover(toast.id)}
+              className={`shrink-0 rounded p-0.5 opacity-70 transition hover:bg-black/5 hover:opacity-100 ${c.text}`}
+              aria-label="Fechar notificação"
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
           </div>
         )
       })}

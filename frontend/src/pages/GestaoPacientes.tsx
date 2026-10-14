@@ -8,13 +8,14 @@ import {
 } from '../api/pacientes'
 import { useToast } from '../contexts/ToastContext'
 import type { Paciente, PacienteCreate } from '../types/api'
-
-function formatarCpf(cpf: string | null | undefined): string {
-  if (!cpf) return '-'
-  const digitos = cpf.replace(/\D/g, '')
-  if (digitos.length !== 11) return cpf
-  return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-${digitos.slice(9)}`
-}
+import {
+  cpfValido,
+  formatarCpf,
+  formatarTelefone,
+  mensagemErroApi,
+  somenteDigitos,
+  somenteNome,
+} from '../utils/form'
 
 function pacienteParaForm(paciente: Paciente): PacienteCreate {
   return {
@@ -22,7 +23,7 @@ function pacienteParaForm(paciente: Paciente): PacienteCreate {
     data_nascimento: paciente.data_nascimento,
     sexo: paciente.sexo === 'F' ? 'F' : 'M',
     cpf: paciente.cpf ?? '',
-    telefone: paciente.telefone ?? '',
+    telefone: formatarTelefone(paciente.telefone),
     observacoes: paciente.observacoes ?? '',
   }
 }
@@ -53,7 +54,7 @@ export function GestaoPacientes() {
       const lista = await listarPacientes()
       setPacientes(lista)
     } catch {
-      toastErro('Nao foi possivel carregar a lista de pacientes.')
+      toastErro('Não foi possível carregar a lista de pacientes.')
     } finally {
       setCarregando(false)
     }
@@ -89,12 +90,21 @@ export function GestaoPacientes() {
     ...form,
     nome: form.nome.trim(),
     cpf: form.cpf?.replace(/\D/g, '') || null,
-    telefone: form.telefone?.trim() || null,
+    telefone: somenteDigitos(form.telefone ?? '') || null,
     observacoes: form.observacoes?.trim() || null,
   })
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    if (form.cpf && !cpfValido(form.cpf)) {
+      toastErro('Informe um CPF válido com 11 dígitos.')
+      return
+    }
+    const telefone = somenteDigitos(form.telefone ?? '')
+    if (telefone && (telefone.length < 10 || telefone.length > 11)) {
+      toastErro('Informe um telefone com DDD e 10 ou 11 dígitos.')
+      return
+    }
     setSalvando(true)
 
     try {
@@ -109,8 +119,8 @@ export function GestaoPacientes() {
       setModalAberto(false)
       setPacienteEditando(null)
       await carregar()
-    } catch {
-      toastErro('Falha ao salvar paciente. Verifique os dados e tente novamente.')
+    } catch (erro) {
+      toastErro(mensagemErroApi(erro, 'Falha ao salvar paciente. Verifique os dados e tente novamente.'))
     } finally {
       setSalvando(false)
     }
@@ -125,10 +135,10 @@ export function GestaoPacientes() {
     setRemovendoId(paciente.id)
     try {
       await excluirPaciente(paciente.id)
-      sucesso(`Paciente "${paciente.nome}" excluido com sucesso.`)
+      sucesso(`Paciente "${paciente.nome}" excluído com sucesso.`)
       await carregar()
     } catch {
-      toastErro('Nao foi possivel excluir o paciente.')
+      toastErro('Não foi possível excluir o paciente.')
     } finally {
       setRemovendoId(null)
     }
@@ -140,9 +150,9 @@ export function GestaoPacientes() {
     <div className="mx-auto max-w-6xl px-5 py-7 md:px-8">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-clinical-900">Gestao de Pacientes</h2>
+          <h2 className="text-2xl font-bold text-clinical-900">Gestão de Pacientes</h2>
           <p className="mt-1 text-sm text-clinical-500">
-            Cadastro, edicao e encaminhamento para novos exames EEG.
+            Cadastro, edição e encaminhamento para novos exames EEG.
           </p>
         </div>
         <button
@@ -186,7 +196,7 @@ export function GestaoPacientes() {
             <tr>
               <th className="px-5 py-3 font-semibold">Nome</th>
               <th className="px-5 py-3 font-semibold">CPF</th>
-              <th className="px-5 py-3 font-semibold text-right">Acoes</th>
+              <th className="px-5 py-3 font-semibold text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -278,7 +288,9 @@ export function GestaoPacientes() {
                 <input
                   required
                   value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                  onChange={(e) => setForm({ ...form, nome: somenteNome(e.target.value) })}
+                  minLength={2}
+                  maxLength={200}
                   className="mt-1 w-full rounded-lg border border-clinical-200 px-3 py-2.5 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                   placeholder="Nome do paciente"
                 />
@@ -290,6 +302,7 @@ export function GestaoPacientes() {
                   <input
                     required
                     type="date"
+                    max={new Date().toISOString().slice(0, 10)}
                     value={form.data_nascimento}
                     onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })}
                     className="mt-1 w-full rounded-lg border border-clinical-200 px-3 py-2.5 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
@@ -312,8 +325,11 @@ export function GestaoPacientes() {
                 <span className="font-medium text-clinical-700">CPF</span>
                 <input
                   value={form.cpf ?? ''}
-                  onChange={(e) => setForm({ ...form, cpf: e.target.value })}
-                  placeholder="Somente numeros"
+                  onChange={(e) => setForm({ ...form, cpf: formatarCpf(e.target.value) })}
+                  placeholder="000.000.000-00"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={14}
                   className="mt-1 w-full rounded-lg border border-clinical-200 px-3 py-2.5 font-mono outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 />
               </label>
@@ -322,7 +338,11 @@ export function GestaoPacientes() {
                 <span className="font-medium text-clinical-700">Telefone</span>
                 <input
                   value={form.telefone ?? ''}
-                  onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+                  onChange={(e) => setForm({ ...form, telefone: formatarTelefone(e.target.value) })}
+                  placeholder="(00) 00000-0000"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={15}
                   className="mt-1 w-full rounded-lg border border-clinical-200 px-3 py-2.5 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 />
               </label>

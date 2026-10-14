@@ -248,11 +248,11 @@ class TestExtrairFeaturesEdf:
 
 def test_selecionar_canais_eeg_validos_descarta_placeholders():
     info = mne.create_info(
-        ch_names=["FP1-F7", "-", "T8-P8", "--0"],
+        ch_names=["FP1-F7", "-", "T8-P8", ".-0", "--0"],
         sfreq=256.0,
-        ch_types=["eeg", "eeg", "eeg", "eeg"],
+        ch_types=["eeg"] * 5,
     )
-    raw = mne.io.RawArray(np.zeros((4, 64)), info, verbose=False)
+    raw = mne.io.RawArray(np.zeros((5, 64)), info, verbose=False)
 
     canais = selecionar_canais_eeg_validos(raw)
 

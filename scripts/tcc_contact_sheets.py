@@ -1,17 +1,19 @@
 """Render local PDF contact sheets for visual review without an office app."""
 
 from pathlib import Path
+import sys
 
 import pypdfium2 as pdfium
 from PIL import Image, ImageDraw
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PDF = ROOT / "docs/tcc/TCC II - Eduardo Marques - Versao Final Revisada.pdf"
-OUT = ROOT / "docs/tcc/render_revisao"
+PDF = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "docs/tcc/TCC II - Eduardo Marques - Versao Final Revisada.pdf"
+OUT = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "docs/tcc/render_revisao"
 
 
 def main():
+    OUT.mkdir(parents=True, exist_ok=True)
     document = pdfium.PdfDocument(str(PDF))
     columns, rows = 4, 3
     scale = 0.45

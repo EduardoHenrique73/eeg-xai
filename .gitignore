@@ -12,8 +12,11 @@ env/
 
 # Environment
 .env
+.env.postgres.local
+.env.sqlite.backup
 config.env
 eeg_xai_dev.db
+transfer_data/
 
 # IDE
 .idea/

@@ -3,8 +3,8 @@ const path = require('path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const root = path.resolve(__dirname, '..');
-const source = path.join(root, 'docs/tcc/TCC II - Eduardo Marques - Versao Final Revisada.docx');
-const output = path.join(root, 'docs/tcc/render_revisao/TCC II - preview sem Word.pdf');
+const source = process.argv[2] || path.join(root, 'docs/tcc/TCC II - Eduardo Marques - Versao Final Revisada.docx');
+const output = process.argv[3] || path.join(root, 'docs/tcc/render_revisao/TCC II - preview sem Word.pdf');
 const bundle = path.join(root, '.tcc-preview/node_modules/docx-preview/dist/docx-preview.min.js');
 const docxPreviewPackage = fs.realpathSync(path.join(root, '.tcc-preview/node_modules/docx-preview'));
 const jszipPackage = require.resolve('jszip/package.json', {

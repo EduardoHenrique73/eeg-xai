@@ -1,0 +1,118 @@
+\begin{capa}
+{\linespread{1.15}\selectfont
+\begin{center}
+INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE GOIÁS -- CÂMPUS URUAÇU\par
+DEPARTAMENTO DE ÁREAS ACADÊMICAS\par
+CURSO DE TECNOLOGIA EM ANÁLISE E DESENVOLVIMENTO DE SISTEMAS\par
+\vspace*{110pt}
+EDUARDO HENRIQUE GUIMARÃES MARQUES\par
+\vspace*{130pt}
+\textbf{DESENVOLVIMENTO DE PLATAFORMA WEB PARA APOIO À ANÁLISE DE EEG COM INTELIGÊNCIA ARTIFICIAL EXPLICÁVEL}\par
+\vfill
+URUAÇU/GO\par
+2026\par
+\end{center}
+}
+\end{capa}
+
+\begin{folhaderosto}
+{\linespread{1.15}\selectfont
+\begin{center}
+EDUARDO HENRIQUE GUIMARÃES MARQUES\par
+\vspace*{120pt}
+\textbf{DESENVOLVIMENTO DE PLATAFORMA WEB PARA APOIO À ANÁLISE DE EEG COM INTELIGÊNCIA ARTIFICIAL EXPLICÁVEL}\par
+\vspace*{90pt}
+\hspace*{8.5cm}\begin{minipage}{7.2cm}
+\fontsize{10}{12}\selectfont
+\begin{SingleSpace}
+Trabalho de Conclusão de Curso apresentado ao curso de Tecnologia em Análise e Desenvolvimento de Sistemas do Departamento de Áreas Acadêmicas do Instituto Federal de Educação, Ciência e Tecnologia de Goiás -- Câmpus Uruaçu como requisito parcial para conclusão do curso.
+
+\vspace{0.8cm}
+Orientador: Dr. Lynwood Livi de Souza
+\end{SingleSpace}
+\end{minipage}
+\par\vfill
+URUAÇU/GO\par
+2026\par
+\end{center}
+}
+\end{folhaderosto}
+
+\begin{agradecimentos}
+Agradeço primeiramente a Deus, pela saúde, força e perseverança concedidas ao longo de toda a minha caminhada acadêmica.
+
+Aos meus pais e à minha família, pelo apoio incondicional, compreensão e incentivo constante em cada etapa da minha formação.
+
+Ao meu orientador, Prof. Dr. Lynwood Livi de Souza, pela orientação criteriosa, paciência, disponibilidade e pelas valiosas contribuições técnicas e científicas que guiaram a evolução deste trabalho desde a iniciação tecnológica até a conclusão deste curso.
+
+Ao Instituto Federal de Educação, Ciência e Tecnologia de Goiás (IFG) – Câmpus Uruaçu, e a todos os professores do Curso de Tecnologia em Análise e Desenvolvimento de Sistemas, pelos ensinamentos transmitidos e pela dedicação à educação pública e de qualidade.
+
+Aos colegas de curso e amigos que compartilharam desafios, aprendizados e momentos importantes durante a graduação, e aos membros da banca examinadora, pela disponibilidade e pelas contribuições para o aperfeiçoamento deste trabalho.
+\end{agradecimentos}
+
+\begin{resumo}
+A interpretação de exames de Eletroencefalograma (EEG) no diagnóstico da epilepsia exige a inspeção visual de longas séries temporais multicanais, um processo exaustivo e vulnerável à fadiga humana e à subjetividade entre avaliadores. Embora modelos de aprendizado profundo alcancem alta sensibilidade no reconhecimento de padrões bioelétricos, sua adoção clínica esbarra em duas barreiras críticas: a fragmentação entre ferramentas de visualização e a opacidade algorítmica das redes neurais, que operam como "caixas-pretas" sem justificativa inspecionável. Para superar essa lacuna, este trabalho desenvolveu e avaliou o protótipo funcional de uma plataforma web integrada (EEG-XAI) voltada ao apoio à triagem e à análise neurofisiológica. Estruturada sob arquitetura cliente-servidor mediada por API REST, a solução combina uma interface reativa em React, TypeScript e Recharts a um núcleo de processamento assíncrono em Python, FastAPI, MNE-Python, TensorFlow/Keras e PostgreSQL. No motor preditivo, implementou-se a arquitetura híbrida CNN-BiLSTM (versão v43) com fusão tardia de 23 canais, alimentada por sequências temporais de 15 características tempo-frequência por canal, incluindo entropia espectral. Para garantir transparência decisória, o método Gradient SHAP foi acoplado ao pipeline, projetando mapas de calor sobre o traçado original para destacar os canais e intervalos de segundos determinantes na sequência de pico. Nos experimentos com registros contínuos da base pública CHB-MIT, aplicando separação estrita por paciente antes do janelamento temporal para impedir vazamento de dados, o modelo atingiu na calibração F1 por arquivo EDF de 95,7\%, F1 localizado de 90,9\% e detecção de 15 em 20 eventos ictais, com 0,55 falso alarme por hora. Na avaliação histórica de desenvolvimento, obteve F1 por EDF de 82,4\% e F1 localizado de 46,2\%, evidenciando o desafio técnico da generalização interpaciente. Conclui-se que a plataforma unifica a ingestão de arquivos EDF, a navegação multicanal, a localização temporal de trechos suspeitos, a explicabilidade visual e a emissão de laudos, oferecendo uma ferramenta transparente de segunda opinião que apoia a revisão médica sem substituir o diagnóstico clínico.
+
+\vspace{\onelineskip}
+\noindent\textbf{Palavras-chave}: eletroencefalograma; epilepsia; aprendizado profundo; CNN-BiLSTM; inteligência artificial explicável; SHAP.
+\end{resumo}
+
+\begin{resumo}[ABSTRACT]
+\begin{otherlanguage*}{english}
+Interpreting Electroencephalogram (EEG) exams for epilepsy diagnosis requires the visual inspection of extensive multichannel time series, an exhaustive process vulnerable to human fatigue and inter-observer subjectivity. Although deep learning models achieve high sensitivity in recognizing bioelectrical patterns, their clinical adoption faces two critical barriers: fragmentation among visualization tools and the algorithmic opacity of neural networks, which operate as "black boxes" without inspectable justification. To bridge this gap, this work developed and evaluated a functional integrated web platform prototype (EEG-XAI) designed to support neurophysiological triage and analysis. Built upon a REST API-mediated client-server architecture, the solution combines a reactive interface in React, TypeScript, and Recharts with an asynchronous processing core in Python, FastAPI, MNE-Python, TensorFlow/Keras, and PostgreSQL. At the predictive core, a hybrid CNN-BiLSTM architecture (version v43) with late fusion across 23 channels was implemented, fed by temporal sequences of 15 time-frequency features per channel, including spectral entropy. To ensure decision transparency, Gradient SHAP was integrated into the pipeline, projecting heatmaps onto the original trace to highlight the channels and time intervals driving the peak sequence. In experiments using continuous recordings from the public CHB-MIT dataset, with strict patient-level splitting before temporal windowing to prevent data leakage, the model achieved an EDF-level F1-score of 95.7\%, a localized F1-score of 90.9\%, and detection of 15 out of 20 ictal events in calibration, with 0.55 false alarms per hour. In the historical development evaluation, it reached an EDF-level F1-score of 82.4\% and a localized F1-score of 46.2\%, highlighting the challenge of inter-patient generalization. The platform integrates EDF ingestion, multichannel navigation, temporal localization of suspicious segments, visual explainability, and medical reporting, providing a transparent second-opinion tool that supports specialist review without replacing clinical diagnosis.
+
+\vspace{\onelineskip}
+\noindent\textbf{Keywords}: electroencephalogram; epilepsy; deep learning; CNN-BiLSTM; explainable artificial intelligence; SHAP.
+\end{otherlanguage*}
+\end{resumo}
+
+\pdfbookmark[0]{\listfigurename}{lof}
+\listoffigures*
+\cleardoublepage
+\pdfbookmark[0]{LISTA DE QUADROS}{loq}
+\listoftables*
+\cleardoublepage
+
+\begin{siglas}
+\item[ANVISA] Agência Nacional de Vigilância Sanitária
+\item[API] Application Programming Interface (Interface de Programação de Aplicações)
+\item[BiLSTM] Bidirectional Long Short-Term Memory (Memória de Longo e Curto Prazo Bidirecional)
+\item[CDSS] Clinical Decision Support Systems (Sistemas de Suporte à Decisão Clínica)
+\item[CHB-MIT] Children's Hospital Boston - Massachusetts Institute of Technology
+\item[CNN] Convolutional Neural Network (Rede Neural Convolucional)
+\item[CPF] Cadastro de Pessoas Físicas
+\item[CRM] Conselho Regional de Medicina
+\item[EDF] European Data Format
+\item[EEG] Eletroencefalograma
+\item[eMAG] Modelo de Acessibilidade em Governo Eletrônico
+\item[FROC] Free-Response Receiver Operating Characteristic
+\item[HTTP] Hypertext Transfer Protocol
+\item[IA] Inteligência Artificial
+\item[IFG] Instituto Federal de Educação, Ciência e Tecnologia de Goiás
+\item[I/O] Input/Output (Entrada/Saída)
+\item[IoU] Intersection over Union (Interseção sobre União)
+\item[JSON] JavaScript Object Notation
+\item[JWT] JSON Web Token
+\item[LGPD] Lei Geral de Proteção de Dados Pessoais
+\item[LSTM] Long Short-Term Memory (Memória de Longo e Curto Prazo)
+\item[MER] Modelo Entidade-Relacionamento
+\item[MLP] Multi-Layer Perceptron (Perceptron Multicamadas)
+\item[P\&D] Pesquisa e Desenvolvimento
+\item[PIBITI] Programa Institucional de Bolsas de Iniciação em Desenvolvimento Tecnológico e Inovação
+\item[RDC] Resolução da Diretoria Colegiada
+\item[REST] Representational State Transfer
+\item[RF] Requisito Funcional
+\item[RNF] Requisito Não Funcional
+\item[SADC] Sistema de Apoio à Decisão Clínica
+\item[SHAP] Shapley Additive exPlanations
+\item[SOA] Service-Oriented Architecture (Arquitetura Orientada a Serviços)
+\item[SPA] Single Page Application
+\item[UI] User Interface (Interface de Usuário)
+\item[WCAG] Web Content Accessibility Guidelines
+\item[WHO] World Health Organization (Organização Mundial da Saúde)
+\item[XAI] Explainable Artificial Intelligence (Inteligência Artificial Explicável)
+\end{siglas}
+
+\pdfbookmark[0]{\contentsname}{toc}
+\tableofcontents*
+\cleardoublepage

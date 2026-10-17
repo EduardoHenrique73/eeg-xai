@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from uuid import uuid4, UUID
 from pathlib import Path
 
 from fastapi import (
@@ -81,6 +82,7 @@ async def _obter_exame_do_usuario(
 )
 async def obter_diagnostico_exame(
     exame_id: int,
+    analise_id: UUID | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
     settings: Settings = Depends(get_settings),
     usuario: Usuario = Depends(get_current_user),
@@ -107,9 +109,18 @@ async def obter_diagnostico_exame(
         select(PredicaoIA)
         .where(PredicaoIA.id_exame == exame_id)
         .order_by(PredicaoIA.data_analise.desc())
-        .limit(1)
     )
-    predicao = result.scalar_one_or_none()
+    predicao = None
+    for candidata in result.scalars():
+        if analise_id is None:
+            predicao = candidata
+            break
+        try:
+            if json.loads(candidata.detalhes_json or "{}").get("analise_id") == str(analise_id):
+                predicao = candidata
+                break
+        except (ValueError, TypeError):
+            continue
 
     if predicao is None:
         payload = DiagnosticoEmProcessamento(**metadados)
@@ -149,7 +160,7 @@ async def obter_diagnostico_exame(
         canais_omitidos=list(detalhes.get("canais_omitidos", [])),
         montagem_incompleta=bool(detalhes.get("montagem_incompleta", False)),
         cobertura_excessiva=bool(detalhes.get("cobertura_excessiva", False)),
-        resultado_conclusivo=bool(detalhes.get("resultado_conclusivo", True)),
+        resultado_conclusivo=bool(detalhes.get("resultado_conclusivo", False)),
         resultado_positivo_conclusivo=bool(detalhes.get("resultado_positivo_conclusivo", False)),
         canais_destaque=list(detalhes.get("canais_destaque", [])),
         n_janelas_analisadas=detalhes.get("n_janelas_analisadas"),
@@ -319,15 +330,18 @@ async def solicitar_analise_ia(
             detail=f"Canais EEG inválidos no arquivo: {', '.join(invalidos)}",
         )
 
+    analise_id = str(uuid4())
     background_tasks.add_task(
         processar_exame_ia,
         exame_id,
         canais_selecionados=canais,
         gerar_shap_sequencial=usuario.exibir_shap,
+        analise_id=analise_id,
     )
 
     return AnaliseIAResponse(
         exame_id=exame_id,
+        analise_id=analise_id,
         canais_processados=alvos,
         message=(
             f"Análise IA enfileirada para {len(alvos)} canal(is). "

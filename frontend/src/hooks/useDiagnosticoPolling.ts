@@ -18,6 +18,7 @@ export function useDiagnosticoPolling() {
   const tentativasRef = useRef(0)
   const pollGenerationRef = useRef(0)
   const concluidoRef = useRef(false)
+  const analiseIdRef = useRef<string | undefined>(undefined)
 
   const parar = useCallback(() => {
     pollGenerationRef.current += 1
@@ -26,6 +27,7 @@ export function useDiagnosticoPolling() {
   }, [])
 
   const resetar = useCallback(() => {
+    analiseIdRef.current = undefined
     pollGenerationRef.current += 1
     concluidoRef.current = false
     setAtivo(false)
@@ -51,6 +53,8 @@ export function useDiagnosticoPolling() {
 
   const iniciar = useCallback(async (id: number, canaisSelecionados: string[]) => {
     pollGenerationRef.current += 1
+    const geracao = pollGenerationRef.current
+    analiseIdRef.current = undefined
     concluidoRef.current = false
     setExameId(id)
     setDiagnostico(null)
@@ -60,9 +64,13 @@ export function useDiagnosticoPolling() {
     setAtivo(false)
 
     try {
-      await solicitarAnaliseIA(id, canaisSelecionados)
+      const resposta = await solicitarAnaliseIA(id, canaisSelecionados)
+      if (geracao !== pollGenerationRef.current) return
+      analiseIdRef.current = resposta.analise_id
+      sessionStorage.setItem(`eeg-analise-${id}`, resposta.analise_id)
       setAtivo(true)
     } catch {
+      if (geracao !== pollGenerationRef.current) return
       setErro('Falha ao enfileirar a análise IA. Verifique os canais selecionados.')
       setCarregando(false)
     }
@@ -70,6 +78,7 @@ export function useDiagnosticoPolling() {
 
   const retomar = useCallback(
     (id: number) => {
+      analiseIdRef.current = sessionStorage.getItem(`eeg-analise-${id}`) ?? undefined
       if (concluidoRef.current && exameId === id) {
         return
       }
@@ -95,12 +104,13 @@ export function useDiagnosticoPolling() {
       if (cancelado || geracao !== pollGenerationRef.current) return
 
       try {
-        const resultado = await obterDiagnostico(exameId)
+        const resultado = await obterDiagnostico(exameId, analiseIdRef.current)
         if (cancelado || geracao !== pollGenerationRef.current) return
 
         aplicarDiagnostico(resultado)
 
         if (isDiagnosticoConcluido(resultado)) {
+          sessionStorage.removeItem(`eeg-analise-${exameId}`)
           parar()
           return
         }

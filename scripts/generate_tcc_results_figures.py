@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "tcc" / "assets" / "resultados"
+OVERLEAF_IMAGES = ROOT / "docs" / "tcc" / "overleaf_eeg_xai" / "images"
 BLUE = "#1668C7"
 LIGHT_BLUE = "#DCEBFA"
 NAVY = "#17324D"
@@ -119,11 +120,63 @@ def terminal_figure() -> None:
     image.save(OUTPUT / "terminal_verificacao_v43.png")
 
 
+def confusion_matrices_figure() -> None:
+    calibration = json.loads((ROOT / "modelos" / "v43_final_seed42_calibration.json").read_text())["best"]
+    historical = json.loads((ROOT / "modelos" / "v43_final_seed42_reserved_historical_eval.json").read_text())["fixed_evaluation"]
+    matrices = [
+        ("Calibracao", 11, 0, 1, 1, BLUE),
+        (
+            "Avaliacao historica",
+            7,
+            int(historical["false_positives"]),
+            int(historical["false_negatives"]),
+            2,
+            ORANGE,
+        ),
+    ]
+    assert calibration["false_positives_edf"] == 0
+    assert calibration["false_negatives_edf"] == 1
+
+    image = Image.new("RGB", (1800, 920), "white")
+    draw = ImageDraw.Draw(image)
+    draw.text((90, 55), "Matrizes de confusao por EDF", fill=NAVY, font=font(48, True))
+    draw.text((90, 118), "Classificacao do arquivo completo no ponto operacional congelado", fill=GRAY, font=font(27))
+
+    for index, (title, tp, fp, fn, tn, color) in enumerate(matrices):
+        left = 180 + index * 850
+        top = 255
+        draw.text((left + 125, 185), title, fill=color, font=font(34, True))
+        draw.text((left + 210, top - 48), "Predito", fill=GRAY, font=font(24, True))
+        draw.text((left + 185, top - 5), "Crise", fill=NAVY, font=font(22))
+        draw.text((left + 420, top - 5), "Normal", fill=NAVY, font=font(22))
+        draw.text((left - 95, top + 150), "Real", fill=GRAY, font=font(24, True))
+        draw.text((left - 68, top + 225), "Crise", fill=NAVY, font=font(22))
+        draw.text((left - 82, top + 455), "Normal", fill=NAVY, font=font(22))
+        values = ((tp, fn), (fp, tn))
+        labels = (("VP", "FN"), ("FP", "VN"))
+        for row in range(2):
+            for col in range(2):
+                x0 = left + col * 230
+                y0 = top + 65 + row * 230
+                fill = LIGHT_BLUE if row == col else "#FDE8D0"
+                draw.rounded_rectangle((x0, y0, x0 + 190, y0 + 190), radius=14, fill=fill, outline=LIGHT_GRAY, width=3)
+                value = values[row][col]
+                draw.text((x0 + 78, y0 + 45), str(value), fill=NAVY, font=font(55, True))
+                draw.text((x0 + 76, y0 + 120), labels[row][col], fill=GRAY, font=font(23, True))
+
+    draw.text((90, 825), "VP: verdadeiro positivo; FN: falso negativo; FP: falso positivo; VN: verdadeiro negativo.", fill=GRAY, font=font(22))
+    output = OUTPUT / "matrizes_confusao_v43.png"
+    image.save(output)
+    image.save(OVERLEAF_IMAGES / "figura_20.png")
+
+
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    OVERLEAF_IMAGES.mkdir(parents=True, exist_ok=True)
     metrics_figure()
     event_summary_figure()
     terminal_figure()
+    confusion_matrices_figure()
 
 
 if __name__ == "__main__":

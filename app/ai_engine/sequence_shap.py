@@ -80,6 +80,8 @@ def gerar_mapa_shap_sequencial(
     inicio_seconds: float,
     fim_seconds: float,
     output_dir: Path | None = None,
+    target_step: int | None = None,
+    artifact_id: str | None = None,
 ) -> tuple[str, dict[str, Any] | None]:
     """Gera heatmap Gradient SHAP agregado por passo temporal e canal."""
     if amostra.ndim != 3 or amostra.shape[0] != 1:
@@ -87,6 +89,13 @@ def gerar_mapa_shap_sequencial(
     if background.ndim != 3 or background.shape[1:] != amostra.shape[1:]:
         raise ValueError("Background SHAP incompativel com a amostra.")
 
+    if target_step is not None:
+        import tensorflow as tf
+
+        if target_step < 0 or target_step >= modelo.output_shape[1]:
+            raise ValueError("Passo temporal SHAP fora da saida do modelo.")
+        alvo = tf.keras.layers.Lambda(lambda saida: saida[:, target_step, :])(modelo.output)
+        modelo = tf.keras.Model(modelo.inputs, alvo)
     explainer = shap.GradientExplainer(modelo, background)
     valores = explainer.shap_values(amostra)
     if isinstance(valores, list):
@@ -107,7 +116,8 @@ def gerar_mapa_shap_sequencial(
 
     destino = output_dir or get_settings().shap_storage_path
     destino.mkdir(parents=True, exist_ok=True)
-    caminho = (destino / f"exame_{exame_id}_sequence_shap.png").resolve()
+    sufixo = f"_{artifact_id}" if artifact_id else ""
+    caminho = (destino / f"exame_{exame_id}{sufixo}_sequence_shap.png").resolve()
 
     fig_height = max(3.5, min(9.0, 1.8 + 0.25 * len(rotulos)))
     fig, ax = plt.subplots(figsize=(10, fig_height))

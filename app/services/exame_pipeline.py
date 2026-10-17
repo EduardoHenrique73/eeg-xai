@@ -298,6 +298,9 @@ def _detalhes_sequenciais(resultado: dict[str, Any]) -> dict[str, Any]:
         "canais_processados": list(resultado.get("canais_processados", [])),
         "canais_omitidos": list(resultado.get("canais_omitidos", [])),
         "montagem_incompleta": bool(resultado.get("montagem_incompleta", False)),
+        "cobertura_excessiva": bool(resultado.get("cobertura_excessiva", False)),
+        "resultado_conclusivo": bool(resultado.get("resultado_conclusivo", False)),
+        "resultado_positivo_conclusivo": bool(resultado.get("resultado_positivo_conclusivo", False)),
         "canais_destaque": [],
         "threshold": resultado.get("threshold"),
         "min_duration_seconds": resultado.get("min_duration_seconds"),
@@ -322,6 +325,7 @@ async def _processar_exame_sequencial(
     settings: Settings,
     canais_selecionados: list[str] | None,
     gerar_shap: bool,
+    analise_id: str | None = None,
 ) -> None:
     """Fluxo do modelo sequencial global com trechos e Gradient SHAP."""
     logger.info("Usando modelo sequencial (global) para exame %s", exame_id)
@@ -338,6 +342,8 @@ async def _processar_exame_sequencial(
 
     score = float(resultado["score_geral"])
     detalhes = _detalhes_sequenciais(resultado)
+    detalhes["analise_id"] = analise_id
+    detalhes["xai_method"] = None
     logger.info(
         "Inferencia sequencial concluida para exame %s - score=%.4f, %d sequencias",
         exame_id,
@@ -360,9 +366,12 @@ async def _processar_exame_sequencial(
                 canais_omitidos=list(resultado.get("canais_omitidos", [])),
                 inicio_seconds=float(pico.get("start_seconds", 0.0)),
                 fim_seconds=float(pico.get("end_seconds", 0.0)),
+                target_step=resultado.get("_xai_target_step"),
+                artifact_id=analise_id,
             )
             if shap_overlay is not None:
                 detalhes["shap_overlay"] = shap_overlay
+            detalhes["xai_method"] = "gradient_shap"
         except Exception:
             logger.exception("Falha ao gerar Gradient SHAP sequencial para exame %s", exame_id)
 
@@ -385,6 +394,7 @@ async def processar_exame_ia(
     inferir: InferenciaFn | None = None,
     gerar_shap: ShapFn | None = None,
     gerar_shap_sequencial: bool = True,
+    analise_id: str | None = None,
 ) -> None:
     """
     Pipeline completo em background: features -> CNN-LSTM -> SHAP -> PredicaoIA.
@@ -423,6 +433,7 @@ async def processar_exame_ia(
                         settings=settings,
                         canais_selecionados=canais_selecionados,
                         gerar_shap=gerar_shap_sequencial,
+                        analise_id=analise_id,
                     )
                     return
                 logger.warning(
@@ -500,6 +511,7 @@ async def processar_exame_ia(
                 scaler=scaler,
                 model_metadata=model_metadata,
             )
+            detalhes["analise_id"] = analise_id
 
             predicao = PredicaoIA(
                 id_exame=exame_id,

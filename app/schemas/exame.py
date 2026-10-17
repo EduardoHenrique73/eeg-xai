@@ -71,7 +71,7 @@ class DiagnosticoConcluido(DiagnosticoExameBase):
     canais_omitidos: list[str] = Field(default_factory=list)
     montagem_incompleta: bool = False
     cobertura_excessiva: bool = False
-    resultado_conclusivo: bool = True
+    resultado_conclusivo: bool = False
     resultado_positivo_conclusivo: bool = False
     canais_destaque: list[dict[str, float | str]] = Field(default_factory=list)
     n_janelas_analisadas: int | None = None
@@ -121,6 +121,7 @@ class AnaliseIARequest(BaseModel):
 
 class AnaliseIAResponse(BaseModel):
     exame_id: int
+    analise_id: str
     status: Literal["em_processamento"] = "em_processamento"
     canais_processados: list[str]
     message: str = "Análise IA enfileirada. Consulte GET /diagnostico para acompanhar."

@@ -156,6 +156,7 @@ export interface AnaliseIARequest {
 
 export interface AnaliseIAResponse {
   exame_id: number
+  analise_id: string
   status: 'em_processamento'
   canais_processados: string[]
   message: string

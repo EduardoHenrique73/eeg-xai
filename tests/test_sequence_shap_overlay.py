@@ -7,6 +7,25 @@ from unittest.mock import patch
 from app.ai_engine.sequence_shap import _resumir_por_canal, gerar_mapa_shap_sequencial
 
 
+def test_gradient_shap_real_seleciona_saida_temporal(tmp_path):
+    import tensorflow as tf
+    entrada = tf.keras.Input(shape=(3, 2))
+    saida = tf.keras.layers.Dense(1, use_bias=False, kernel_initializer="ones")(entrada)
+    modelo = tf.keras.Model(entrada, saida)
+    caminho, overlay = gerar_mapa_shap_sequencial(
+        modelo, np.zeros((2, 3, 2), dtype=np.float32),
+        np.ones((1, 3, 2), dtype=np.float32), exame_id=9,
+        canais=["A", "B"],
+        janelas=[{"start_seconds": float(i * 2), "end_seconds": float(i * 2 + 4)} for i in range(3)],
+        inicio_seconds=4, fim_seconds=8, target_step=2, output_dir=tmp_path,
+    )
+    assert overlay is not None
+    positivos = [c for c in overlay["cells"] if c["intensity"] > 0]
+    assert all(c["start_seconds"] == 4 for c in positivos)
+    assert len(positivos) == 2
+    assert tmp_path.joinpath(caminho).exists()
+
+
 def test_overlay_usa_ordem_de_canais_e_intervalos_reais():
     matriz = np.array([[1, 3, 2, 2], [4, 4, 1, 1]], dtype=np.float32)
     janelas = [

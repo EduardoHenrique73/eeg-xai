@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Maximize2, Minimize2, Minus, Plus, RotateCcw, X } from 'lucide-react'
 import {
   CartesianGrid,
@@ -66,17 +66,17 @@ export const EegSignalChart = memo(function EegSignalChart({
     setGraficoExpandido(false)
   }, [exameId])
 
-  const focar = (inicio: number, fim: number) => {
+  const focar = useCallback((inicio: number, fim: number) => {
     if (!duracaoTotal) return
     const largura = Math.min(120, Math.max(30, fim - inicio + 20))
     setIntervalo(limitarIntervalo((inicio + fim) / 2, largura, duracaoTotal))
     setDetalharShap(false)
-  }
+  }, [duracaoTotal])
 
   useEffect(() => {
     if (!trechoEmFoco || !duracaoTotal) return
     focar(trechoEmFoco.start_seconds, trechoEmFoco.end_seconds)
-  }, [trechoEmFoco, duracaoTotal])
+  }, [trechoEmFoco, duracaoTotal, focar])
 
   const focarShap = () => {
     if (!shapOverlay?.cells.length || !duracaoTotal) return
@@ -94,12 +94,12 @@ export const EegSignalChart = memo(function EegSignalChart({
     setDetalharShap(false)
   }
 
-  const deslocar = (direcao: number) => {
+  const deslocar = useCallback((direcao: number) => {
     if (!intervalo) return
     const largura = intervalo.end_seconds - intervalo.start_seconds
     setIntervalo(limitarIntervalo((intervalo.start_seconds + intervalo.end_seconds) / 2 + direcao * largura * 0.75, largura, duracaoTotal))
     setDetalharShap(false)
-  }
+  }, [duracaoTotal, intervalo])
 
   useEffect(() => {
     if (!graficoExpandido) return
@@ -120,7 +120,7 @@ export const EegSignalChart = memo(function EegSignalChart({
       document.body.style.overflow = overflowAnterior
       window.removeEventListener('keydown', aoPressionarTecla)
     }
-  }, [graficoExpandido, intervalo, duracaoTotal, shapExpandido])
+  }, [graficoExpandido, shapExpandido, deslocar])
 
   useEffect(() => {
     if (exameId == null) {
@@ -215,13 +215,8 @@ export const EegSignalChart = memo(function EegSignalChart({
     })
   }, [seriesVisiveis, escalaVertical])
 
-  const dadosExibidos = useMemo(() => {
-    if (intervalo || dadosGrafico.length <= 600) return dadosGrafico
-    const ultimo = dadosGrafico.length - 1
-    return Array.from({ length: 600 }, (_, indice) =>
-      dadosGrafico[Math.round((indice * ultimo) / 599)],
-    )
-  }, [dadosGrafico, intervalo])
+  // The server retains channel extrema; resampling here would discard peaks.
+  const dadosExibidos = dadosGrafico
 
   const possuiSerie = dadosExibidos.length > 0
   const dominioY: [number, number] = [-2, Math.max(2, (seriesVisiveis.length - 1) * 4 + 2)]

@@ -12,6 +12,8 @@ A explicabilidade é incorporada por meio do método SHAP, que relaciona a decis
 
 No Brasil, a eventual disponibilização de software com finalidade médica deve considerar a regulamentação aplicável a Software como Dispositivo Médico, incluindo a RDC nº 657, de 24 de março de 2022, da Agência Nacional de Vigilância Sanitária. O protótipo desenvolvido neste trabalho não foi submetido à regularização sanitária. No âmbito da interface, as recomendações do eMAG e das WCAG constituem referências para evolução da acessibilidade, sem que se alegue conformidade formal antes de uma auditoria específica.
 
+Em termos operacionais, a pergunta central é: como reunir, em uma aplicação web, a inspeção de um EEG extenso e a indicação automática de intervalos que merecem revisão? O resultado entregue combina duas contribuições: um fluxo funcional de software e uma avaliação quantitativa do detector temporal. O médico recebe o traçado, os intervalos suspeitos e as contribuições estimadas pelo modelo, podendo confrontá-los antes de registrar seu parecer. O desempenho do detector é avaliado separadamente do funcionamento da aplicação.
+
 \Needspace{12\baselineskip}\section{OBJETIVOS}
 \subsection{Objetivo Geral}
 Desenvolver e avaliar um protótipo funcional de plataforma web para apoio à triagem e à análise de exames de Eletroencefalograma (EEG), integrando uma arquitetura híbrida CNN-BiLSTM e técnicas de Inteligência Artificial Explicável (XAI) para localizar temporalmente eventos suspeitos e fornecer informações de apoio à revisão do especialista.
@@ -44,14 +46,14 @@ Este trabalho encontra-se estruturado em sete capítulos. O Capítulo 1 introduz
 \Needspace{12\baselineskip}\section{Contexto Neurofisiológico e Desafios da Análise Computacional}
 O Eletroencefalograma (EEG) é reconhecido como recurso fundamental para o diagnóstico e o monitoramento de epilepsia e outras desordens cerebrais, caracterizando-se como exame não invasivo, de baixo custo e elevada resolução temporal (Niedermeyer; Lopes da Silva, 2005; Craik et al., 2019). A duração dos registros e a quantidade de canais produzem grande volume de dados, o que aumenta a carga de revisão dos especialistas.
 
-Apesar da importância crítica do exame, a interpretação do EEG ainda é predominantemente manual e visual. Relatórios e estudos da área indicam que a análise de longas séries temporais (exames que podem durar de 20 minutos a dias) é um processo exaustivo, sujeito à fadiga e à subjetividade do especialista (Tatum, 2014; Roy et al., 2019). Essa dependência da análise humana exclusiva constitui uma vulnerabilidade diagnóstica crítica. A leitura visual convencional é criticada por ser lenta, apresentar baixa concordância entre diferentes avaliadores (variabilidade interobservador) e ser propensa a erros na detecção de eventos sutis ou raros em meio a artefatos de ruído (Aboalayon et al., 2016).
+Apesar da importância do exame, a interpretação do EEG ainda é predominantemente manual e visual. Relatórios e estudos da área indicam que a análise de longas séries temporais (exames que podem durar de 20 minutos a dias) é um processo exaustivo, sujeito à fadiga e à subjetividade do especialista (Tatum, 2014; Roy et al., 2019). A leitura visual convencional pode ser lenta, apresentar variabilidade entre avaliadores e dificultar a detecção de eventos sutis ou raros em meio a artefatos (Aboalayon et al., 2016).
 
-Diante da complexidade não-linear dos sinais biológicos, a aplicação de Inteligência Artificial deixou de ser apenas uma promessa acadêmica e tornou-se uma necessidade para o suporte à decisão clínica (Topol, 2019). O estado da arte exige modernização e eficiência, tornando sistemas de auxílio ao diagnóstico (CDSS - Clinical Decision Support Systems) indispensáveis para triagem em larga escala (Sutton et al., 2020). A adoção de algoritmos de Deep Learning tem como principal objetivo sanar as limitações humanas, pois:
+Diante da complexidade não linear dos sinais biológicos, a Inteligência Artificial passou a ser investigada como recurso de apoio à decisão clínica (Topol, 2019). Nesse contexto, sistemas de apoio à decisão (CDSS - Clinical Decision Support Systems) podem contribuir para a triagem em larga escala, desde que seu desempenho e seus riscos sejam avaliados no cenário de uso (Sutton et al., 2020). A adoção de algoritmos de Deep Learning pode auxiliar a análise porque:
 
 \begin{itemize}[leftmargin=1.25cm,itemsep=0pt,topsep=0pt]
 \item Aumenta a Sensibilidade: redes profundas podem identificar relações não lineares e padrões distribuídos no sinal que são difíceis de representar por regras fixas; o desempenho, contudo, depende da base, do protocolo de validação e da população avaliada (Acharya et al., 2018; Roy et al., 2019).
-\item Automatiza a Triagem: Soluções tecnológicas processam arquivos pesados em segundos, permitindo que o médico foque sua atenção apenas nos segmentos apontados como patológicos pelo sistema, otimizando o fluxo clínico (Esteva et al., 2019).
-\item Padroniza a Análise: Ao utilizar critérios matemáticos consistentes, a tecnologia reduz a variabilidade diagnóstica, proporcionando uma "segunda opinião" isenta de fatores como cansaço ou viés cognitivo (Faust et al., 2018).
+\item Automatiza a Triagem: soluções tecnológicas podem reduzir o espaço de busca ao destacar segmentos para revisão, permitindo que o médico concentre a inspeção nos intervalos sinalizados pelo sistema. O tempo efetivo de processamento depende do hardware, da duração do registro e do método empregado (Esteva et al., 2019).
+\item Padroniza a Análise: ao aplicar critérios computacionais consistentes, a tecnologia pode reduzir parte da variabilidade operacional e fornecer uma segunda leitura que não sofre fadiga, embora permaneça sujeita aos vieses dos dados e do processo de desenvolvimento (Faust et al., 2018).
 \end{itemize}
 Portanto, uma plataforma web de apoio não busca substituir o médico, mas organizar o fluxo de triagem e apresentar evidências computacionais para revisão. A utilidade clínica efetiva depende de validação externa, avaliação com especialistas e controle dos falsos alarmes.
 
@@ -63,7 +65,7 @@ Os ciclos curtos permitiram comparar arquiteturas, estratégias de amostragem e 
 A arquitetura segue o modelo cliente-servidor mediado por API REST. O frontend React envia requisições ao backend FastAPI, responsável pela persistência, pelo processamento dos arquivos EDF e pela execução da IA. Esse desacoplamento permite manter a interface responsiva enquanto as tarefas computacionalmente intensivas são executadas no servidor.
 
 \Needspace{12\baselineskip}\section{Tecnologias Full-Stack e Persistência de Dados Biomédicos}
-A arquitetura Full-Stack moderna é essencial para o desenvolvimento de soluções que exigem alta performance e interatividade, como a proposta. Na camada de desenvolvimento da API e Inteligência Artificial, a escolha pela linguagem Python é crucial, pois ela constitui o padrão da indústria para Ciência de Dados, oferecendo bibliotecas robustas (como TensorFlow e MNE) para manipulação de sinais (Van Rossum; Drake, 2009; McKinney, 2012). Para a interface web, sistemas modernos de visualização médica exigem gráficos dinâmicos e interativos (necessários para o zoom e seleção de canais no EEG), sendo o React.js a biblioteca mais indicada para a construção de uma Single Page Application (SPA) fluida e reativa (Meta Platforms, 2024; Banks; Porcello, 2020).
+A solução foi organizada em camadas para atender aos requisitos de processamento e interatividade. No servidor e no módulo de Inteligência Artificial, Python foi escolhido pela disponibilidade de bibliotecas como TensorFlow e MNE-Python para aprendizado profundo e processamento de sinais (Van Rossum; Drake, 2009; McKinney, 2012). Na interface web, React foi adotado para construir uma Single Page Application (SPA) com atualização de estado, navegação e gráficos interativos, incluindo zoom e seleção de canais (Meta Platforms, 2024; Banks; Porcello, 2020).
 
 Na versão final, o PostgreSQL armazena os dados cadastrais e metadados dos exames, enquanto os arquivos EDF e os artefatos de IA permanecem no sistema de arquivos, com seus caminhos referenciados pela aplicação. A conexão e a leitura dos registros foram verificadas no fluxo local da API. Não foram utilizados pgvector nem banco vetorial.
 
@@ -74,10 +76,10 @@ No TCC I, a proposta de CNN-LSTM partia da análise temporal do EEG e previa Ent
 
 O trabalho anterior de Moreira et al. (2025) integra o contexto acadêmico que motivou a investigação de características matemáticas e modelos de IA. Seus resultados numéricos não são utilizados aqui como evidência de desempenho em EEG, pois não foi possível conferir no relatório original o protocolo e os valores atribuídos a essa comparação. A escolha da CNN-BiLSTM e de sua representação de entrada fundamenta-se nos experimentos controlados descritos neste trabalho, sem transferir acurácias de outro estudo para a avaliação da CHB-MIT.
 
-Para que essa análise seja confiável, a integração do método SHAP (Shapley Additive exPlanations) é fundamental. Proposto por Lundberg e Lee (2017), o SHAP baseia-se na teoria dos jogos para atribuir valores de importância a cada feature de entrada. O uso de XAI neste contexto:
+Para aumentar a inspecionabilidade dessa análise, foi integrado o método SHAP (Shapley Additive exPlanations). Proposto por Lundberg e Lee (2017), o SHAP baseia-se na teoria dos jogos para atribuir valores de importância às características de entrada. O uso de XAI neste contexto:
 
 \begin{itemize}[leftmargin=1.25cm,itemsep=0pt,topsep=0pt]
-\item Favorece a Interpretabilidade: o sistema associa os valores de relevância às features, aos canais e aos intervalos temporais da sequência analisada, permitindo confrontar a saída do modelo com o traçado exibido.
+\item Favorece a Interpretabilidade: o sistema associa os valores de relevância às características, aos canais e aos intervalos temporais da sequência analisada, permitindo confrontar a saída do modelo com o traçado exibido.
 \item Apoia a Revisão Clínica: a explicação não comprova uma justificativa fisiológica nem valida automaticamente a predição. Ela oferece uma indicação adicional para que o especialista examine se a região destacada é compatível com evento ictal, padrão interictal ou artefato.
 \end{itemize}
 A combinação entre modelo temporal e XAI é, portanto, utilizada para tornar a saída computacional mais inspecionável, mantendo explícita a necessidade de supervisão humana e validação externa.
@@ -126,7 +128,7 @@ A implementação foi dividida em incrementos dependentes, mas com atividades pa
 
 \begin{itemize}[leftmargin=1.25cm,itemsep=0pt,topsep=0pt]
 \item Incremento I (Infraestrutura e Ingestão): concluído quando a API passou a autenticar usuários, cadastrar pacientes, receber, validar, armazenar e ler arquivos EDF, extraindo canais e taxa de amostragem.
-\item Incremento II (Núcleo de Inteligência): o extrator histórico implementou Entropia de Shannon e medidas de Dinâmica Simbólica, que foram investigadas como alternativas de representação. Após os experimentos, a CNN-BiLSTM final passou a receber 15 características tempo-frequência por canal, incluindo entropia espectral, mas não aquelas características históricas. A rede produz probabilidades ictais por passo temporal. A separação dos grupos ocorreu antes do janelamento e da amostragem.
+\item Incremento II (Núcleo de Inteligência): o extrator histórico implementou Entropia de Shannon e medidas de Dinâmica Simbólica, que foram investigadas como alternativas de representação. Após os experimentos, a CNN-BiLSTM final passou a receber 15 características tempo-frequência por canal, incluindo entropia espectral, mas não aquelas características históricas. A rede produz escores de suspeita ictal por passo temporal. A separação dos grupos ocorreu antes do janelamento e da amostragem.
 \item Incremento III (Interface e Explicabilidade): concluído com a integração entre backend e frontend, incluindo visualização multicanal, seleção de canais, trechos suspeitos, sobreposição SHAP, configurações médicas e emissão de laudo.
 \end{itemize}
 A cada ciclo foram executados testes automatizados e verificações sobre arquivos EDF reais. Alterações experimentais na IA somente foram promovidas quando apresentaram benefício no protocolo controlado de calibração.
@@ -139,7 +141,28 @@ A verificação contemplou o comportamento do software e a avaliação científi
 \item Desempenho e carga: o processamento ponta a ponta foi verificado em EDF real de longa duração. O tempo aceitável para uso clínico não foi definido por profissionais da área; portanto, o trabalho não adota um limite arbitrário. Uma avaliação formal deve registrar hardware, duração do exame, tempo total, uso de memória e concorrência.
 \item Usabilidade e interpretabilidade: foram realizados testes técnicos da interface, do alinhamento temporal e da projeção do SHAP. Não foi conduzido estudo formal com médicos ou técnicos; essa ausência é apresentada como limitação e trabalho futuro.
 \end{itemize}
-Precisão é a fração de predições positivas corretas; sensibilidade (recall) é a fração dos casos positivos reais detectados; F1 é a média harmônica entre ambas (F1 = 2PR/(P+R), com P = precisão e R = recall). Na análise por EDF, cada arquivo é uma unidade; por evento, consideram-se crises e alertas. A IoU mede a sobreposição temporal entre intervalos reais e previstos. FA/h expressa alarmes incorretos por hora de sinal analisado. F1 localizado exige correspondência temporal e difere do F1 por evento.
+Precisão é a fração de predições positivas corretas; sensibilidade (recall) é a fração dos casos positivos reais detectados; F1 é a média harmônica entre ambas (F1 = 2PR/(P+R), com P = precisão e R = recall). Na análise por EDF, cada arquivo constitui uma unidade. Na análise por evento, uma crise foi considerada detectada quando algum candidato válido apresentou simultaneamente pelo menos 1 segundo de interseção e sobreposição correspondente a 25\% da duração do evento real; candidatos válidos sem essa correspondência foram contabilizados como falsos alarmes. A métrica FA/h corresponde ao número desses falsos alarmes dividido pelas horas não ictais analisadas, isto é, a duração total descontados os intervalos anotados como crise.
+
+A IoU temporal foi calculada pela razão entre a duração da interseção e a duração da união dos intervalos real e previsto. O F1 localizado não é um F1 calculado amostra a amostra: ele mantém o EDF como unidade, mas somente considera correta a predição positiva de um EDF ictal quando o trecho principal selecionado satisfaz os mesmos critérios de sobreposição temporal. Assim, essa métrica penaliza arquivos classificados como positivos cujo candidato principal foi posicionado fora da crise. Já o F1 por evento considera todas as crises anotadas e todos os candidatos válidos, razão pela qual pode divergir do F1 localizado.
+
+Para explicitar as unidades utilizadas, as métricas por EDF são definidas nas Equações~\ref{eq:precisao} a~\ref{eq:f1}. VP indica arquivo ictal classificado como positivo, FP indica arquivo não ictal classificado como positivo e FN indica arquivo ictal classificado como negativo.
+\begin{equation}\label{eq:precisao}
+P=\frac{VP}{VP+FP}
+\end{equation}
+\begin{equation}\label{eq:recall}
+R=\frac{VP}{VP+FN}
+\end{equation}
+\begin{equation}\label{eq:f1}
+F_1=\frac{2PR}{P+R}
+\end{equation}
+Para intervalos $A$ (referência) e $B$ (previsão), com $|\cdot|$ representando duração, a sobreposição e a taxa de falsos alarmes são dadas por:
+\begin{equation}\label{eq:iou}
+\mathrm{IoU}(A,B)=\frac{|A\cap B|}{|A\cup B|}
+\end{equation}
+\begin{equation}\label{eq:fah}
+\mathrm{FA/h}=\frac{N_{\mathrm{alarmes\ sem\ correspondencia}}}{T_{\mathrm{nao\ ictal}}/3600}.
+\end{equation}
+Na Equação~\ref{eq:fah}, o tempo é medido em segundos. No avaliador utilizado, a sensibilidade por evento é a quantidade de crises detectadas dividida pelo total de crises, e a precisão por evento é calculada como crises detectadas divididas pela soma de crises detectadas e falsos alarmes. Não há pareamento exclusivo um a um: dois candidatos que correspondam à mesma crise não são necessariamente penalizados como duplicatas. Essa convenção é mantida para interpretar os resultados históricos. Os intervalos de referência do avaliador são reconstruídos dos rótulos das janelas; portanto, seus limites temporais estão sujeitos à discretização do janelamento.
 
 \Needspace{12\baselineskip}\section{Implementação}
 A versão avaliada foi implantada localmente como protótipo de pesquisa, com frontend, API, banco de dados e artefatos de IA executados no ambiente de desenvolvimento.
@@ -154,7 +177,7 @@ A avaliação utilizou registros públicos reais e desidentificados da CHB-MIT. 
 \Needspace{12\baselineskip}\section{Descrição}
 O software configura-se como um protótipo funcional de plataforma web de apoio à análise de EEG. Seu público-alvo potencial inclui neurologistas, neurofisiologistas e pesquisadores, mas a versão atual não foi validada clinicamente nem regularizada para uso assistencial. A proposta responde ao esforço envolvido na revisão de registros extensos e à necessidade de reunir visualização, análise computacional, explicabilidade e laudo em um fluxo único.
 
-A plataforma recebe arquivos EDF vinculados ao paciente, extrai metadados e apresenta os canais em uma linha temporal interativa. O pipeline CNN-BiLSTM produz probabilidades ictais por passo e agrega sequências sobrepostas em trechos suspeitos. O Gradient SHAP explica as features da sequência de pico e a interface projeta relevâncias positivas por canal e intervalo de segundos. Essa explicação não corresponde a uma atribuição por amostra bruta e deve ser interpretada como apoio à inspeção, não como justificativa fisiológica conclusiva.
+A plataforma recebe arquivos EDF vinculados ao paciente, extrai metadados e apresenta os canais em uma linha temporal interativa. O pipeline CNN-BiLSTM produz escores temporais de suspeita ictal e agrega sequências sobrepostas em trechos suspeitos. O Gradient SHAP estima a contribuição das características da sequência de pico, e a interface projeta as relevâncias positivas por canal e intervalo de segundos. Essa explicação não corresponde a uma atribuição por amostra bruta e deve ser interpretada como apoio à inspeção, não como justificativa fisiológica conclusiva.
 
 \Needspace{12\baselineskip}\section{Levantamento de Requisitos}
 A engenharia de requisitos baseou-se em revisão bibliográfica, análise documental do EDF, experiência do projeto anterior e refinamento com a orientação acadêmica. Não houve entrevista estruturada nem validação formal com neurologistas. Assim, os requisitos clínicos representam hipóteses de projeto para um protótipo e deverão ser avaliados com profissionais antes de uma eventual evolução assistencial.
@@ -171,8 +194,8 @@ A partir da análise estrutural da plataforma e do pipeline de triagem neurofisi
 \noindent \textbf{3 – Importar Exame (.EDF):} O sistema deve fornecer mecanismos para o upload e a ingestão de arquivos de sinais biomédicos estruturados no formato padrão universal .EDF.\par
 \noindent \textbf{4 – Extrair Metadados do Sinal:} O sistema deve decodificar o cabeçalho (header) do arquivo binário carregado e extrair automaticamente informações como taxa de amostragem e os rótulos dos canais de eletrodos.\par
 \noindent \textbf{5 – Visualizar Sinais de EEG:} O sistema deve plotar graficamente na tela do usuário as séries temporais contínuas e multicanais correspondentes às ondas cerebrais captadas.\par
-\noindent \textbf{6 – Manipulação Interativa de Ondas:} O sistema deve permitir que o médico execute comandos responsivos de zoom horizontal e vertical e isole montagens de canais focais diretamente no dashboard.\par
-\noindent \textbf{7 – Solicitar Análise Preditiva: }O sistema deve acionar o modelo CNN-BiLSTM sobre um exame EDF já importado para gerar probabilidades ictais por intervalo e destacar trechos suspeitos para revisão médica.\par
+\noindent \textbf{6 – Manipulação Interativa de Ondas:} O sistema deve permitir que o médico execute comandos responsivos de zoom horizontal e vertical e isole montagens de canais focais diretamente no painel.\par
+\noindent \textbf{7 – Solicitar Análise Preditiva: }O sistema deve acionar o modelo CNN-BiLSTM sobre um exame EDF já importado para gerar escores de suspeita ictal por intervalo e destacar trechos para revisão médica.\par
 \noindent \textbf{8 – Exibir Justificativa Visual (XAI): }O sistema deve sobrepor um mapa de calor gerado com os valores do algoritmo SHAP sobre o traçado original do EEG, destacando em vermelho os intervalos e canais que contribuíram para o escore da rede neural.\par
 \noindent \textbf{9 – Emitir Laudo Médico:} O sistema deve disponibilizar um campo de texto descritivo para que o especialista redija e formalize o laudo definitivo do exame, integrando a triagem analítica.\par
 \textbf{Requisitos Não Funcionais:}
@@ -212,7 +235,7 @@ Ator principal & Médico Neurologista \\ \hline
 Atores secundários & - \\ \hline
 Resumo & Este caso de uso descreve o processo de autenticação de segurança, permitindo que o médico insira suas credenciais para obter acesso seguro ao painel de controle da plataforma. \\ \hline
 Pré-condições & O médico deve estar previamente cadastrado no banco de dados do sistema. \\ \hline
-Pós-condições & O usuário é autenticado, um token de sessão seguro (JWT) é gerado e o dashboard principal é carregado no frontend. \\ \hline
+Pós-condições & O usuário é autenticado, um token de sessão JWT é gerado e o painel principal é carregado no frontend. \\ \hline
 Ações do ator & Ações do sistema \\ \hline
 1 – Acessar a tela inicial da plataforma web e preencher os campos de e-mail e senha. &  \\ \hline
  & 2 – Receber os dados de login através da API FastAPI de forma assíncrona. \\ \hline
@@ -305,7 +328,7 @@ Pré-condições & O arquivo do exame já deve ter sido importado com sucesso na
 Pós-condições & Os traçados de sinais elétricos são exibidos de forma reativa e fluida em tela, permitindo manipulações visuais pelo usuário. \\ \hline
 Ações do ator & Ações do sistema \\ \hline
 1 – Selecionar o exame de EEG correspondente na linha do tempo do paciente. &  \\ \hline
- & 2 – Buscar os blocos de vetores temporais do arquivo de sinais e renderizar os canais na tela usando componentes gráficos de alta performance. \\ \hline
+ & 2 – Buscar os blocos de vetores temporais do arquivo de sinais e renderizar os canais na tela usando os componentes gráficos da aplicação. \\ \hline
 3 – Executar interações na tela, como comandos de zoom horizontal/vertical e seleção dinâmica de montagens de canais específicos. &  \\ \hline
  & 4 – Atualizar as escalas dos eixos, recalculando a renderização visual das ondas cerebrais em tempo real conforme os filtros acionados. \\ \hline
 Restrições/Validações & 1 – O sistema deve limitar a quantidade de pontos simultâneos renderizados na tela para evitar gargalos de memória e travamentos na interface React.js. \\ \hline
@@ -329,15 +352,15 @@ Restrições/Validações & 1 – O sistema deve limitar a quantidade de pontos 
 Caso de uso geral & - \\ \hline
 Ator principal & Médico Neurologista \\ \hline
 Atores secundários & - \\ \hline
-Resumo & Este caso de uso detalha o acionamento do pipeline de inteligência artificial para realizar a triagem e a predição automática de descargas epileptiformes e crises no sinal. \\ \hline
+Resumo & Este caso de uso detalha o acionamento do pipeline de inteligência artificial para realizar a triagem temporal e destacar segmentos com atividade compatível com os eventos ictais aprendidos a partir das anotações da CHB-MIT. \\ \hline
 Pré-condições & O arquivo EDF correspondente deve estar previamente importado e carregado no backend. \\ \hline
-Pós-condições & As probabilidades temporais, os trechos suspeitos e os metadados da análise são persistidos e disponibilizados na interface. \\ \hline
+Pós-condições & Os escores temporais, os trechos suspeitos e os metadados da análise são persistidos e disponibilizados na interface. \\ \hline
 Ações do ator & Ações do sistema \\ \hline
 1 – Clicar no comando "Solicitar Análise da IA" localizado no painel de visualização do exame. &  \\ \hline
  & 2 – Extrair 15 características tempo-frequência por canal e por janela, incluindo entropia espectral, para formar sequências temporais. \\ \hline
- & 3 – Alimentar a rede CNN-BiLSTM com as sequências de características para estimar a probabilidade ictal em cada passo temporal. \\ \hline
- & 4 – Persistir o score probabilístico resultante e sinalizar graficamente no dashboard quais trechos de tempo apresentam indícios patológicos. \\ \hline
-Restrições/Validações & 1 – Garantir processamento estritamente assíncrono no backend via FastAPI para que a requisição de classificação em segundo plano não interrompa o uso do sistema médico. \\ \hline
+ & 3 – Alimentar a rede CNN-BiLSTM com as sequências de características para estimar o escore de suspeita ictal em cada passo temporal. \\ \hline
+ & 4 – Persistir o resultado e destacar graficamente no painel os trechos que devem ser revisados pelo especialista. \\ \hline
+Restrições/Validações & 1 – Executar a análise em segundo plano para que a requisição inicial não permaneça bloqueada durante todo o processamento. \\ \hline
 \end{longtable}
 \endgroup
 \nopagebreak[4]{\centering\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor (2026).\par}
@@ -358,14 +381,14 @@ Restrições/Validações & 1 – Garantir processamento estritamente assíncron
 Caso de uso geral & - \\ \hline
 Ator principal & Médico Neurologista \\ \hline
 Atores secundários & - \\ \hline
-Resumo & Este caso de uso descreve a exibição das justificativas fisiológicas tomadas pela rede neural profunda através da plotagem de mapas de relevância gerados pelo algoritmo SHAP. \\ \hline
+Resumo & Este caso de uso descreve a exibição das contribuições computacionais estimadas pelo Gradient SHAP para a sequência de pico analisada pela rede neural. \\ \hline
 Pré-condições & A análise preditiva descrita no Quadro 5 deve estar concluída e possuir uma sequência de pico válida. \\ \hline
 Pós-condições & Gráficos explicativos com mapas de calor coloridos são sobrepostos às ondas de EEG para inspeção do médico. \\ \hline
 Ações do ator & Ações do sistema \\ \hline
-1 – Acionar a opção "Exibir Justificativa / Mapa SHAP" no painel de resultados preditivos. &  \\ \hline
+1 – Acionar a opção de exibição do mapa SHAP no painel de resultados preditivos. &  \\ \hline
  & 2 – Associar os valores positivos de Gradient SHAP às features, aos canais e aos intervalos temporais da sequência de pico. \\ \hline
  & 3 – Projetar as relevâncias por canal e intervalo de segundos sobre o traçado exibido, mantendo explícito que a explicação não é calculada por amostra bruta. \\ \hline
-Restrições/Validações & 1 – Validar que o mapa gerado corresponda exatamente à janela de tempo selecionada para evitar desalinhamento visual entre o sinal original e a marcação de explicabilidade. \\ \hline
+Restrições/Validações & 1 – O mapa deve utilizar o mesmo mapeamento de sequência, passo temporal, canais e intervalos empregado na inferência da sequência de pico. A seleção de outro candidato na interface não recalcula automaticamente uma nova explicação SHAP. \\ \hline
 \end{longtable}
 \endgroup
 \nopagebreak[4]{\centering\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor (2026).\par}
@@ -393,8 +416,7 @@ Ações do ator & Ações do sistema \\ \hline
 1 – Acessar o campo de digitação textual para o laudo médico final. &  \\ \hline
 2 – Digitar as impressões clínicas e decidir se confirma ou desconsidera os alertas emitidos pela triagem do algoritmo inteligente. &  \\ \hline
 3 – Clicar na ação "Emitir Laudo Finalizado". & 4 – Salvar o texto associado ao exame, alterar o status para Concluído e impedir novas edições. \\ \hline
- & 1 – Impedir a emissão se o texto estiver vazio. 2 – Informar que não há rascunho persistente, campos estruturados ou assinatura digital nesta versão. \\ \hline
-Restrições/Validações & 1 - Impedir a emissão se o texto estiver vazio. 2 - Informar que não há rascunho persistente, campos estruturados ou assinatura digital nesta versão. \\ \hline
+Restrições/Validações & 1 – Impedir a emissão se o texto estiver vazio. 2 – Informar que não há rascunho persistente, campos estruturados ou assinatura digital nesta versão. \\ \hline
 \end{longtable}
 \endgroup
 \nopagebreak[4]{\centering\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor (2026).\par}
@@ -403,7 +425,7 @@ A aplicação adota uma organização cliente-servidor: a interface React se com
 
 O frontend é uma aplicação React e TypeScript. O traçado multicanal utiliza Recharts e oferece navegação temporal, seleção de canais e sobreposição de trechos suspeitos. O backend, em Python e FastAPI, utiliza MNE-Python na leitura do EDF e TensorFlow/Keras na inferência da CNN-BiLSTM. Os metadados são persistidos no PostgreSQL configurado para a versão final.
 
-Após o envio do EDF, a API valida e armazena o arquivo e registra o exame. Quando o médico solicita a análise, o pipeline extrai 15 características por canal em janelas temporais e forma sequências para a CNN-BiLSTM, que produz probabilidades ictais ao longo do tempo. A explicação Gradient SHAP é calculada para a sequência de pico e projetada por canal e intervalo de segundos na interface. Essa projeção não atribui relevância a cada amostra bruta do sinal e não substitui a interpretação médica.
+Após o envio do EDF, a API valida e armazena o arquivo e registra o exame. Quando o médico solicita a análise, o pipeline extrai 15 características por canal em janelas temporais e forma sequências para a CNN-BiLSTM, que produz escores de suspeita ictal ao longo do tempo. A explicação Gradient SHAP é calculada para a sequência de pico e projetada por canal e intervalo de segundos na interface. Essa projeção não atribui relevância a cada amostra bruta do sinal e não substitui a interpretação médica.
 
 \Needspace{12\baselineskip}\section{Fluxograma}
 Para mapear de maneira lógica a dinâmica operacional e a rastreabilidade dos dados na plataforma web proposta, desenvolveu-se o fluxograma detalhado na Figura 3. Conforme preconizado pelas boas práticas de Engenharia de Software, o fluxo foi segmentado visualmente em três macrocamadas interdependentes e síncronas/assíncronas, diferenciadas por meio de uma paleta de cores funcional para facilitar a compreensão da arquitetura lógica do sistema:
@@ -419,7 +441,7 @@ A lógica de processamento mapeada no diagrama cumpre rigorosamente quatro fases
 
 \textbf{2. Ingestão e Validação de Arquivo:} O arquivo biomédico com extensão .EDF é submetido pela interface via requisição HTTP POST Multipart. O servidor FastAPI intercepta o arquivo e valida a integridade do seu cabeçalho (header); caso haja inconformidade ou erro de formato, o fluxo é interrompido com uma notificação de erro ao cliente, impedindo a persistência de dados corrompidos.
 
-\textbf{3. Processamento Inteligente Assíncrono: }Após a importação, o médico solicita a análise do exame. O servidor executa em segundo plano a extração das 15 características por canal e a inferência CNN-BiLSTM. As probabilidades são agregadas em trechos temporais suspeitos; o SHAP explica a sequência de pico. Os metadados e resultados são registrados no banco relacional configurado, enquanto EDF e imagens permanecem em disco.
+\textbf{3. Processamento Inteligente em Segundo Plano: }Após a importação, o médico solicita a análise do exame. O servidor executa em segundo plano a extração das 15 características por canal e a inferência CNN-BiLSTM. Os escores são agregados em trechos temporais suspeitos; o SHAP estima as contribuições para a sequência de pico. Os metadados e resultados são registrados no banco relacional configurado, enquanto EDF e imagens permanecem em disco.
 
 Na Figura 3, os blocos roxos representam o pipeline conceitual definido no planejamento inicial. Na implementação final, essas etapas foram consolidadas na extração de 15 características tempo-frequência por canal e na inferência temporal pela rede CNN-BiLSTM.
 
@@ -440,7 +462,7 @@ A entidade Usuario armazena dados profissionais e o hash da senha dos médicos a
 
 A entidade Exame registra o arquivo EDF, os metadados extraídos, o estado do processamento e o texto livre do laudo. Depois da emissão, o laudo torna-se imutável. Não há rascunho persistente, campos clínicos estruturados ou assinatura digital nesta versão.
 
-A entidade Predicao\_IA registra o resultado analítico, o score, os trechos suspeitos e a referência do mapa SHAP. Arquivos EDF, modelos e imagens permanecem no sistema de arquivos e são referenciados pelo banco.
+A entidade Predicao\_IA registra o resultado analítico, o escore, os trechos suspeitos e a referência do mapa SHAP. Arquivos EDF, modelos e imagens permanecem no sistema de arquivos e são referenciados pelo banco.
 
 \begin{figure}[htbp]
 \centering
@@ -543,7 +565,7 @@ A Figura 14 apresenta a interface implementada para as configurações do sistem
 \includegraphics[width=13.60cm,height=0.72\textheight,keepaspectratio]{images/figura_14.png}\par
 {\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor (2026).\par}
 \end{figure}
-A Figura 15 demonstra a tela central de visualização multicanal de EEG operando sobre um registro real de 23 canais. Na coluna esquerda, a interface reúne os dados cadastrais e o histórico do paciente, juntamente com a área de upload para arquivos no formato .edf. No painel central, o traçado das séries temporais é renderizado com controles superiores de navegação e zoom; nele, a faixa laranja delimita o trecho suspeito e a intensidade vermelha representa a contribuição positiva do Gradient SHAP. A projeção está associada às janelas de features da sequência de pico; portanto, não corresponde a uma atribuição para cada amostra bruta do sinal. Na coluna direita, na aba de Análise, são exibidos o seletor de canais, o status do motor de IA e o Score de Suspeita acompanhado da observação explícita de que a métrica atua como apoio, e não como diagnóstico.
+A Figura 15 demonstra a tela central de visualização multicanal de EEG operando sobre um registro real de 23 canais. Na coluna esquerda, a interface reúne os dados cadastrais e o histórico do paciente, juntamente com a área de upload para arquivos no formato .edf. No painel central, o traçado das séries temporais é renderizado com controles superiores de navegação e zoom; nele, a faixa laranja delimita o trecho suspeito e a intensidade vermelha representa a contribuição positiva do Gradient SHAP. A projeção está associada às janelas de características da sequência de pico; portanto, não corresponde a uma atribuição para cada amostra bruta do sinal. Na coluna direita, na aba de Análise, são exibidos o seletor de canais, o status do motor de IA e o Escore de Suspeita acompanhado da observação explícita de que a métrica atua como apoio, e não como diagnóstico.
 
 \begin{figure}[htbp]
 \centering
@@ -560,11 +582,62 @@ Por fim, a Figura 16 apresenta a área de emissão do parecer médico na coluna 
 {\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor (2026).\par}
 \end{figure}
 \Needspace{12\baselineskip}\section{Protocolo experimental}
-O modelo final selecionado foi a versão v43 com seed 42. A arquitetura CNN-BiLSTM utiliza fusão tardia de 23 canais e 15 características tempo-frequência por canal, entre elas entropia espectral. Não utiliza a feature histórica de Entropia de Shannon nem medidas de Dinâmica Simbólica. As janelas têm 4 segundos, passo de 2 segundos e sequências de 8 passos. O treinamento utilizou 77 EDFs de 17 grupos identificados na base; a calibração reuniu 13 EDFs de chb16, chb19, chb20 e chb24, separados antes do janelamento.
+O modelo final selecionado foi a versão v43 com seed 42. A arquitetura CNN-BiLSTM utiliza fusão tardia de 23 canais e 15 características tempo-frequência por canal, entre elas a entropia espectral. Não utiliza a característica histórica de Entropia de Shannon nem medidas de Dinâmica Simbólica. As janelas têm 4 segundos, passo de 2 segundos e sequências de 8 passos. O treinamento utilizou 77 EDFs de 17 grupos identificados na base; a calibração reuniu 13 EDFs de chb16, chb19, chb20 e chb24, separados antes do janelamento.
 
 O ponto operacional foi definido exclusivamente na calibração, com limiar de 0,60, duração mínima de 18 segundos e fechamento de lacunas de 8 segundos. A seleção do checkpoint priorizou desempenho por evento sob limite de falsos alarmes por hora. O conjunto chb09, chb15 e chb18 foi mantido separado no experimento final, mas já havia sido consultado durante o desenvolvimento; por isso, seus resultados são classificados como avaliação histórica, e não como teste final intocado. O limiar é aplicado aos escores temporais de suspeita e não significa que o modelo tenha precisão de 60\% nem equivale a uma probabilidade clínica calibrada.
 
+O Quadro a seguir consolida a receita experimental da versão integrada à aplicação. Além da normalização robusta por EDF, baseada em mediana e intervalo interquartil com limitação de valores extremos, foi aplicado o escalonador ajustado exclusivamente sobre o conjunto de treino. A BCE recebeu pesos por amostra derivados do balanceamento de classes e da amostragem por evento, evitando que crises longas dominassem apenas por produzirem mais janelas.
+
+\FloatBarrier\Needspace{9\baselineskip}
+\captionof{table}{Configuração reproduzível do modelo final v43, seed 42}\nopagebreak[4]
+\begingroup
+\fontsize{10}{12}\selectfont
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\addtocounter{table}{-1}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.30\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
+\hline
+\textbf{Elemento} & \textbf{Configuração} \\ \hline
+\endfirsthead
+\hline
+\textbf{Elemento} & \textbf{Configuração} \\ \hline
+\endhead
+Entrada & 23 canais bipolares; 15 características por canal; 345 valores por janela. \\ \hline
+Características & Potência absoluta e relativa nas bandas delta (0,5--4 Hz), theta (4--8 Hz), alpha (8--13 Hz), beta (13--30 Hz) e gamma (30--45 Hz); frequência dominante; centroide espectral; entropia espectral; razões theta/alpha e beta/alpha. \\ \hline
+Organização temporal & Janelas de 4 s, passo de 2 s, sequência de 8 passos, stride de sequência 2 e rótulo ictal da janela com sobreposição mínima de 50\% em relação à anotação. \\ \hline
+Normalização & Normalização robusta por EDF, seguida de scaler ajustado somente no treino; canais ausentes mantidos mascarados após o escalonamento. \\ \hline
+Arquitetura & Projeção temporal compartilhada por canal com duas convoluções 2D de 16 filtros, fusão tardia por Conv1D de 64 filtros, Conv1D temporal de 64 filtros, BiLSTM com 48 unidades por direção e saída sigmoide por passo. \\ \hline
+Regularização & L2 de $10^{-4}$ nas convoluções por canal; normalização por camada; dropout de 0,20, 0,25 e 0,20. \\ \hline
+Otimização & Entropia cruzada binária ponderada, Adam com taxa de aprendizado 0,001, lote 32, limite de 20 épocas e amostragem balanceada por evento. \\ \hline
+Seleção & Checkpoint por recall de evento sob FA/h $\leq 0{,}75$, com critério de desempate orientado à localização; melhor época: 14; seed: 42. \\ \hline
+Volume efetivo & 77 EDFs de treino, 4.648 sequências de treino, sendo 952 positivas; 13 EDFs de calibração, 11.587 sequências, sendo 153 positivas. \\ \hline
+Capacidade & 84.081 parâmetros treináveis. \\ \hline
+Pós-processamento & Limiar 0,60, duração mínima 18 s e fechamento de lacunas de até 8 s, definidos somente na calibração. \\ \hline
+\end{longtable}
+\endgroup
+\nopagebreak[4]{\centering\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor a partir dos artefatos da v43 (2026).\par}
+
 A base Bonn, prevista no planejamento do TCC I, não foi combinada à avaliação final. Seus segmentos curtos e previamente selecionados não preservam o mesmo protocolo de registros contínuos multicanais com início e término de crises do CHB-MIT. A mistura direta dificultaria interpretar métricas de localização temporal e falsos alarmes por hora. Assim, os resultados apresentados nesta pesquisa referem-se ao CHB-MIT; Bonn permanece como referência do planejamento.
+
+O processamento pode ser interpretado em três níveis. Primeiro, cada janela é convertida em características numéricas por canal. Em seguida, a CNN aprende combinações dessas características e a BiLSTM modela sua evolução dentro da sequência, produzindo oito escores temporais. Por fim, as saídas de sequências sobrepostas são agregadas e o pós-processamento forma intervalos para revisão. A saída sigmoide está entre zero e um, mas não foi demonstrado que ela represente uma probabilidade clínica calibrada. O uso de contexto bidirecional e de normalização por EDF caracteriza a análise de um registro disponível, sem demonstração de detecção em tempo real.
+
+\begin{figure}[htbp]
+\centering
+\caption{Etapas da análise temporal na versão v43.}\label{fig:fluxo-v43}
+\begin{minipage}{0.91\textwidth}
+\centering\small
+\fbox{\parbox{0.94\linewidth}{\centering EDF multicanal: janelas de 4 s, deslocadas a cada 2 s}}\par
+$\downarrow$\par
+\fbox{\parbox{0.94\linewidth}{\centering 23 canais $\times$ 15 características: 345 valores por janela\\Sequências de 8 passos}}\par
+$\downarrow$\par
+\fbox{\parbox{0.94\linewidth}{\centering Convoluções temporais por canal $\rightarrow$ fusão tardia\\Convolução temporal $\rightarrow$ BiLSTM $\rightarrow$ escore por passo}}\par
+$\downarrow$\par
+\fbox{\parbox{0.94\linewidth}{\centering Agregação de saídas sobrepostas\\Limiar 0,60; duração mínima 18 s; união de lacunas até 8 s}}\par
+$\downarrow$\par
+\fbox{\parbox{0.94\linewidth}{\centering Trechos suspeitos no EEG e contribuições SHAP\\Inspeção do especialista e registro do parecer}}
+\end{minipage}\par
+{\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor (2026).\par}
+\end{figure}
 
 \Needspace{12\baselineskip}\section{Desempenho do modelo}
 \FloatBarrier\Needspace{9\baselineskip}
@@ -587,6 +660,7 @@ F1 por EDF & 95,7\% & 82,4\% \\ \hline
 F1 localizado & 90,9\% & 46,2\% \\ \hline
 Eventos detectados & 15 de 20 & 4 de 9 \\ \hline
 Recall por evento & 75,0\% & 44,4\% \\ \hline
+Precisão por evento & 68,2\% & 11,1\% \\ \hline
 F1 por evento & 71,4\% & 17,8\% \\ \hline
 Falsos alarmes por hora & 0,55 & 2,08 \\ \hline
 \end{longtable}
@@ -598,7 +672,14 @@ Falsos alarmes por hora & 0,55 & 2,08 \\ \hline
 \includegraphics[width=13.60cm,height=0.72\textheight,keepaspectratio]{images/figura_17.png}\par
 {\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor (2026).\par}
 \end{figure}
-Na calibração, a v43 atingiu F1 por EDF de 95,7\%, F1 localizado de 90,9\% e detectou 15 de 20 eventos, com 0,55 falso alarme por hora. A avaliação histórica apresentou F1 por EDF de 82,4\%, F1 localizado de 46,2\% e detecção de 4 de 9 eventos, com 2,08 falsos alarmes por hora. A diferença indica perda de generalização entre pacientes e impede interpretar a calibração como estimativa de desempenho clínico externo.
+Na calibração, a v43 atingiu F1 por EDF de 95,7\%, F1 localizado de 90,9\% e detectou 15 de 20 eventos, com 0,55 falso alarme por hora. A avaliação histórica apresentou F1 por EDF de 82,4\%, F1 localizado de 46,2\% e detecção de 4 de 9 eventos, com 2,08 falsos alarmes por hora. Entre os quatro eventos históricos detectados, a IoU temporal média foi 73,7\%, o erro absoluto médio de início foi 3,0 s e o erro absoluto médio de término foi 23,5 s. Essas médias descrevem apenas os eventos encontrados e não compensam as cinco crises perdidas. A diferença entre os conjuntos indica perda de generalização entre pacientes e impede interpretar a calibração como estimativa de desempenho clínico externo.
+
+\begin{figure}[htbp]
+\centering
+\caption{Matrizes de confusão por EDF da v43.}
+\includegraphics[width=13.60cm,height=0.72\textheight,keepaspectratio]{images/figura_20.png}\par
+{\fontsize{10}{12}\selectfont Fonte: Elaborado pelo autor a partir dos artefatos v43 (2026).\par}
+\end{figure}
 
 \begin{figure}[htbp]
 \centering
@@ -624,8 +705,12 @@ A mineração de negativos difíceis foi examinada nas versões v55 e v56, usand
 \Needspace{12\baselineskip}\section{Análise dos erros e generalização}
 A avaliação histórica em chb09, chb15 e chb18 localizou 4 de 9 eventos, com F1 localizado de 46,2\% e 2,08 falsos alarmes por hora. Esses pacientes haviam sido consultados durante o desenvolvimento e, portanto, os resultados descrevem a dificuldade interpaciente observada, sem constituir teste externo intocado. Crises não localizadas podem refletir baixa evidência ictal, fragmentação temporal ou escolha de candidato principal incorreto. A interpretação por evento é necessária porque F1 por EDF não identifica qual desses erros ocorreu.
 
+Dois casos do artefato histórico ilustram essa distinção. Em \texttt{chb09\_19.edf}, o intervalo de referência reconstruído foi 5.298--5.362 s, enquanto o candidato correspondente foi 5.300--5.354 s. Houve 54 s de interseção, IoU de 84,4\%, início 2 s posterior e término 8 s anterior à referência. Em \texttt{chb15\_10.edf}, o evento de referência ocupou 1.080--1.114 s e nenhum candidato atingiu o critério de detecção. A ausência de candidato correspondente não permite, isoladamente, concluir se a causa foi um escore baixo ou o descarte pelo pós-processamento. Esses exemplos foram selecionados para ilustrar um acerto e uma falha já contabilizados, sem constituir novos experimentos.
+
+Uma classificação positiva por EDF responde apenas se o arquivo recebeu um alerta válido. Ela não demonstra que todas as crises foram encontradas. No conjunto histórico, sete dos nove EDFs ictais receberam classificação positiva, mas somente quatro dos nove eventos corresponderam a candidatos válidos e apenas três EDFs ictais tiveram o candidato principal corretamente localizado. Por isso, o F1 por EDF de 82,4\%, o recall por evento de 44,4\% e o F1 localizado de 46,2\% descrevem aspectos distintos do mesmo resultado.
+
 \Needspace{12\baselineskip}\section{Verificação do software e dos artefatos}
-A integração foi verificada no fluxo local completo: autenticação, cadastro do paciente, leitura de EDF, visualização multicanal, recuperação de exame analisado, apresentação do score, intervalo suspeito, sobreposição SHAP e emissão de laudo. O frontend foi compilado com TypeScript e Vite. A verificação inicial registrou 22 testes focados do backend aprovados. Em uma rodada posterior de validação selecionada, relacionada aos experimentos controlados do modelo, foram reportados 38 testes aprovados. Esses totais se referem a rodadas distintas e não demonstram aprovação integral da suíte de testes. A execução da suíte completa apresentou bloqueio na inicialização do TensorFlow no ambiente utilizado e permanece como pendência de fechamento. Na configuração final, a API iniciou com PostgreSQL e recuperou os registros migrados de usuários, pacientes, exames e predições. A comparação campo a campo com a origem confirmou a integridade dos registros.
+A integração foi verificada no fluxo local completo: autenticação, cadastro do paciente, leitura de EDF, visualização multicanal, recuperação de exame analisado, apresentação do escore, intervalo suspeito, sobreposição SHAP e emissão de laudo. O frontend foi compilado com TypeScript e Vite. Na rodada final direcionada aos componentes alterados, 46 testes do backend foram aprovados, abrangendo inferência sequencial, integração do SHAP, extração dos sinais para visualização, rotas de exames e persistência do pipeline. Essa seleção não equivale à execução integral de todos os testes do repositório. A integração real do Gradient SHAP com a saída temporal da v43 também foi verificada com entrada sintética compatível com o modelo, produzindo a imagem e a matriz de sobreposição; essa verificação comprova compatibilidade técnica, não desempenho em novo EDF. Na configuração final, a API iniciou com PostgreSQL e recuperou os registros migrados de usuários, pacientes, exames e predições. A comparação campo a campo com a origem confirmou a integridade dos registros.
 
 \begin{figure}[htbp]
 \centering
@@ -636,9 +721,9 @@ A integração foi verificada no fluxo local completo: autenticação, cadastro 
 \chapter{DISCUSSÃO}
 Os resultados demonstram que o protótipo executa a proposta de apoio à análise temporal de EEG e apresenta evidências interpretáveis no mesmo contexto visual do sinal. A avaliação por EDF, isoladamente, mostrou-se insuficiente: mesmo quando o arquivo foi classificado corretamente, o sistema pôde deixar de localizar eventos específicos ou produzir alarmes fora do intervalo ictal. Por esse motivo, o estudo passou a registrar métricas por evento, localização temporal e falsos alarmes por hora.
 
-A fusão tardia preservou a identidade dos canais por mais etapas da rede e foi superior às tentativas que agregavam precocemente a dimensão espacial. Entretanto, crises com morfologia, duração ou topografia pouco representadas no treino continuaram recebendo score baixo. O pós-processamento temporal melhorou continuidade e reduziu fragmentação, mas não recuperou eventos que o primeiro estágio não representou.
+A fusão tardia preservou a identidade dos canais por mais etapas da rede e foi superior às tentativas que agregavam precocemente a dimensão espacial. Entretanto, crises com morfologia, duração ou topografia pouco representadas no treino continuaram recebendo escores baixos. O pós-processamento temporal melhorou continuidade e reduziu fragmentação, mas não recuperou eventos que o primeiro estágio não representou.
 
-O SHAP aumenta a inspecionabilidade ao destacar quais canais e janelas de features contribuíram para a sequência de pico. Essa explicação não comprova causalidade fisiológica, não substitui a interpretação do traçado e pode refletir correlações aprendidas pelo modelo. Sua utilidade deverá ser avaliada com especialistas em estudo posterior.
+O SHAP aumenta a inspecionabilidade ao destacar quais canais e janelas de características contribuíram para a sequência de pico. Essa explicação não comprova causalidade fisiológica, não substitui a interpretação do traçado e pode refletir correlações aprendidas pelo modelo. Sua utilidade deverá ser avaliada com especialistas em estudo posterior.
 
 \Needspace{12\baselineskip}\section{Limitações e ameaças à validade}
 \begin{itemize}[leftmargin=1.25cm,itemsep=0pt,topsep=0pt]
@@ -647,7 +732,7 @@ O SHAP aumenta a inspecionabilidade ao destacar quais canais e janelas de featur
 \item não foi realizada validação externa em outra instituição ou base temporal multicanal equivalente;
 \item não houve estudo formal de usabilidade com neurologistas ou técnicos de EEG;
 \item o sistema é um protótipo local, sem validação de desempenho concorrente, conformidade integral com a LGPD ou regularização sanitária;
-\item a suíte completa de testes precisa ser reexecutada em ambiente isolado após resolver o bloqueio de inicialização do TensorFlow.
+\item a rodada final de testes foi direcionada aos componentes modificados e não substitui uma execução integral da suíte em ambiente de integração.
 \end{itemize}
 \chapter{CONCLUSÃO}
 Este trabalho desenvolveu um protótipo web de apoio à análise de EEG que integra autenticação, gestão de pacientes, ingestão de EDF, visualização multicanal, detecção temporal com CNN-BiLSTM, explicabilidade por Gradient SHAP e emissão de laudo. A implementação atende ao objetivo de reunir o fluxo técnico em uma única aplicação e mantém explícito que a saída da IA representa apoio à decisão, não diagnóstico autônomo.

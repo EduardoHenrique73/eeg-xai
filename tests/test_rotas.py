@@ -74,6 +74,25 @@ async def test_upload_extensao_invalida_retorna_415(client, paciente):
 
 
 @pytest.mark.asyncio
+async def test_reanalise_nao_retorna_predicao_antiga(client, exame, db_session):
+    from uuid import uuid4
+    http, _ = client
+    nova_id = str(uuid4())
+    db_session.add(PredicaoIA(id_exame=exame.id, resultado_score=0.8, mapa_shap_path=""))
+    await db_session.commit()
+    resposta = await http.get(f"/api/exames/{exame.id}/diagnostico", params={"analise_id": nova_id})
+    assert resposta.status_code == 206
+    db_session.add(PredicaoIA(
+        id_exame=exame.id, resultado_score=0.2, mapa_shap_path="",
+        detalhes_json=json.dumps({"analise_id": nova_id}),
+    ))
+    await db_session.commit()
+    resposta = await http.get(f"/api/exames/{exame.id}/diagnostico", params={"analise_id": nova_id})
+    assert resposta.status_code == 200
+    assert resposta.json()["resultado_score"] == 0.2
+
+
+@pytest.mark.asyncio
 async def test_upload_edf_valido_retorna_202_e_persiste(client, paciente, db_session, edf_storage_tmp):
     http_client, mock_processar = client
     paciente_id = paciente.id
@@ -144,6 +163,7 @@ async def test_solicitar_analise_ia_retorna_202(client, exame, db_session, tmp_p
         exame.id,
         canais_selecionados=["FP1", "F7"],
         gerar_shap_sequencial=True,
+        analise_id=response.json()["analise_id"],
     )
 
 

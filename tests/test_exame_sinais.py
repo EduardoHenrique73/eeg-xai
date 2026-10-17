@@ -28,13 +28,30 @@ def test_extrair_sinais_downsample_para_max_pontos(monkeypatch) -> None:
     resultado = extrair_sinais_para_visualizacao("fake.edf", max_pontos=1500)
 
     assert resultado["n_pontos_original"] == 10_000
-    assert resultado["n_pontos_retornados"] == 1500
+    assert resultado["n_pontos_retornados"] <= 1500
     assert resultado["n_canais_eeg"] == 4
     assert resultado["canais_eeg"] == _mock_canais(4)
     assert len(resultado["series"]) == 4
-    assert len(resultado["pontos"]) == 1500
+    assert len(resultado["pontos"]) == resultado["n_pontos_retornados"]
     assert resultado["pontos"][0]["tempo"] == 0.0
     assert resultado["pontos"][-1]["tempo"] > 0
+
+
+def test_preserva_picos_por_canal(monkeypatch):
+    sinais = np.zeros((2, 10000))
+    sinais[0, 123] = 90e-6
+    sinais[1, 8765] = -70e-6
+    monkeypatch.setattr(
+        "app.services.exame_sinais.carregar_sinais_edf",
+        lambda *args, **kwargs: (sinais, 256.0, ["A", "B"]),
+    )
+    resultado = extrair_sinais_para_visualizacao("fake.edf", max_pontos=100)
+    a, b = resultado["series"]
+    assert max(p["amplitude"] for p in a["pontos"]) == 90.0
+    assert min(p["amplitude"] for p in b["pontos"]) == -70.0
+    assert next(p["tempo"] for p in a["pontos"] if p["amplitude"] == 90) == round(123 / 256, 4)
+    assert [p["tempo"] for p in a["pontos"]] == [p["tempo"] for p in b["pontos"]]
+    assert resultado["pontos"][-1]["tempo"] == round(9999 / 256, 4)
 
 
 def test_extrair_sinais_mantem_todos_pontos_quando_curto(monkeypatch) -> None:

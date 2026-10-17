@@ -24,6 +24,28 @@ def _janela(inicio: float, fim: float, valor: float) -> dict:
     }
 
 
+def test_shap_pico_tardio_usa_indice_de_sequencia(monkeypatch):
+    from app.ai_engine.sequence_inference import RecursosSequenciais, analisar_exame_sequencial
+    janelas = [_janela(i * 2, i * 2 + 4, float(i)) for i in range(12)]
+
+    class Modelo:
+        def predict(self, x, verbose=0):
+            saida = np.zeros((len(x), 4, 1), dtype=np.float32)
+            saida[-1, -1, 0] = 0.99
+            return saida
+
+    monkeypatch.setattr(
+        "app.ai_engine.sequence_inference.extrair_features_edf_janelado",
+        lambda *args, **kwargs: janelas,
+    )
+    recursos = RecursosSequenciais(Modelo(), None, {"sequence_length": 4, "sequence_stride": 2}, None, "fake")
+    resultado = analisar_exame_sequencial("fake.edf", recursos=recursos, settings=Settings())
+    assert resultado["_xai_input"].shape == (1, 4, 3)
+    passo = resultado["_xai_target_step"]
+    assert resultado["_xai_windows"][passo]["start_seconds"] == resultado["janela_pico"]["start_seconds"]
+    assert resultado["_xai_input"][0, passo, 0] == 11.0
+
+
 def test_construir_sequencias_gera_blocos_consecutivos():
     janelas = [_janela(i * 2.0, i * 2.0 + 4.0, float(i)) for i in range(6)]
     x, meta = construir_sequencias(janelas, sequence_length=3, sequence_stride=1)

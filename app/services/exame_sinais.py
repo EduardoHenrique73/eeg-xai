@@ -69,7 +69,20 @@ def extrair_sinais_para_visualizacao(
     n_original = int(sinais_uv.shape[1])
 
     if n_original > max_pontos:
-        indices = np.linspace(0, n_original - 1, max_pontos, dtype=int)
+        if max_pontos < 2 * len(canais_eeg) + 2:
+            raise ValueError("max_pontos insuficiente para preservar extremos de todos os canais.")
+        # Shared time grid: retain both extrema of every channel in each bin.
+        # Reserve the endpoints so the full examination duration stays visible.
+        n_bins = max(1, (max_pontos - 2) // (2 * len(canais_eeg)))
+        indices_extremos = {0, n_original - 1}
+        for inicio, fim in zip(
+            np.linspace(0, n_original, n_bins + 1, dtype=int)[:-1],
+            np.linspace(0, n_original, n_bins + 1, dtype=int)[1:],
+        ):
+            bloco = sinais_uv[:, inicio:fim]
+            indices_extremos.update((inicio + np.argmin(bloco, axis=1)).tolist())
+            indices_extremos.update((inicio + np.argmax(bloco, axis=1)).tolist())
+        indices = np.asarray(sorted(indices_extremos), dtype=int)
         amostras = sinais_uv[:, indices]
         tempos = (indices.astype(np.float64) + indice_inicio) / taxa_hz
     else:

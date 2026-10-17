@@ -541,6 +541,19 @@ def analisar_exame_sequencial(
         "end_seconds": float(meta_scores[indice_pico]["end_seconds"]),
         "score": float(scores[indice_pico]),
     }
+    target_step = None
+    if raw_scores.ndim >= 2 and raw_scores.size != len(meta_seq):
+        # Explain one contributing sequence at the aggregated peak's exact time.
+        candidatos = []
+        for seq_idx, meta in enumerate(meta_seq):
+            passo = (janela_pico["start_seconds"] - float(meta["context_start_seconds"])) / step_seconds
+            if abs(passo - round(passo)) < 1e-6 and 0 <= round(passo) < sequence_length:
+                candidatos.append((seq_idx, int(round(passo))))
+        if not candidatos:
+            raise ValueError("Pico temporal sem sequencia correspondente para SHAP.")
+        indice_sequencia_xai, target_step = min(
+            candidatos, key=lambda item: abs(item[1] - (sequence_length - 1) / 2)
+        )
 
     canais_processados = list(janelas[0].get("canais_processados", []))
     canais_omitidos = list(janelas[0].get("canais_omitidos", []))
@@ -603,7 +616,8 @@ def analisar_exame_sequencial(
             }
             for janela in janelas_xai
         ],
-        "_xai_input": x_scaled[indice_pico : indice_pico + 1],
+        "_xai_input": x_scaled[indice_sequencia_xai : indice_sequencia_xai + 1],
+        "_xai_target_step": target_step,
         "_xai_background": x_scaled[
             np.linspace(0, len(x_scaled) - 1, min(16, len(x_scaled)), dtype=int)
         ],

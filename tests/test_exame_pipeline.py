@@ -109,6 +109,9 @@ async def test_processar_exame_usa_fluxo_sequencial_quando_habilitado(
     monkeypatch.setattr(settings, "ai_model_type", "sequence_cnn_lstm")
 
     resultado_fake = {
+        "cobertura_excessiva": True,
+        "resultado_conclusivo": False,
+        "resultado_positivo_conclusivo": False,
         "model_type": "sequence_cnn_lstm",
         "score_geral": 0.91,
         "classificacao_clinica": "Padrão sugestivo de atividade epileptiforme (revisão médica necessária)",
@@ -158,6 +161,11 @@ async def test_processar_exame_usa_fluxo_sequencial_quando_habilitado(
     assert predicao.mapa_shap_path == ""
     assert predicao.detalhes_json is not None
     assert "sequence_cnn_lstm" in predicao.detalhes_json
+    import json
+    detalhes = json.loads(predicao.detalhes_json)
+    assert detalhes["cobertura_excessiva"] is True
+    assert detalhes["resultado_conclusivo"] is False
+    assert detalhes["resultado_positivo_conclusivo"] is False
 
 
 @pytest.mark.asyncio

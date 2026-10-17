@@ -34,11 +34,13 @@ export async function uploadExame(
 
 export async function obterDiagnostico(
   exameId: number,
+  analiseId?: string,
 ): Promise<DiagnosticoResponse> {
   const response = await apiClient.get<DiagnosticoResponse>(
     `/api/exames/${exameId}/diagnostico`,
     {
       validateStatus: (status) => status === 200 || status === 206,
+      params: analiseId ? { analise_id: analiseId } : undefined,
     },
   )
 

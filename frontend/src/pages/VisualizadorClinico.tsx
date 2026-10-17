@@ -313,7 +313,7 @@ export function VisualizadorClinico() {
               canaisOmitidos={concluido?.canais_omitidos ?? []}
               montagemIncompleta={concluido?.montagem_incompleta ?? false}
               coberturaExcessiva={concluido?.cobertura_excessiva ?? false}
-              resultadoConclusivo={concluido?.resultado_conclusivo ?? true}
+              resultadoConclusivo={concluido?.resultado_conclusivo ?? false}
               resultadoPositivoConclusivo={concluido?.resultado_positivo_conclusivo ?? false}
               canaisDestaque={concluido?.canais_destaque ?? []}
               nJanelasAnalisadas={concluido?.n_janelas_analisadas}

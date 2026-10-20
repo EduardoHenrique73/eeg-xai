@@ -1,0 +1,24 @@
+{
+  "collapse-filter": false,
+  "search": "-path:graphify-code",
+  "showTags": true,
+  "showAttachments": false,
+  "showOrphans": true,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1.2,
+  "lineSizeMultiplier": 1,
+  "centerStrength": 0.52,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "colorGroups": [
+    {
+      "query": "path:00 - Inicio OR path:01 - Mapa do projeto OR path:02 - Estado atual v43 OR path:03 - Experimento v57 OR path:04 - TCC e evidencias OR path:05 - Atualizar grafo",
+      "color": {
+        "a": 1,
+        "rgb": 3102879
+      }
+    }
+  ]
+}

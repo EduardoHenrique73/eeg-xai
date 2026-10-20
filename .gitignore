@@ -64,3 +64,6 @@ docs/tcc/render_final/
 docs/tcc/render_revisao/
 .tcc-preview/
 ~$*.docx
+# Graphify/Obsidian: artefatos regeneraveis do grafo tecnico.
+docs/graphify/
+docs/obsidian_eeg_xai/graphify-code/

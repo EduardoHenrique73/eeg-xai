@@ -1,6 +1,11 @@
 # Documentacao da IA do EEG-XAI
 
-Atualizado em: 2026-10-07
+Atualizado em: 2026-10-20
+
+Estado atual: modelo ativo v43 seed 42. Relatorios abaixo preservam a cronologia
+experimental; referencias antigas a "proximo passo" ou "candidato atual" devem
+ser lidas na data de cada rodada. Para o ultimo diagnostico e protocolo, leia
+`33_auditoria_resolutiva_v58.md`; para v57 concluida, leia o relatorio 32.
 
 Esta pasta documenta o estado atual da IA do projeto, o que foi feito, quais experimentos foram executados, quais problemas ainda existem e quais sao os proximos passos recomendados.
 
@@ -98,3 +103,19 @@ incluindo a delimitacao correta entre Bonn e CHB-MIT, esta em
 As observacoes dos tres PDFs revisados pelos orientadores, a matriz de resposta
 e os trechos academicos corrigidos estao em
 `31_correcoes_dos_orientadores.md`.
+
+A rodada v57 de balanceamento da loss por paciente e classe esta em
+`32_experimento_v57_balanceamento_pacientes.md`. Em tres seeds, manteve 14/20
+eventos medios na calibracao e reduziu FA/h de 0,628 para 0,549. Na verificacao
+historica congelada, manteve os mesmos 4/9 eventos, reduziu alarmes de 32 para
+16 e elevou F1 localizado de 46,2% para 53,3%, mas caiu para F1 EDF de 62,5%.
+Permanece experimental; o modelo ativo continua v43 seed 42.
+
+A auditoria resolutiva, contagem real da coorte e protocolo v58 estao em
+`33_auditoria_resolutiva_v58.md`. A rodada testa dropout por canal antes da
+fusao espacial, com taxa fixa e criterio de parada definido antes do treino.
+O piloto v58 terminou em 13/20 eventos (baseline 15/20), foi rejeitado e nao
+foi avaliado nos pacientes historicos. A auditoria tambem corrigiu uma
+divergencia real na reconstrucao da montagem bipolar entre treino e inferencia;
+um EDF referencial real passou de zero slots diretos para 20 slots recuperados,
+com features exatamente iguais as do treino.

@@ -1,0 +1,41 @@
+{
+  "selected_by": "calibration_only_before_historical_evaluation",
+  "seed": 42,
+  "operating_point": {
+    "threshold": 0.3,
+    "min_duration_seconds": 26.0,
+    "max_gap_seconds": 8.0,
+    "edf_precision": 1.0,
+    "edf_recall": 1.0,
+    "edf_f1": 1.0,
+    "localized_f1": 0.9090909090909091,
+    "event_recall": 0.75,
+    "event_precision": 0.6818181818181818,
+    "event_f1": 0.7142857142857143,
+    "false_alarms_per_hour": 0.5494505494505494,
+    "detected_events": 15,
+    "total_events": 20,
+    "false_alarms": 7,
+    "false_positives_edf": 0,
+    "false_negatives_edf": 0
+  },
+  "files": {
+    "model_path": {
+      "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\v57_patient_balanced_seed42.keras",
+      "sha256": "51c78b19ab7e9b285d731855766af96d1661acdd37fb29e153fdddc202de801b"
+    },
+    "scaler_path": {
+      "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\v57_patient_balanced_seed42_scaler.pkl",
+      "sha256": "e4d1e1d2aa5630ae1b68578698c20b88f5a4eff892992d9ea7ebc6d6dda44ab7"
+    },
+    "metadata_path": {
+      "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\v57_patient_balanced_seed42_metadata.json",
+      "sha256": "9dfa1008574217b76603a6ae37fac44069ee6530ef311745dde9a845f5f8a4ee"
+    },
+    "calibration_path": {
+      "path": "C:\\Users\\Foco\\Documents\\DEV\\eeg-xai\\modelos\\v57_patient_balanced_seed42_calibration.json",
+      "sha256": "0cb9a84c253dec8867272306e042b060a2f3ed59f47f95d64fd7e592e108676f"
+    }
+  },
+  "historical_evaluation_accessed": false
+}

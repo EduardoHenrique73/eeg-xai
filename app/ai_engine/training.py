@@ -33,6 +33,7 @@ from app.ai_engine.feature_extractor import (
     extrair_features_por_modo_de_valores,
     extrair_features_de_valores,
     selecionar_canais_eeg_validos,
+    resolver_sinais_referencia,
 )
 from app.ai_engine.inference import criar_modelo_cnn_lstm_hibrido
 
@@ -621,44 +622,9 @@ def extrair_dataset_janelado_multicanal_referencia(
         canal: np.asarray(sinal, dtype=float)
         for canal, sinal in zip(canais_validos_lista, dados_validos)
     }
-    sinais_referencia: dict[str, np.ndarray] = {}
-    canais_derivados: set[str] = set()
-    for canal in canais_referencia:
-        if canal in sinais_disponiveis:
-            sinais_referencia[canal] = sinais_disponiveis[canal]
-            continue
-
-        # MNE adds running-number suffixes to duplicate channel names.
-        canal_base = re.sub(r"-\d+$", "", canal)
-        partes = canal_base.split("-")
-        if len(partes) != 2:
-            continue
-        eletrodo_a, eletrodo_b = partes
-        inverso = f"{eletrodo_b}-{eletrodo_a}"
-        if inverso in sinais_disponiveis:
-            sinais_referencia[canal] = -sinais_disponiveis[inverso]
-            canais_derivados.add(canal)
-            continue
-
-        prefixo_a = f"{eletrodo_a}-"
-        referencias_a = {
-            nome[len(prefixo_a):]: sinal
-            for nome, sinal in sinais_disponiveis.items()
-            if nome.startswith(prefixo_a)
-        }
-        prefixo_b = f"{eletrodo_b}-"
-        referencias_b = {
-            nome[len(prefixo_b):]: sinal
-            for nome, sinal in sinais_disponiveis.items()
-            if nome.startswith(prefixo_b)
-        }
-        referencias_comuns = sorted(set(referencias_a) & set(referencias_b))
-        if referencias_comuns:
-            referencia = referencias_comuns[0]
-            sinais_referencia[canal] = (
-                referencias_a[referencia] - referencias_b[referencia]
-            )
-            canais_derivados.add(canal)
+    sinais_referencia, canais_derivados = resolver_sinais_referencia(
+        sinais_disponiveis, canais_referencia,
+    )
     sfreq = float(raw.info["sfreq"])
     duration_seconds = raw.n_times / sfreq
     specs = gerar_janelas_temporais(

@@ -35,6 +35,7 @@ from scripts.calibrate_sequence_cnn_lstm import (  # noqa: E402
 )
 from scripts.experiment_channel_mask_v32 import load_sequences  # noqa: E402
 from scripts.experiment_multiscale_v31 import _compact, _froc  # noqa: E402
+from scripts.patient_balancing import balance_patient_class_weights  # noqa: E402
 from scripts.train_sequence_cnn_lstm import (  # noqa: E402
     ajustar_scaler,
     aplicar_scaler,
@@ -552,6 +553,13 @@ def create_event_checkpoint_callback(
                 **metrics,
             }
             self.trajectory.append(record)
+            print(
+                f"epoch={epoch + 1} events={metrics['detected_events']}/"
+                f"{metrics['total_events']} localized_f1={metrics['localized_f1']:.4f} "
+                f"edf_f1={metrics['edf_f1']:.4f} "
+                f"fa_h={metrics['false_alarms_per_hour']:.4f} feasible={feasible}",
+                flush=True,
+            )
             if self.best_rank is None or rank > self.best_rank:
                 self.best_rank = rank
                 self.best_weights = self.model.get_weights()
@@ -592,6 +600,11 @@ def main() -> None:
     )
     parser.add_argument("--added-events", type=int, default=2)
     parser.add_argument("--event-balanced-sampling", action="store_true")
+    parser.add_argument("--channel-dropout", type=float, default=0.0)
+    parser.add_argument(
+        "--patient-balance-exponent", type=float, default=0.0,
+        help="Temper per-patient loss mass within each class (0 disables; 0.5 is moderate).",
+    )
     parser.add_argument(
         "--checkpoint-monitor", choices=("val_pr_auc", "event_recall"),
         default="val_pr_auc",
@@ -633,6 +646,14 @@ def main() -> None:
     parser.add_argument("--hard-negative-min-separation-seconds", type=float, default=30.0)
     parser.add_argument("--hard-negative-weight", type=float, default=1.5)
     args = parser.parse_args()
+
+    if not 0.0 <= args.channel_dropout < 1.0:
+        parser.error("--channel-dropout must be in [0, 1).")
+    if args.channel_dropout and args.architecture != "late_channel_fusion":
+        parser.error("--channel-dropout requires late_channel_fusion.")
+
+    if not 0.0 <= args.patient_balance_exponent <= 1.0:
+        parser.error("--patient-balance-exponent must be between zero and one.")
 
     if args.model_output is not None and len(args.seeds) != 1:
         parser.error("--model-output exige exatamente uma seed em --seeds.")
@@ -731,6 +752,13 @@ def main() -> None:
             [bool(meta.get("hard_negative")) for meta in meta_train], dtype=bool,
         )
         weights[hard_mask] *= args.hard_negative_weight
+    weights, patient_weight_audit = balance_patient_class_weights(
+        weights, y_train, meta_train, exponent=args.patient_balance_exponent,
+    )
+    print(
+        "Patient loss audit: " + json.dumps(patient_weight_audit, ensure_ascii=False),
+        flush=True,
+    )
     scaler = ajustar_scaler(x_train)
     train_scaled = aplicar_scaler(x_train, scaler)
     cal_scaled = aplicar_scaler(x_cal, scaler)
@@ -758,6 +786,8 @@ def main() -> None:
         "reserved_test_files_not_loaded": test_files,
         "test_accessed": False,
         "event_balanced_sampling": args.event_balanced_sampling,
+        "channel_dropout": args.channel_dropout,
+        "patient_weight_audit": patient_weight_audit,
         "checkpoint_monitor": args.checkpoint_monitor,
         "checkpoint_false_alarms_per_hour_cap": args.checkpoint_fa_cap,
         "checkpoint_patience": args.checkpoint_patience,
@@ -802,6 +832,7 @@ def main() -> None:
                 sequence_length=8, n_channels=n_channels,
                 features_per_channel=features_per_channel,
                 learning_rate=args.learning_rate,
+                channel_dropout=args.channel_dropout,
             )
         else:
             model = criar_modelo_segmentacao(
@@ -967,6 +998,8 @@ def main() -> None:
                 "training_manifest": str(args.manifest.resolve()),
                 "reserved_test_patients": sorted(reserved),
                 "test_accessed": False,
+                "patient_balance_exponent": args.patient_balance_exponent,
+                "channel_dropout": args.channel_dropout,
             }
             calibration = {
                 "source": "calibration_patients_only",

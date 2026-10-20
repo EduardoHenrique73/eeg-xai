@@ -1,0 +1,54 @@
+{
+  "source": "calibration_patients_only",
+  "calibration_patients": [
+    "chb16",
+    "chb19",
+    "chb20",
+    "chb24"
+  ],
+  "false_alarms_per_hour_cap": 0.75,
+  "best": {
+    "threshold": 0.5,
+    "min_duration_seconds": 26.0,
+    "max_gap_seconds": 0.0,
+    "edf_precision": 1.0,
+    "edf_recall": 0.9166666666666666,
+    "edf_f1": 0.9565217391304348,
+    "localized_f1": 0.8,
+    "event_recall": 0.65,
+    "event_precision": 0.6842105263157895,
+    "event_f1": 0.6666666666666667,
+    "false_alarms_per_hour": 0.47095761381475665,
+    "detected_events": 13,
+    "total_events": 20,
+    "false_alarms": 6,
+    "false_positives_edf": 0,
+    "false_negatives_edf": 1
+  },
+  "best_aligned": {
+    "threshold": 0.5,
+    "min_duration_seconds": 26.0,
+    "max_gap_seconds": 0.0,
+    "edf_precision": 1.0,
+    "edf_recall": 0.9166666666666666,
+    "edf_f1": 0.9565217391304348,
+    "localized_f1": 0.8,
+    "event_recall": 0.65,
+    "event_precision": 0.6842105263157895,
+    "event_f1": 0.6666666666666667,
+    "false_alarms_per_hour": 0.47095761381475665,
+    "detected_events": 13,
+    "total_events": 20,
+    "false_alarms": 6,
+    "false_positives_edf": 0,
+    "false_negatives_edf": 1
+  },
+  "seed": 44,
+  "checkpoint_best_epoch": 6,
+  "reserved_test_patients": [
+    "chb09",
+    "chb15",
+    "chb18"
+  ],
+  "test_accessed": false
+}

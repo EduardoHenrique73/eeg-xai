@@ -1,0 +1,747 @@
+{
+  "historical_edfs_opened": false,
+  "splits": {
+    "training": {
+      "edfs": 77,
+      "people": 16,
+      "events": 72,
+      "total_hours": 109.6763888888889,
+      "ictal_minutes": 71.53333333333333,
+      "normal_hours": 108.48416666666667,
+      "edfs_without_seizure": 22,
+      "files": [
+        {
+          "file": "chb01_01.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb01_03.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 40.0
+        },
+        {
+          "file": "chb01_04.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 27.0
+        },
+        {
+          "file": "chb01_15.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 40.0
+        },
+        {
+          "file": "chb02_01.edf",
+          "person": "chb02",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb02_16.edf",
+          "person": "chb02",
+          "duration_seconds": 959.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 82.0
+        },
+        {
+          "file": "chb02_16+.edf",
+          "person": "chb02",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 81.0
+        },
+        {
+          "file": "chb02_19.edf",
+          "person": "chb02",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 9.0
+        },
+        {
+          "file": "chb03_01.edf",
+          "person": "chb03",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 52.0
+        },
+        {
+          "file": "chb03_02.edf",
+          "person": "chb03",
+          "duration_seconds": 3724.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 65.0
+        },
+        {
+          "file": "chb03_05.edf",
+          "person": "chb03",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb03_34.edf",
+          "person": "chb03",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 47.0
+        },
+        {
+          "file": "chb04_01.edf",
+          "person": "chb04",
+          "duration_seconds": 14398.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb04_02.edf",
+          "person": "chb04",
+          "duration_seconds": 14400.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb04_05.edf",
+          "person": "chb04",
+          "duration_seconds": 9656.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 49.0
+        },
+        {
+          "file": "chb04_08.edf",
+          "person": "chb04",
+          "duration_seconds": 14400.0,
+          "channel_slots": 24,
+          "events": 1,
+          "ictal_seconds": 111.0
+        },
+        {
+          "file": "chb04_28.edf",
+          "person": "chb04",
+          "duration_seconds": 14423.0,
+          "channel_slots": 24,
+          "events": 2,
+          "ictal_seconds": 218.0
+        },
+        {
+          "file": "chb05_01.edf",
+          "person": "chb05",
+          "duration_seconds": 3610.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb05_06.edf",
+          "person": "chb05",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 115.0
+        },
+        {
+          "file": "chb05_13.edf",
+          "person": "chb05",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 110.0
+        },
+        {
+          "file": "chb05_17.edf",
+          "person": "chb05",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 120.0
+        },
+        {
+          "file": "chb06_01.edf",
+          "person": "chb06",
+          "duration_seconds": 14427.0,
+          "channel_slots": 23,
+          "events": 3,
+          "ictal_seconds": 44.0
+        },
+        {
+          "file": "chb06_02.edf",
+          "person": "chb06",
+          "duration_seconds": 14400.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb07_01.edf",
+          "person": "chb07",
+          "duration_seconds": 14411.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb07_12.edf",
+          "person": "chb07",
+          "duration_seconds": 14400.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 86.0
+        },
+        {
+          "file": "chb07_13.edf",
+          "person": "chb07",
+          "duration_seconds": 3726.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 96.0
+        },
+        {
+          "file": "chb07_19.edf",
+          "person": "chb07",
+          "duration_seconds": 14411.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 143.0
+        },
+        {
+          "file": "chb08_02.edf",
+          "person": "chb08",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 171.0
+        },
+        {
+          "file": "chb08_03.edf",
+          "person": "chb08",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb08_05.edf",
+          "person": "chb08",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 190.0
+        },
+        {
+          "file": "chb08_13.edf",
+          "person": "chb08",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 160.0
+        },
+        {
+          "file": "chb08_21.edf",
+          "person": "chb08",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 264.0
+        },
+        {
+          "file": "chb10_01.edf",
+          "person": "chb10",
+          "duration_seconds": 7220.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb10_12.edf",
+          "person": "chb10",
+          "duration_seconds": 7200.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 35.0
+        },
+        {
+          "file": "chb10_20.edf",
+          "person": "chb10",
+          "duration_seconds": 7212.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 70.0
+        },
+        {
+          "file": "chb10_27.edf",
+          "person": "chb10",
+          "duration_seconds": 7218.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 65.0
+        },
+        {
+          "file": "chb11_01.edf",
+          "person": "chb11",
+          "duration_seconds": 3598.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb11_02.edf",
+          "person": "chb11",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb11_82.edf",
+          "person": "chb11",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 22.0
+        },
+        {
+          "file": "chb11_92.edf",
+          "person": "chb11",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 32.0
+        },
+        {
+          "file": "chb12_06.edf",
+          "person": "chb12",
+          "duration_seconds": 3606.0,
+          "channel_slots": 28,
+          "events": 2,
+          "ictal_seconds": 93.0
+        },
+        {
+          "file": "chb12_08.edf",
+          "person": "chb12",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 4,
+          "ictal_seconds": 82.0
+        },
+        {
+          "file": "chb12_19.edf",
+          "person": "chb12",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb12_27.edf",
+          "person": "chb12",
+          "duration_seconds": 3600.0,
+          "channel_slots": 29,
+          "events": 6,
+          "ictal_seconds": 229.0
+        },
+        {
+          "file": "chb13_02.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb13_19.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 44.0
+        },
+        {
+          "file": "chb13_21.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 70.0
+        },
+        {
+          "file": "chb13_22.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb13_40.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 22,
+          "events": 2,
+          "ictal_seconds": 95.0
+        },
+        {
+          "file": "chb13_47.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 22,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb13_55.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 2,
+          "ictal_seconds": 38.0
+        },
+        {
+          "file": "chb13_58.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 17.0
+        },
+        {
+          "file": "chb13_59.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 62.0
+        },
+        {
+          "file": "chb13_60.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 22.0
+        },
+        {
+          "file": "chb13_62.edf",
+          "person": "chb13",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 3,
+          "ictal_seconds": 187.0
+        },
+        {
+          "file": "chb14_01.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb14_03.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 14.0
+        },
+        {
+          "file": "chb14_04.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 2,
+          "ictal_seconds": 42.0
+        },
+        {
+          "file": "chb14_06.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 14.0
+        },
+        {
+          "file": "chb14_11.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 41.0
+        },
+        {
+          "file": "chb14_17.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 20.0
+        },
+        {
+          "file": "chb14_18.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 22.0
+        },
+        {
+          "file": "chb14_27.edf",
+          "person": "chb14",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 16.0
+        },
+        {
+          "file": "chb17a_03.edf",
+          "person": "chb17",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 90.0
+        },
+        {
+          "file": "chb17a_04.edf",
+          "person": "chb17",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 115.0
+        },
+        {
+          "file": "chb17a_05.edf",
+          "person": "chb17",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb21_01.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb21_02.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb21_19.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 56.0
+        },
+        {
+          "file": "chb21_20.edf",
+          "person": "chb01",
+          "duration_seconds": 2990.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 50.0
+        },
+        {
+          "file": "chb21_22.edf",
+          "person": "chb01",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 12.0
+        },
+        {
+          "file": "chb22_01.edf",
+          "person": "chb22",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb22_20.edf",
+          "person": "chb22",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 58.0
+        },
+        {
+          "file": "chb22_25.edf",
+          "person": "chb22",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 74.0
+        },
+        {
+          "file": "chb22_38.edf",
+          "person": "chb22",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 72.0
+        },
+        {
+          "file": "chb23_06.edf",
+          "person": "chb23",
+          "duration_seconds": 7486.0,
+          "channel_slots": 23,
+          "events": 1,
+          "ictal_seconds": 113.0
+        },
+        {
+          "file": "chb23_07.edf",
+          "person": "chb23",
+          "duration_seconds": 2560.0,
+          "channel_slots": 23,
+          "events": 0,
+          "ictal_seconds": 0
+        }
+      ]
+    },
+    "calibration": {
+      "edfs": 13,
+      "people": 4,
+      "events": 20,
+      "total_hours": 12.931111111111111,
+      "ictal_minutes": 10.05,
+      "normal_hours": 12.76361111111111,
+      "edfs_without_seizure": 1,
+      "files": [
+        {
+          "file": "chb16_10.edf",
+          "person": "chb16",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 9.0
+        },
+        {
+          "file": "chb16_11.edf",
+          "person": "chb16",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 9.0
+        },
+        {
+          "file": "chb16_17.edf",
+          "person": "chb16",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 4,
+          "ictal_seconds": 31.0
+        },
+        {
+          "file": "chb19_28.edf",
+          "person": "chb19",
+          "duration_seconds": 3612.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 78.0
+        },
+        {
+          "file": "chb19_29.edf",
+          "person": "chb19",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 77.0
+        },
+        {
+          "file": "chb19_30.edf",
+          "person": "chb19",
+          "duration_seconds": 3334.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 81.0
+        },
+        {
+          "file": "chb20_01.edf",
+          "person": "chb20",
+          "duration_seconds": 3606.0,
+          "channel_slots": 28,
+          "events": 0,
+          "ictal_seconds": 0
+        },
+        {
+          "file": "chb20_12.edf",
+          "person": "chb20",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 29.0
+        },
+        {
+          "file": "chb20_13.edf",
+          "person": "chb20",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 2,
+          "ictal_seconds": 69.0
+        },
+        {
+          "file": "chb20_14.edf",
+          "person": "chb20",
+          "duration_seconds": 3600.0,
+          "channel_slots": 28,
+          "events": 1,
+          "ictal_seconds": 38.0
+        },
+        {
+          "file": "chb24_01.edf",
+          "person": "chb24",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 2,
+          "ictal_seconds": 50.0
+        },
+        {
+          "file": "chb24_03.edf",
+          "person": "chb24",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 2,
+          "ictal_seconds": 54.0
+        },
+        {
+          "file": "chb24_04.edf",
+          "person": "chb24",
+          "duration_seconds": 3600.0,
+          "channel_slots": 23,
+          "events": 3,
+          "ictal_seconds": 78.0
+        }
+      ]
+    }
+  }
+}

@@ -34,14 +34,14 @@ def metrics_figure() -> None:
     cal = calibration["best"]
     hist = historical["fixed_evaluation"]
 
-    labels = ["Precisao EDF", "Sensibilidade EDF", "F1 EDF", "F1 localizado", "Recall evento", "F1 evento"]
+    labels = ["Precisão EDF", "Sensibilidade EDF", "F1 EDF", "F1 localizado", "Recall evento", "F1 evento"]
     cal_values = [cal["edf_precision"], cal["edf_recall"], cal["edf_f1"], cal["localized_f1"], cal["event_recall"], cal["event_f1"]]
     hist_values = [hist["metrics"]["precision"], hist["metrics"]["recall"], hist["metrics"]["f1"], hist["localized_metrics"]["f1"], hist["event_sensitivity"], hist["event_f1"]]
 
     image = Image.new("RGB", (1800, 1040), "white")
     draw = ImageDraw.Draw(image)
     draw.text((90, 55), "Desempenho do modelo final v43", fill=NAVY, font=font(48, True))
-    draw.text((90, 118), "Calibracao separada e avaliacao historica de desenvolvimento", fill=GRAY, font=font(27))
+    draw.text((90, 118), "Calibração separada e avaliação histórica de desenvolvimento", fill=GRAY, font=font(27))
 
     chart_left, chart_top, chart_right, chart_bottom = 350, 230, 1700, 820
     for tick in range(0, 101, 20):
@@ -60,11 +60,12 @@ def metrics_figure() -> None:
             draw.text((chart_left + width + 12, y + offset - 1), pct(value), fill=color, font=font(22, True))
 
     draw.rounded_rectangle((90, 875, 121, 906), radius=5, fill=BLUE)
-    draw.text((137, 875), "Calibracao: chb16, chb19, chb20 e chb24", fill=NAVY, font=font(23))
+    draw.text((137, 875), "Calibração: chb16, chb19, chb20 e chb24", fill=NAVY, font=font(23))
     draw.rounded_rectangle((770, 875, 801, 906), radius=5, fill=ORANGE)
-    draw.text((817, 875), "Avaliacao historica: chb09, chb15 e chb18", fill=NAVY, font=font(23))
-    draw.text((90, 946), "Nota: a avaliacao historica foi consultada durante o desenvolvimento e nao constitui teste final intocado.", fill=GRAY, font=font(22))
+    draw.text((817, 875), "Avaliação histórica: chb09, chb15 e chb18", fill=NAVY, font=font(23))
+    draw.text((90, 946), "Nota: a avaliação histórica foi consultada durante o desenvolvimento e não constitui teste final intocado.", fill=GRAY, font=font(22))
     image.save(OUTPUT / "metricas_v43.png")
+    image.save(OVERLEAF_IMAGES / "figura_17.png")
 
 
 def event_summary_figure() -> None:
@@ -73,12 +74,12 @@ def event_summary_figure() -> None:
 
     image = Image.new("RGB", (1800, 880), "white")
     draw = ImageDraw.Draw(image)
-    draw.text((90, 55), "Deteccao por evento e falsos alarmes", fill=NAVY, font=font(48, True))
-    draw.text((90, 118), "O desempenho por EDF nao substitui a avaliacao temporal", fill=GRAY, font=font(27))
+    draw.text((90, 55), "Detecção por evento e falsos alarmes", fill=NAVY, font=font(48, True))
+    draw.text((90, 118), "O desempenho por EDF não substitui a avaliação temporal", fill=GRAY, font=font(27))
 
     groups = [
-        ("Calibracao", calibration["detected_events"], calibration["total_events"], calibration["false_alarms_per_hour"], BLUE),
-        ("Historico", historical["detected_seizure_events"], historical["total_seizure_events"], historical["false_alarms_per_hour"], ORANGE),
+        ("Calibração", calibration["detected_events"], calibration["total_events"], calibration["false_alarms_per_hour"], BLUE),
+        ("Histórico", historical["detected_seizure_events"], historical["total_seizure_events"], historical["false_alarms_per_hour"], ORANGE),
     ]
     for index, (name, detected, total, fa_h, color) in enumerate(groups):
         x = 130 + index * 830
@@ -89,8 +90,9 @@ def event_summary_figure() -> None:
         draw.text((x + 45, 515), "Falsos alarmes por hora", fill=GRAY, font=font(24))
         draw.text((x + 45, 555), f"{fa_h:.2f}".replace(".", ","), fill=NAVY, font=font(62, True))
 
-    draw.text((90, 765), "A calibracao definiu o ponto operacional; o conjunto historico evidencia a queda de generalizacao interpaciente.", fill=GRAY, font=font(24))
+    draw.text((90, 765), "A calibração definiu o ponto operacional; o conjunto histórico evidencia a queda de generalização interpaciente.", fill=GRAY, font=font(24))
     image.save(OUTPUT / "eventos_falsos_alarmes_v43.png")
+    image.save(OVERLEAF_IMAGES / "figura_18.png")
 
 
 def terminal_figure() -> None:
@@ -110,7 +112,7 @@ def terminal_figure() -> None:
         "",
         "Modelo: v43_final_seed42.keras",
         "Scaler: v43_final_seed42_scaler.pkl",
-        "Metadata e calibracao: verificados por SHA-256",
+        "Metadados e calibração: verificados por SHA-256",
     ]
     y = 125
     for line in lines:
@@ -124,9 +126,9 @@ def confusion_matrices_figure() -> None:
     calibration = json.loads((ROOT / "modelos" / "v43_final_seed42_calibration.json").read_text())["best"]
     historical = json.loads((ROOT / "modelos" / "v43_final_seed42_reserved_historical_eval.json").read_text())["fixed_evaluation"]
     matrices = [
-        ("Calibracao", 11, 0, 1, 1, BLUE),
+        ("Calibração", 11, 0, 1, 1, BLUE),
         (
-            "Avaliacao historica",
+            "Avaliação histórica",
             7,
             int(historical["false_positives"]),
             int(historical["false_negatives"]),
@@ -139,8 +141,8 @@ def confusion_matrices_figure() -> None:
 
     image = Image.new("RGB", (1800, 920), "white")
     draw = ImageDraw.Draw(image)
-    draw.text((90, 55), "Matrizes de confusao por EDF", fill=NAVY, font=font(48, True))
-    draw.text((90, 118), "Classificacao do arquivo completo no ponto operacional congelado", fill=GRAY, font=font(27))
+    draw.text((90, 55), "Matrizes de confusão por EDF", fill=NAVY, font=font(48, True))
+    draw.text((90, 118), "Classificação do arquivo completo no ponto operacional congelado", fill=GRAY, font=font(27))
 
     for index, (title, tp, fp, fn, tn, color) in enumerate(matrices):
         left = 180 + index * 850

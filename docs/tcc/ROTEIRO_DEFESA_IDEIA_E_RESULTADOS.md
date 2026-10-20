@@ -1,4 +1,8 @@
-# Roteiro para explicar a ideia e os resultados
+# Roteiro final para defesa do EEG-XAI
+
+## Tese central em uma frase
+
+O EEG-XAI demonstra que e possivel integrar visualizacao multicanal, localizacao temporal por CNN-BiLSTM, explicabilidade por Gradient SHAP e emissao de laudo em um unico prototipo, mas os resultados historicos mostram que a generalizacao entre pacientes ainda limita o uso clinico.
 
 ## Mensagem de abertura
 
@@ -14,6 +18,65 @@ O EEG-XAI integra a importacao do EEG, a visualizacao dos canais, a indicacao au
 6. Resultados: apresentar ambos os conjuntos com o mesmo ponto operacional.
 7. Exemplos: um acerto temporal e uma falha ja presentes na avaliacao.
 8. Conclusao: contribuicao de software, resultado experimental e limite de generalizacao.
+
+## Sequencia sugerida de slides
+
+### Slide 1 - Problema e objetivo
+
+Mostrar um EEG com muitos canais e explicar: "O desafio nao e apenas dizer se um arquivo contem crise; e indicar em que intervalo o especialista deve revisar." Em seguida, apresentar o objetivo de integrar o fluxo em uma plataforma web.
+
+### Slide 2 - O que foi entregue
+
+Usar uma captura da interface final. Destacar apenas quatro pontos: upload EDF, visualizacao multicanal, trechos suspeitos com SHAP e laudo. Evitar listar todas as tecnologias neste momento.
+
+### Slide 3 - Fluxo da IA
+
+Apresentar: EDF -> janelas de 4 s -> 15 caracteristicas por canal -> sequencias de 8 passos -> CNN-BiLSTM -> escores temporais -> trechos suspeitos. Explicar que a saida e um escore operacional, nao uma certeza diagnostica.
+
+### Slide 4 - Evolucao em relacao ao TCC I
+
+Explicar que Entropia de Shannon, Dinamica Simbolica, Bonn e k-fold foram investigados no planejamento ou em ensaios exploratorios. A versao final adotou CHB-MIT, caracteristicas tempo-frequencia, separacao por grupos antes do janelamento e avaliacao temporal por evento.
+
+### Slide 5 - Protocolo final
+
+Mostrar treino com 77 EDFs de 17 grupos, calibracao com 13 EDFs de quatro grupos e avaliacao historica em chb09, chb15 e chb18. Informar seed 42, limiar 0,60, duracao minima 18 s e gap 8 s. Dizer explicitamente que os pacientes historicos ficaram fora do treino e da calibracao da v43, mas ja haviam sido consultados durante o desenvolvimento.
+
+### Slide 6 - Como ler as metricas
+
+Usar tres perguntas: "O EDF recebeu alerta?", "A crise foi encontrada?" e "O trecho principal ficou no lugar certo?" Associar respectivamente F1 por EDF, recall/F1 por evento e F1 localizado. FA/h mede alarmes sem correspondencia por hora nao ictal.
+
+### Slide 7 - Resultado na calibracao
+
+Apresentar F1 EDF 95,7%, F1 localizado 90,9%, 15/20 eventos e 0,55 FA/h. Ressaltar que calibracao participa da escolha do ponto operacional e nao equivale a desempenho externo.
+
+### Slide 8 - Avaliacao historica
+
+Apresentar F1 EDF 82,4%, F1 localizado 46,2%, 4/9 eventos e 2,08 FA/h. A mensagem principal e a queda de generalizacao interpaciente, nao esconder o resultado menor.
+
+### Slide 9 - Um acerto e uma falha
+
+No chb09_19, mostrar o evento real 5.298--5.362 s e a previsao 5.300--5.354 s, com IoU de 84,4%. No chb15_10, explicar que o evento 1.080--1.114 s nao teve candidato valido. Isso torna concreta a diferenca entre classificar e localizar.
+
+### Slide 10 - Explicabilidade
+
+Mostrar o overlay SHAP. Explicar que ele destaca contribuicoes positivas das caracteristicas por canal e janela para a sequencia de pico. Nao explica cada amostra bruta e nao prova causalidade fisiologica.
+
+### Slide 11 - Contribuicoes e limites
+
+Contribuicoes: plataforma integrada, detector temporal, avaliacao por evento e overlay explicavel. Limites: cinco de nove eventos historicos perdidos, 2,08 FA/h, ausencia de validacao externa e ausencia de estudo com neurologistas.
+
+### Slide 12 - Conclusao
+
+Encerrar com: "O sistema cumpre a proposta como prototipo funcional e experimento de Engenharia de Software com IA explicavel. O principal proximo passo cientifico e validar em uma coorte externa mantida intocada."
+
+## Numeros que devem permanecer identicos
+
+| Contexto | F1 EDF | F1 localizado | Eventos | FA/h |
+|---|---:|---:|---:|---:|
+| Calibracao | 95,7% | 90,9% | 15/20 | 0,55 |
+| Avaliacao historica | 82,4% | 46,2% | 4/9 | 2,08 |
+
+A IoU temporal media de 73,7%, o erro absoluto medio de inicio de 3,0 s e o erro absoluto medio de termino de 23,5 s descrevem somente os quatro eventos historicos detectados.
 
 ## Perguntas provaveis
 

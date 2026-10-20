@@ -1,4 +1,4 @@
-"""Avalia uma unica vez o ponto operacional congelado da v43 no reservado historico."""
+"""Avalia um ponto operacional congelado no reservado historico."""
 
 from __future__ import annotations
 
@@ -141,9 +141,26 @@ def main() -> None:
     parser.add_argument(
         "--patients", nargs="+", default=["chb09", "chb15", "chb18"],
     )
+    parser.add_argument(
+        "--model-path", type=Path,
+        help="Modelo experimental; deriva scaler/metadata/calibration e exige --output separado.",
+    )
     args = parser.parse_args()
 
     settings = get_settings()
+    if args.model_path is not None:
+        if args.output.resolve() == (ROOT / "modelos/v43_final_seed42_reserved_historical_eval.json").resolve():
+            parser.error("An experimental model requires a separate --output report.")
+        model_path = args.model_path.resolve()
+        experimental_paths = {
+            "ai_sequence_model_path": model_path,
+            "ai_sequence_scaler_path": model_path.with_name(f"{model_path.stem}_scaler.pkl"),
+            "ai_sequence_metadata_path": model_path.with_name(f"{model_path.stem}_metadata.json"),
+            "ai_sequence_calibration_path": model_path.with_name(f"{model_path.stem}_calibration.json"),
+        }
+        if not all(path.is_file() for path in experimental_paths.values()):
+            parser.error("The experimental model, scaler, metadata and calibration must all exist.")
+        settings = settings.model_copy(update=experimental_paths)
     recursos = carregar_recursos_sequenciais(settings)
     if recursos is None:
         raise SystemExit("Artefatos sequenciais ativos nao puderam ser carregados.")
@@ -235,7 +252,10 @@ def main() -> None:
         ) if detectados else None,
     }
     payload = {
-        "experiment": "v43_final_seed42_reserved_historical_frozen",
+        "experiment": (
+            f"{args.model_path.stem}_reserved_historical_frozen"
+            if args.model_path is not None else "v43_final_seed42_reserved_historical_frozen"
+        ),
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "methodological_status": (
             "historical_reserved_development_test_already_consulted"

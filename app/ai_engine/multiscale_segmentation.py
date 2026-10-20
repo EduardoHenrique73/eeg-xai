@@ -135,8 +135,11 @@ def create_late_channel_fusion_bilstm(
     n_channels: int,
     features_per_channel: int,
     learning_rate: float = 0.001,
+    channel_dropout: float = 0.0,
 ) -> Any:
     """Preserve channels through a shared temporal frontend before spatial fusion."""
+    if not 0.0 <= channel_dropout < 1.0:
+        raise ValueError("channel_dropout must be in [0, 1).")
     inputs = layers.Input(
         shape=(sequence_length, n_channels * features_per_channel),
         name="eeg_features",
@@ -161,6 +164,13 @@ def create_late_channel_fusion_bilstm(
     )(x)
     x = layers.LayerNormalization(name="per_channel_norm_2")(x)
     x = layers.Multiply(name="mask_after_temporal_2")([x, presence_mask])
+
+    if channel_dropout:
+        # One channel mask per example, shared across time and learned features.
+        x = layers.Dropout(
+            channel_dropout, noise_shape=(None, 1, n_channels, 1),
+            name="channel_evidence_dropout",
+        )(x)
 
     x = layers.Reshape(
         (sequence_length, n_channels * 16), name="late_channel_flatten",

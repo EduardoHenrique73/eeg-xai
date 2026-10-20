@@ -157,6 +157,54 @@ def selecionar_canais_eeg_validos(
     return canais_validos
 
 
+def resolver_sinais_referencia(
+    sinais_disponiveis: dict[str, np.ndarray],
+    canais_referencia: list[str],
+) -> tuple[dict[str, np.ndarray], set[str]]:
+    """Use the same bipolar reconstruction for training and inference."""
+    sinais: dict[str, np.ndarray] = {}
+    derivados: set[str] = set()
+    for canal in canais_referencia:
+        if canal in sinais_disponiveis:
+            sinais[canal] = sinais_disponiveis[canal]
+            continue
+        partes = re.sub(r"-\d+$", "", canal).split("-")
+        if len(partes) != 2:
+            continue
+        a, b = partes
+        inverso = f"{b}-{a}"
+        if inverso in sinais_disponiveis:
+            sinais[canal] = -sinais_disponiveis[inverso]
+            derivados.add(canal)
+            continue
+        referencias_a = {nome[len(a)+1:]: sinal for nome, sinal in sinais_disponiveis.items()
+                         if nome.startswith(f"{a}-")}
+        referencias_b = {nome[len(b)+1:]: sinal for nome, sinal in sinais_disponiveis.items()
+                         if nome.startswith(f"{b}-")}
+        comuns = sorted(set(referencias_a) & set(referencias_b))
+        if comuns:
+            referencia = comuns[0]
+            sinais[canal] = referencias_a[referencia] - referencias_b[referencia]
+            derivados.add(canal)
+    return sinais, derivados
+
+
+def _resolver_sinais_raw(
+    raw: mne.io.BaseRaw,
+    canais_usuario: list[str],
+    referencia: list[str],
+    *,
+    inicio: int = 0,
+    fim: int | None = None,
+) -> tuple[dict[str, np.ndarray], set[str]]:
+    indices = [raw.ch_names.index(canal) for canal in canais_usuario]
+    dados = raw.get_data(picks=indices, start=inicio, stop=fim) if indices else []
+    return resolver_sinais_referencia(
+        {canal: np.asarray(sinal, dtype=float) for canal, sinal in zip(canais_usuario, dados)},
+        referencia,
+    )
+
+
 def _calcular_skewness(data: np.ndarray) -> float:
     n = len(data)
     if n < 3:
@@ -557,16 +605,16 @@ def extrair_features_edf(
         canais_processados: list[str] = []
         canais_omitidos = []
         nomes_base = nomes_features_por_modo(feature_mode)
+        sinais_referencia, derivados = _resolver_sinais_raw(raw, canais_usuario, referencia)
 
         for canal in referencia:
             nomes_expandidos.extend([f"{canal}::{nome}" for nome in nomes_base])
-            if canal not in canais_usuario or canal not in canais_validos:
+            if canal not in sinais_referencia:
                 vetores_expandidos.extend([0.0] * len(nomes_base))
                 canais_omitidos.append(canal)
                 continue
 
-            idx = canais_disponiveis.index(canal)
-            sinal_canal = np.asarray(raw.get_data(picks=[idx])[0], dtype=float)
+            sinal_canal = sinais_referencia[canal]
             feat = extrair_features_por_modo_de_valores(
                 sinal_canal,
                 feature_mode=feature_mode,
@@ -579,6 +627,7 @@ def extrair_features_edf(
         features = {
             "feature_names": nomes_expandidos,
             "feature_vector": vetores_expandidos,
+            "canais_derivados": sorted(derivados),
         }
         alvos = canais_processados
     else:
@@ -652,16 +701,18 @@ def _montar_features_de_janela(
         canais_processados = []
         canais_omitidos = []
         nomes_base = nomes_features_por_modo(feature_mode)
+        sinais_referencia, derivados = _resolver_sinais_raw(
+            raw, canais_usuario, referencia, inicio=inicio, fim=fim,
+        )
 
         for canal in referencia:
             nomes_expandidos.extend([f"{canal}::{nome}" for nome in nomes_base])
-            if canal not in canais_usuario or canal not in canais_validos:
+            if canal not in sinais_referencia:
                 vetores_expandidos.extend([0.0] * len(nomes_base))
                 canais_omitidos.append(canal)
                 continue
 
-            idx = canais_disponiveis.index(canal)
-            sinal_canal = np.asarray(raw.get_data(picks=[idx], start=inicio, stop=fim)[0], dtype=float)
+            sinal_canal = sinais_referencia[canal]
             feat = extrair_features_por_modo_de_valores(
                 sinal_canal,
                 feature_mode=feature_mode,
@@ -674,6 +725,7 @@ def _montar_features_de_janela(
         features = {
             "feature_names": nomes_expandidos,
             "feature_vector": vetores_expandidos,
+            "canais_derivados": sorted(derivados),
         }
     else:
         raise ValueError(f"feature_mode invalido: {feature_mode}")
